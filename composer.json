@@ -1,0 +1,21 @@
+{
+	"name": "owncloud/elasticsearch",
+	"license": "AGPL",
+	"authors": [
+		{
+			"name": "Jörn Friedrich Dreyer",
+			"email": "jfd@butonic.de",
+			"role": "Developer",
+			"homepage": "http://www.butonic.de"
+		}
+	],
+	"config": {
+		"vendor-dir": "3rdparty"
+	},
+	"support": {
+		"issues": "https://github.com/owncloud/elasticsearch/issues"
+	},
+	"require": {
+		"ruflin/Elastica": "dev-master"
+	}
+}

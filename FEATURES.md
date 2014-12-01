@@ -26,25 +26,25 @@ and where I can click and get to my file quickly
 Acceptance Criteria:
 - [ ] Results are paginated, with the first 30 shown inside the search results page
 - [ ] Results are displayed like:
-	Still working with Jan on the Layout here, but initial concept looks like this:
-	
-	(Search field with current search terms in it for the search we are listing)
-	
-	TOTAL RESULTS <a number of identified files in this search>
-	
-	FILENAME1 <logo of mount point if there is one>
-	Path to file1
-	Short excerpt from the document of the search term
-	
-	FILENAME2 <logo of mount point if there is one>
-	Path to file
-	Short excerpt from the document of the search term
-	
-	FILENAME3 <logo of mount point if there is one>
-	Path to file
-	Short excerpt from the document of the search term
-	
-	Each filename is then clickable to take you to that file in the ownCloud files app.
+  Still working with Jan on the Layout here, but initial concept looks like this:
+  ```
+(Search field with current search terms in it for the search we are listing)
+  
+TOTAL RESULTS <a number of identified files in this search>
+
+FILENAME1 <logo of mount point if there is one>
+Path to file1
+Short excerpt from the document of the search term
+
+FILENAME2 <logo of mount point if there is one>
+Path to file
+Short excerpt from the document of the search term
+
+FILENAME3 <logo of mount point if there is one>
+Path to file
+Short excerpt from the document of the search term
+```  
+  Each filename is then clickable to take you to that file in the ownCloud files app.
 
 # Limit search to subdirectory
 

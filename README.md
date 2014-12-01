@@ -33,5 +33,5 @@ When you recently edited a file, chances are that you still know where it reside
 
 # Todo
 
--[ ] port test suite from search_lucene
--[ ] resolve path for shared files
+- [ ] port test suite from search_lucene
+- [ ] resolve path for shared files

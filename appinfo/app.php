@@ -14,15 +14,15 @@
 
 // --- always add js & css -----------------------------------------------
 
-OCP\Util::addScript('search_elastic', 'app');
-//OCP\Util::addStyle('search_elastic', 'app');
+OCP\Util::addScript('search_elastic', 'search');
+OCP\Util::addStyle('search_elastic', 'results');
 
 // --- register settings -----------------------------------------------
-\OCP\App::registerAdmin('search_elastic', 'settings-admin');
+//\OCP\App::registerAdmin('search_elastic', 'settings-admin');
 
 // --- add file search provider -----------------------------------------------
 
-\OC::$server->getSearch()->registerProvider('OCA\Search_Elastic\Search\ElasticSearchProvider');
+\OC::$server->getSearch()->registerProvider('OCA\Search_Elastic\Search\ElasticSearchProvider', array('apps' => array('files')));
 
 // if we know the user add background job for deletion
 if (\OC::$server->getUserSession()->getUser()) {

@@ -53,7 +53,7 @@ class ElasticSearchResult extends File {
 		);
 		$this->permissions = $this->getPermissions($this->path);
 		$this->modified = (int)$data['file']['mtime'];
-		$this->mime_type = $data['file']['content_type'];
+		$this->mime = $data['file']['content_type'];
 		$this->highlights = $highlights['content'];
 	}
 

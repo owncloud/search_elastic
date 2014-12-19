@@ -20,17 +20,18 @@ use Elastica\Result;
 use Elastica\Client;
 use Elastica\Type;
 use OCA\Search_Elastic\AppInfo\Application;
-use OCP\Search\Provider;
+use OCP\Search\PagedProvider;
 
-class ElasticSearchProvider extends Provider {
+class ElasticSearchProvider extends PagedProvider {
 
 	/**
-	 * performs a search on the users index
-	 *
-	 * @param string $query lucene search query
+	 * Search for $query
+	 * @param string $query
+	 * @param int $page pages start at page 1
+	 * @param int $size, 0 = all
 	 * @return ElasticSearchResult[]
 	 */
-	public function search($query){
+	public function searchPaged($query, $page, $size) {
 
 		$app = new Application();
 		$container = $app->getContainer();
@@ -59,9 +60,12 @@ class ElasticSearchProvider extends Provider {
 					),
 				));
 
+				$es_query->setSize($size);
+				$es_query->setFrom(($page - 1) * $size);
+
 				$search = new \Elastica\Search($client);
 				$search->addType(new Type($index, 'file'));
-				$resultSet = $search->search($es_query, 30);
+				$resultSet = $search->search($es_query);
 
 				/** @var Result $result */
 				foreach ($resultSet as $result) {

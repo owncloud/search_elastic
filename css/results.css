@@ -1,0 +1,13 @@
+
+#searchresults .highlights {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: normal;
+	color: #545454;
+}
+
+#searchresults .highlights em {
+	color: #545454;
+	font-weight: bold;
+	opacity: 1;
+}

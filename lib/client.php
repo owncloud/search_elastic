@@ -145,22 +145,25 @@ class Client {
 
 			} catch (VanishedException $e) {
 
+				$fileStatus->setMessage('File vanished');
 				$this->mapper->markVanished($fileStatus);
 
 			} catch (NotIndexedException $e) {
 
+				$fileStatus->setMessage('Not indexed');
 				$this->mapper->markUnIndexed($fileStatus);
 
 			} catch (SkippedException $e) {
 
-				$this->mapper->markSkipped($fileStatus);
+				$this->mapper->markSkipped($fileStatus, 'Skipped');
 				$this->logger->debug( $e->getMessage() );
 
 			} catch (\Exception $e) {
 				//sqlite might report database locked errors when stock filescan is in progress
 				//this also catches db locked exception that might come up when using sqlite
 				$this->logger->error($e->getMessage() . ' Trace:\n' . $e->getTraceAsString() );
-				$this->mapper->markError($fileStatus);
+
+				$this->mapper->markError($fileStatus, substr($e->getMessage(), 0, 255));
 				// TODO Add UI to trigger rescan of files with status 'E'rror?
 				if ($eventSource) {
 					$eventSource->send('error', $e->getMessage());

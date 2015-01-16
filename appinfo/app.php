@@ -18,7 +18,7 @@ OCP\Util::addScript('search_elastic', 'app');
 //OCP\Util::addStyle('search_elastic', 'app');
 
 // --- register settings -----------------------------------------------
-\OCP\App::registerAdmin('search_elastic', 'settings-admin');
+//\OCP\App::registerAdmin('search_elastic', 'settings-admin');
 
 // --- add file search provider -----------------------------------------------
 

@@ -25,6 +25,11 @@ namespace OCA\Search_Elastic\AppInfo;
 $application = new Application();
 
 $application->registerRoutes($this, array('routes' => array(
+	array('name' => 'admin_settings#loadServers', 'url' => '/settings/servers', 'verb' => 'GET'),
+	array('name' => 'admin_settings#saveServers', 'url' => '/settings/servers', 'verb' => 'POST'),
+	array('name' => 'admin_settings#checkStatus', 'url' => '/settings/status', 'verb' => 'GET'),
+	array('name' => 'admin_settings#setup', 'url' => '/setup', 'verb' => 'POST'),
+	array('name' => 'admin_settings#rescan', 'url' => '/rescan', 'verb' => 'POST'),
 	array('name' => 'api#index', 'url' => '/indexer/index', 'verb' => 'GET'),
 	array('name' => 'api#optimize', 'url' => '/indexer/optimize', 'verb' => 'POST'),
 )));

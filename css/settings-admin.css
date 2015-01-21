@@ -1,0 +1,10 @@
+#searchElasticSettings .icon {
+	display: inline-block;
+	height: 16px;
+	width: 16px;
+	border-radius: 8px;
+}
+
+#searchElasticSettings input {
+	width: 200px;
+}

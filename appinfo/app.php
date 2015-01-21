@@ -18,15 +18,17 @@ OCP\Util::addScript('search_elastic', 'app');
 //OCP\Util::addStyle('search_elastic', 'app');
 
 // --- register settings -----------------------------------------------
-//\OCP\App::registerAdmin('search_elastic', 'settings-admin');
+\OCP\App::registerAdmin('search_elastic', 'settings-admin');
 
 // --- add file search provider -----------------------------------------------
 
 \OC::$server->getSearch()->registerProvider('OCA\Search_Elastic\Search\ElasticSearchProvider');
 
-// add background job for index optimization:
-
-$arguments = array('user' => \OCP\User::getUser());
+// if we know the user add background job for deletion
+if (\OC::$server->getUserSession()->getUser()) {
+	$arguments = array('user' => \OC::$server->getUserSession()->getUser()->getUID());
+	\OC::$server->getJobList()->add(new \OCA\Search_Elastic\Jobs\DeleteJob(), $arguments);
+}
 
 // --- add hooks -----------------------------------------------
 
@@ -45,13 +47,6 @@ OCP\Util::connectHook(
 		OC\Files\Filesystem::signal_post_rename,
 		'OCA\Search_Elastic\Hooks\Files',
 		OCA\Search_Elastic\Hooks\Files::handle_post_rename);
-
-//listen for file deletions to clean the database and index
-OCP\Util::connectHook(
-	OC\Files\Filesystem::CLASSNAME,
-	'post_delete',
-	'OCA\Search_Elastic\Hooks\Files',
-	OCA\Search_Elastic\Hooks\Files::handle_delete);
 
 //listen for file shares to update read permission in index
 OCP\Util::connectHook(

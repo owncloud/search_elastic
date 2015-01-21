@@ -26,9 +26,12 @@ class StatusMapper extends Mapper {
 
 	private $logger;
 
-	public function __construct(IDb $db, ILogger $logger){
+	private $scanExternalStorages;
+
+	public function __construct(IDb $db, ILogger $logger, $scanExternalStorages = true){
 		parent::__construct($db, 'search_elastic_status', '\OCA\Search_Elastic\Db\Status');
 		$this->logger = $logger;
+		$this->scanExternalStorages = $scanExternalStorages;
 	}
 
 
@@ -173,7 +176,7 @@ class StatusMapper extends Mapper {
 					debug( 'expected string or instance of \OC\Files\Mount\Mount got ' . json_encode($mount) );
 			}
 			//only index local files for now
-			if ($storage->isLocal()) {
+			if ($this->scanExternalStorages || $storage->isLocal()) {
 				$cache = $storage->getCache();
 				$numericId = $cache->getNumericStorageId();
 

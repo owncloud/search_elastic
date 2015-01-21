@@ -16,6 +16,7 @@ namespace OCA\Search_Elastic\AppInfo;
 
 use Elastica\Type;
 use OCA\Search_Elastic\ContentExtractor;
+use OCA\Search_Elastic\Controller\AdminSettingsController;
 use OCA\Search_Elastic\Core\Db;
 use OCA\Search_Elastic\Core\Logger;
 use OCA\Search_Elastic\Db\StatusMapper;
@@ -24,6 +25,24 @@ use OCA\Search_Elastic\Core\Files;
 use OCP\AppFramework\App;
 
 class Application extends App {
+
+	/**
+	 * @param string $servers
+	 * @return array
+	 */
+	public function parseServers($servers) {
+		$serverArr = explode(',', $servers);
+		$results = array();
+		foreach ($serverArr as $server) {
+			list($host, $port) = explode(':', $server, 2);
+			$results[] = array('host' => $host, 'port' => $port);
+		}
+		if (count($results) === 1) {
+			return $results[0];
+		}
+		return array('servers' => $results);
+	}
+
 
 	public function __construct (array $urlParams=array()) {
 		parent::__construct('search_elastic', $urlParams);
@@ -39,9 +58,7 @@ class Application extends App {
 		$container->registerService('Elastica', function($c) {
 			/** @var \OCP\IConfig $config */
 			$config = $c->query('ServerContainer')->getConfig();
-			$elasticaConfig = $config->getSystemValue('elasticsearch', array(
-					'host' => 'localhost', 'port' => 9200)
-			);
+			$elasticaConfig = $this->parseServers($config->getAppValue('search_elastic', 'servers', 'localhost:9200'));
 			return new \Elastica\Client($elasticaConfig);
 		});
 
@@ -80,7 +97,8 @@ class Application extends App {
 		$container->registerService('StatusMapper', function($c) {
 			return new StatusMapper(
 				$c->query('Db'),
-				$c->query('Logger')
+				$c->query('Logger'),
+				$c->query('OCP\IConfig')->getAppValue('search_elastic', 'scanExternalStorages', true)
 			);
 		});
 
@@ -122,6 +140,18 @@ class Application extends App {
 			return $c->query('ServerContainer')->getUserFolder();
 		});
 
+		/**
+		 * Controllers
+		 */
+		$container->registerService('AdminSettingsController', function($c) {
+			return new AdminSettingsController(
+				$c->query('AppName'),
+				$c->query('Request'),
+				$c->query('OCP\IConfig'),
+				$c->query('Index'),
+				$c->query('ContentExtractionIndex')
+			);
+		});
 	}
 
 

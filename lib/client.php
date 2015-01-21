@@ -78,8 +78,6 @@ class Client {
 		$this->type = new Type($this->index, 'file');
 		$this->tempType = new Type($this->tempIndex, 'file');
 
-		$this->autocreateIndexes();
-
 	}
 
 	public function autocreateIndexes () {
@@ -334,93 +332,6 @@ class Client {
 		$doc->setData(array('file' => array('users' => $users)));
 		$this->type->updateDocument($doc);
 
-	}
-
-	function setUpIndex() {
-		$this->index->create(array('index' => array('number_of_shards' => 1, 'number_of_replicas' => 0),), false);
-
-		$mapping = new Type\Mapping($this->type, array(
-			'file' => array(
-				'type' => 'object',
-				'fields' => array(
-					'content' => array(
-						'type' => 'string',
-						'term_vector' => 'with_positions_offsets',
-						'store' => 'yes',
-					),
-					'title' => array(
-						'type' => 'string',
-						'term_vector' => 'with_positions_offsets',
-						'store' => 'yes',
-					),
-					'date' => array(
-						'store' => 'yes',
-					),
-					'author' => array(
-						'type' => 'string',
-						'store' => 'yes',
-					),
-					'keywords' => array(
-						'type' => 'string',
-						'store' => 'yes',
-					),
-					'content_type' => array(
-						'store' => 'yes',
-					),
-					'content_length' => array(
-						'store' => 'yes',
-					),
-					'language' => array(
-						'store' => 'yes',
-					),
-				)
-			)
-		));
-		$this->type->setMapping($mapping);
-	}
-
-	function setUpTempIndex() {
-		$this->tempIndex->create(array('index' => array('number_of_shards' => 1, 'number_of_replicas' => 0),), false);
-
-		$mapping = new Type\Mapping($this->tempType, array(
-			'file' => array(
-				'type' => 'attachment',
-				'path' => 'full',
-				'fields' => array(
-					'file' => array(
-						'type' => 'string',
-						'store' => 'yes',
-					),
-					'title' => array(
-						'type' => 'string',
-						'store' => 'yes',
-					),
-					'date' => array(
-						'store' => 'yes',
-					),
-					'author' => array(
-						'type' => 'string',
-						'store' => 'yes',
-					),
-					'keywords' => array(
-						'type' => 'string',
-						'store' => 'yes',
-					),
-					'content_type' => array(
-						'store' => 'yes',
-					),
-					'content_length' => array(
-						'store' => 'yes',
-					),
-					'language' => array(
-						'store' => 'yes',
-					),
-				)
-			)
-		));
-		// do not store file in es
-		$mapping->setParam('_source', array('excludes' => array('file.content')));
-		$this->tempType->setMapping($mapping);
 	}
 
 } 

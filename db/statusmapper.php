@@ -34,7 +34,6 @@ class StatusMapper extends Mapper {
 		$this->scanExternalStorages = $scanExternalStorages;
 	}
 
-
 	/**
 	 * Deletes a status from the table
 	 * @param Entity $status the status that should be deleted
@@ -42,6 +41,13 @@ class StatusMapper extends Mapper {
 	public function delete(Entity $status){
 		$sql = 'DELETE FROM `' . $this->tableName . '` WHERE `fileid` = ?';
 		$this->execute($sql, array($status->getFileId()));
+	}
+
+	/**
+	 * Clears all status entries from the table
+	 */
+	public function clear() {
+		$this->execute('DELETE FROM `' . $this->tableName . '`');
 	}
 
 	/**

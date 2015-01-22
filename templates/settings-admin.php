@@ -8,12 +8,8 @@
 
 		<button><?php p($l->t('Rescan'));?></button>
 
-		<span class="status"></span>
+		<br/><span class="status"></span>
 
 	</div>
-
-	TODO status icon, red=server not found, yellow=index missing, index broken?, green=ok<br>
-	TODO input for comma delimited ip:port servers<br>
-	TODO rescan button that recreates the index
 
 </div>

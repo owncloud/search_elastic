@@ -18,6 +18,7 @@ use Elastica\Exception\Connection\HttpException;
 use Elastica\Index;
 use Elastica\Type;
 use OC\AppFramework\Http;
+use OCA\Search_Elastic\Db\StatusMapper;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IConfig;
 use OCP\IRequest;
@@ -38,16 +39,21 @@ class AdminSettingsController extends APIController {
 	 * @var Index
 	 */
 	var $contentExtractionIndex;
+	/**
+	 * @var StatusMapper
+	 */
+	var $mapper;
 
 	/**
 	 * @param string $appName
 	 * @param IRequest $request
 	 */
-	public function __construct($appName, IRequest $request, IConfig $config, Index $index, Index $contentExtractionIndex) {
+	public function __construct($appName, IRequest $request, IConfig $config, Index $index, Index $contentExtractionIndex, StatusMapper $mapper) {
 		parent::__construct($appName, $request);
 		$this->config = $config;
 		$this->index = $index;
 		$this->contentExtractionIndex = $contentExtractionIndex;
+		$this->mapper = $mapper;
 	}
 
 	/**
@@ -89,7 +95,7 @@ class AdminSettingsController extends APIController {
 			return new JSONResponse(array('message' => 'Elasticsearch Server unreachable at '.$servers), Http::STATUS_SERVICE_UNAVAILABLE);
 		}
 		$stats = $this->index->getStats();
-		return new JSONResponse(array('stats' => $stats));
+		return new JSONResponse(array('stats' => $stats->getData()));
 	}
 
 	/**
@@ -98,6 +104,7 @@ class AdminSettingsController extends APIController {
 	public function setup() {
 		$this->setUpIndex();
 		$this->setUpContentExtractionIndex();
+		$this->mapper->clear();
 		return $this->checkStatus();
 	}
 

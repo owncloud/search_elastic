@@ -149,7 +149,8 @@ class Application extends App {
 				$c->query('Request'),
 				$c->query('OCP\IConfig'),
 				$c->query('Index'),
-				$c->query('ContentExtractionIndex')
+				$c->query('ContentExtractionIndex'),
+				$c->query('StatusMapper')
 			);
 		});
 	}

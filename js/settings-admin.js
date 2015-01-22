@@ -28,28 +28,41 @@
 			});
 		}
 		function checkStatus() {
+			$searchElasticSettings.find('.icon').addClass('icon-loading-small').removeClass('error success');
 			$.get(
 				OC.generateUrl('apps/search_elastic/settings/status')
 			).done(function( result ) {
-				$searchElasticSettings.find('.icon').addClass('success').removeClass('error');
-				$searchElasticSettings.find('.status').text('');
+				$searchElasticSettings.find('.icon').addClass('success').removeClass('error icon-loading-small');
 				$searchElasticSettings.find('button').text(t('search_elastic', 'Reset index'));
-				console.debug(result.responseJSON.status);
+
+				console.debug(result.stats);
+				var count = result.stats.indices.owncloud.total.docs.count;
+				var size_in_bytes = result.stats.indices.owncloud.total.store.size_in_bytes;
+				$searchElasticSettings.find('.status').text(
+					n('search_elastic', '{count} document uses {size} bytes', '{count} documents using {size} bytes', count, {count: count, size: size_in_bytes})
+				);
 			}).fail(function( result ) {
-				$searchElasticSettings.find('.icon').addClass('error').removeClass('success');
+				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
 				$searchElasticSettings.find('.status').text(result.responseJSON.message);
 				$searchElasticSettings.find('button').text(t('search_elastic', 'Setup index'));
 			});
 		}
 		function setup() {
+			$searchElasticSettings.find('.icon').addClass('icon-loading-small').removeClass('error success');
 			return $.post(
 				OC.generateUrl('apps/search_elastic/setup')
 			).done(function( result ) {
-				$searchElasticSettings.find('.icon').addClass('success').removeClass('error');
-				$searchElasticSettings.find('.status').text('');
+				$searchElasticSettings.find('.icon').addClass('success').removeClass('error icon-loading-small');
 				$searchElasticSettings.find('button').text(t('search_elastic', 'Reset index'));
+
+				console.debug(result.stats);
+				var count = result.stats.indices.owncloud.total.docs.count;
+				var size_in_bytes = result.stats.indices.owncloud.total.store.size_in_bytes;
+				$searchElasticSettings.find('.status').text(
+					n('search_elastic', '{count} document uses {size} bytes', '{count} documents using {size} bytes', count, {count: count, size: size_in_bytes})
+				);
 			}).fail(function( result ) {
-				$searchElasticSettings.find('.icon').addClass('error').removeClass('success');
+				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
 				OC.dialogs.alert(result.responseJSON.message, t('search_elastic', 'Could not setup indexes'));
 			});
 		}

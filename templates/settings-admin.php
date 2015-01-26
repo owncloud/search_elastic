@@ -8,6 +8,8 @@
 
 		<button><?php p($l->t('Rescan'));?></button>
 
+		<label><input type="checkbox" /> <?php p($l->t('Scan external storages'));?></label>
+
 		<br/><span class="status"></span>
 
 	</div>

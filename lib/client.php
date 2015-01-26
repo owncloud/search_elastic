@@ -60,6 +60,11 @@ class Client {
 	private $logger;
 
 	/**
+	 * @var bool
+	 */
+	private $scanExternalStorages;
+
+	/**
 	 * @param IServerContainer $server
 	 * @param Index $index
 	 * @param Index $tempIndex used only to extract content
@@ -67,13 +72,14 @@ class Client {
 	 * @param StatusMapper $mapper
 	 * @param ILogger $logger
 	 */
-	public function __construct(IServerContainer $server, Index $index, Index $tempIndex, array $skippedDirs, StatusMapper $mapper, ILogger $logger) {
+	public function __construct(IServerContainer $server, Index $index, Index $tempIndex, array $skippedDirs, StatusMapper $mapper, ILogger $logger, $scanExternalStorages) {
 		$this->server = $server;
 		$this->skippedDirs = $skippedDirs;
 		$this->mapper = $mapper;
 		$this->logger = $logger;
 		$this->index = $index;
 		$this->tempIndex = $tempIndex;
+		$this->scanExternalStorages = $scanExternalStorages;
 
 		$this->type = new Type($this->index, 'file');
 		$this->tempType = new Type($this->tempIndex, 'file');
@@ -203,7 +209,7 @@ class Client {
 		// index content for local files only
 		$storage = $file->getStorage();
 
-		if ($storage->isLocal()) {
+		if ($this->scanExternalStorages || $storage->isLocal()) {
 			$data = $this->extractContent($file);
 
 			if (!empty($data)) {

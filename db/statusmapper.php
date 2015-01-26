@@ -168,7 +168,6 @@ class StatusMapper extends Mapper {
 			ON `*PREFIX*filecache`.`fileid` = `' . $this->tableName . '`.`fileid`
 			WHERE `storage` = ?
 			AND ( `status` IS NULL OR `status` = ? )
-			AND `path` LIKE \'files/%\'
 		');
 
 		foreach ($mounts as $mount) {
@@ -181,7 +180,7 @@ class StatusMapper extends Mapper {
 				$this->logger->
 					debug( 'expected string or instance of \OC\Files\Mount\Mount got ' . json_encode($mount) );
 			}
-			//only index local files for now
+			//only index external files if the admin enabled it
 			if ($this->scanExternalStorages || $storage->isLocal()) {
 				$cache = $storage->getCache();
 				$numericId = $cache->getNumericStorageId();

@@ -78,7 +78,8 @@ class Application extends App {
 				$c->query('ContentExtractionIndex'),
 				$c->query('SkippedDirs'),
 				$c->query('StatusMapper'),
-				$c->query('Logger')
+				$c->query('Logger'),
+				$c->query('OCP\IConfig')->getAppValue('search_elastic', 'scanExternalStorages', true)
 			);
 		});
 

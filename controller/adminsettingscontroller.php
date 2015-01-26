@@ -27,6 +27,7 @@ use OCP\AppFramework\ApiController;
 class AdminSettingsController extends APIController {
 
 	const SERVERS = 'servers';
+	const SCAN_EXTERNAL_STORAGE = 'scanExternalStorages';
 	/**
 	 * @var IConfig
 	 */
@@ -70,6 +71,23 @@ class AdminSettingsController extends APIController {
 	 */
 	public function saveServers($servers) {
 		$this->config->setAppValue($this->appName, self::SERVERS, $servers);
+		return new JSONResponse();
+	}
+
+	/**
+	 * @return JSONResponse
+	 */
+	public function getScanExternalStorages() {
+		$scanExternalStorages = $this->config->getAppValue($this->appName, self::SCAN_EXTERNAL_STORAGE, true);
+		return new JSONResponse(array(self::SCAN_EXTERNAL_STORAGE => $scanExternalStorages) );
+	}
+
+	/**
+	 * @param bool $scanExternalStorages
+	 * @return JSONResponse
+	 */
+	public function setScanExternalStorages($scanExternalStorages) {
+		$this->config->setAppValue($this->appName, self::SCAN_EXTERNAL_STORAGE, $scanExternalStorages);
 		return new JSONResponse();
 	}
 

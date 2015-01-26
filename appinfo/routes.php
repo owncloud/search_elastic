@@ -27,6 +27,8 @@ $application = new Application();
 $application->registerRoutes($this, array('routes' => array(
 	array('name' => 'admin_settings#loadServers', 'url' => '/settings/servers', 'verb' => 'GET'),
 	array('name' => 'admin_settings#saveServers', 'url' => '/settings/servers', 'verb' => 'POST'),
+	array('name' => 'admin_settings#getScanExternalStorages', 'url' => '/settings/scanExternalStorages', 'verb' => 'GET'),
+	array('name' => 'admin_settings#setScanExternalStorages', 'url' => '/settings/scanExternalStorages', 'verb' => 'POST'),
 	array('name' => 'admin_settings#checkStatus', 'url' => '/settings/status', 'verb' => 'GET'),
 	array('name' => 'admin_settings#setup', 'url' => '/setup', 'verb' => 'POST'),
 	array('name' => 'admin_settings#rescan', 'url' => '/rescan', 'verb' => 'POST'),

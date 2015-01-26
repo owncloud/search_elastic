@@ -5,6 +5,6 @@
 	border-radius: 8px;
 }
 
-#searchElasticSettings input {
+#searchElasticSettings input[type="text"] {
 	width: 200px;
 }

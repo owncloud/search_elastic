@@ -1,8 +1,5 @@
 (function(){
 
-	// TODO add spinner
-	// TODO remove legend
-
 	$(document).ready(function() {
 
 		var $searchElasticSettings = $('#searchElasticSettings');
@@ -13,7 +10,7 @@
 			).done(function( result ) {
 				$element.val(result.servers);
 			}).fail(function( result ) {
-				$searchElasticSettings.find('.icon').addClass('error').removeClass('success');
+				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
 				OC.dialogs.alert(result.responseJSON.message, t('search_elastic', 'Could not load servers'));
 			});
 		}
@@ -21,10 +18,30 @@
 			$.post(
 				OC.generateUrl('apps/search_elastic/settings/servers'),
 				{ servers: servers }
-			).done(function( result ) {
-			}).fail(function( result ) {
-				$searchElasticSettings.find('.icon').addClass('error').removeClass('success');
+			).fail(function( result ) {
+				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
 				OC.dialogs.alert(result.responseJSON.message, t('search_elastic', 'Could not save servers'));
+			});
+		}
+		function getScanExternalStorages($element) {
+			$.get(
+				OC.generateUrl('apps/search_elastic/settings/scanExternalStorages')
+			).done(function( result ) {
+				$element.prop('checked', result.scanExternalStorages);
+			}).fail(function( result ) {
+				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
+				OC.dialogs.alert(result.responseJSON.message, t('search_elastic', 'Could not get scanExternalStorages'));
+			});
+		}
+		function toggleScanExternalStorages($element) {
+			$.post(
+				OC.generateUrl('apps/search_elastic/settings/scanExternalStorages'),
+				{ scanExternalStorages: $element.prop('checked') }
+			).done(function( result ) {
+				$element.prop('checked', result.scanExternalStorages);
+			}).fail(function( result ) {
+				$element.prop('checked', !$element.prop('checked'));
+				OC.dialogs.alert(result.responseJSON.message, t('search_elastic', 'Could not set scanExternalStorages'));
 			});
 		}
 		function checkStatus() {
@@ -76,14 +93,19 @@
 			timer = setTimeout(function() {
 				saveServers($(that).val());
 				checkStatus();
-			}, 2000);
+			}, 1500);
 		});
 
 		$searchElasticSettings.on('click', 'button', function(e) {
 			setup();
 		});
 
-		loadServers($searchElasticSettings.find('input'));
+		$searchElasticSettings.on('click', 'input[type="checkbox"]', function(e) {
+			toggleScanExternalStorages($searchElasticSettings.find('input[type="checkbox"]'));
+		});
+
+		loadServers($searchElasticSettings.find('input[type="text"]'));
+		getScanExternalStorages($searchElasticSettings.find('input[type="checkbox"]'));
 		checkStatus();
 
 	});

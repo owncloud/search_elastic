@@ -61,7 +61,7 @@ class AdminSettingsController extends APIController {
 	 * @return JSONResponse
 	 */
 	public function loadServers() {
-		$servers = $this->config->getAppValue($this->appName, self::SERVERS);
+		$servers = $this->config->getAppValue($this->appName, self::SERVERS, 'localhost:9200');
 		return new JSONResponse(array(self::SERVERS => $servers) );
 	}
 
@@ -109,7 +109,7 @@ class AdminSettingsController extends APIController {
 				return new JSONResponse(array('message' => 'Content extraction index requires attachment type. Did you install the elasticsearch mapper attachments plugin?'), Http::STATUS_EXPECTATION_FAILED);
 			}
 		} catch (HttpException $ex) {
-			$servers = $this->config->getAppValue($this->appName, self::SERVERS);
+			$servers = $this->config->getAppValue($this->appName, self::SERVERS, 'localhost:9200');
 			return new JSONResponse(array('message' => 'Elasticsearch Server unreachable at '.$servers), Http::STATUS_SERVICE_UNAVAILABLE);
 		}
 		$stats = $this->index->getStats();

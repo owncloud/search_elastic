@@ -14,8 +14,8 @@
 
 \OC_Util::checkAdminUser();
 
-//\OCP\Util::addStyle('search_elastic', 'settings-admin');
-//\OCP\Util::addScript('search_elastic', 'settings-admin');
+\OCP\Util::addStyle('search_elastic', 'settings-admin');
+\OCP\Util::addScript('search_elastic', 'settings-admin');
 
 $tmpl = new \OCP\Template('search_elastic', 'settings-admin');
 

@@ -282,17 +282,17 @@ class StatusMapper extends Mapper {
 	 * @return Status
 	 */
 	public function getOrCreateFromFileId($fileId) {
+		$this->db->insertIfNotExist(
+			$this->tableName,
+			[ 'fileid' => $fileId, 'status' => Status::STATUS_NEW ],
+			[ 'fileid' ]
+		);
 		$sql = '
 			SELECT `fileid`, `status`, `message`
 			FROM ' . $this->tableName . '
 			WHERE `fileid` = ?
 		';
-		try {
-			return $this->findEntity($sql, array($fileId));
-		} catch (DoesNotExistException $e) {
-			$status = new Status($fileId, Status::STATUS_NEW);
-			return $this->insert($status);
-		}
+		return $this->findEntity($sql, array($fileId));
 	}
 
 	public function markNew(Status $status) {

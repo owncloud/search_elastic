@@ -11,11 +11,6 @@
 	<require>7</require>
 	<description>This app uses a separate elasticsearch cluster to enable
 		searching in content and meta data of files.
-
-		Depending on the file size, version and content of PDF / office
-		files indexing may fail. This is a known issue and help is welcome
-		to get these problems reproduced and sorted out. Start by having a
-		look at the skipped unit tests.
 	</description>
 	<!--ocsid></ocsid-->
 </info>

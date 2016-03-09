@@ -41,13 +41,6 @@ OCP\Util::connectHook(
 		'OCA\Search_Elastic\Hooks\Files',
 		OCA\Search_Elastic\Hooks\Files::handle_post_write);
 
-//connect to the filesystem for renaming
-OCP\Util::connectHook(
-		OC\Files\Filesystem::CLASSNAME,
-		OC\Files\Filesystem::signal_post_rename,
-		'OCA\Search_Elastic\Hooks\Files',
-		OCA\Search_Elastic\Hooks\Files::handle_post_rename);
-
 //listen for file shares to update read permission in index
 OCP\Util::connectHook(
 	'OCP\Share',

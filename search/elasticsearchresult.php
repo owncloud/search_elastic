@@ -57,7 +57,6 @@ class ElasticSearchResult extends File {
 		$this->highlights = $highlights['file.content'];
 	}
 
-	//FIXME resolve path for shared files
 	protected function getRelativePath ($id) {
 		$home = \OC::$server->getUserFolder();
 		$node = $home->getById($id);

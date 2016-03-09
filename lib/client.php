@@ -218,12 +218,6 @@ class Client {
 			$data = $this->extractContent($file);
 
 			if (!empty($data)) {
-				$data['_name'] = $file->getPath();
-				//FIXME use groups in addition to users so we don't have to track group membership changes
-				//FIXME dont store user / group but storage instead if we can get
-				//      a list of all storages that we have access to?
-				//      hm shared storages are implicit ... may be a problem
-				//FIXME how does the new storage layer impact search relying on the fileid to be unique
 				$access = $this->getUsersWithReadPermission($file);
 				$data['users'] = $access['users'];
 				$data['groups'] = $access['groups'];
@@ -257,8 +251,6 @@ class Client {
 	 * Find which users can access a shared item
 	 * @param string $path to the file
 	 * @param string $ownerUser owner of the file
-	 * @param boolean $includeOwner include owner to the list of users with access to the file
-	 * @param boolean $returnUserPaths Return an array with the user => path map
 	 * @return array
 	 * @note $path needs to be relative to user data dir, e.g. 'file.txt'
 	 *       not '/admin/data/file.txt'
@@ -394,7 +386,6 @@ class Client {
 
 		$value = array(
 			'_content_type' => $file->getMimeType(),
-			'_name' => $file->getPath(),
 			'_content' => base64_encode($file->getContent()),
 		);
 

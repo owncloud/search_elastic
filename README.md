@@ -39,7 +39,7 @@ When you recently edited a file, chances are that you still know where it reside
 - [x] store groups and users with access to filter search results by group membership
 - [x] store fileid instead of filenames so we don't have to handle renames 
 - [x] use instanceid to set up index - allows using the same elasticsearch instance for muliple oc instances
-- [ ] dont bother storing the filename / path
+- [x] dont bother storing the filename / path
 - [ ] check js for result link handling so clicking a result dos not do a full page load, there seems to be js in place that already does the file highlighting
 - [ ] send code snippets for search_lucene
 - sharing a file immediately after it has been uploadad throws an exception

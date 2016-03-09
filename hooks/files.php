@@ -94,44 +94,6 @@ class Files {
 	}
 
 	/**
-	 * handle file renames (triggers indexing and deletion)
-	 * 
-	 * @param $param array from postRenameFile-Hook
-	 */
-	public static function renameFile(array $param) {
-		//FIXME ... update only name & path of file
-		/*
-			curl -XPOST 'localhost:9200/test/type1/1/_update' -d '{
-				"doc" : {
-					"name" : "new_name"
-				},
-				"detect_noop": true
-			}'
-		 */
-		$app = new Application();
-		$container = $app->getContainer();
-
-		if (!empty($param['oldpath'])) {
-			//delete from lucene index
-			$container->query('Index')->deleteFile($param['oldpath']);
-		}
-
-		if (!empty($param['newpath'])) {
-			/** @var Folder $userFolder */
-			$userFolder = $container->query('UserFolder');
-			$node = $userFolder->get($param['newpath']);
-
-			// only index files
-			if ($node instanceof File) {
-				$mapper = $container->query('StatusMapper');
-				$mapper->getOrCreateFromFileId($node->getId());
-				self::indexFile(array('path'=>$param['newpath']));
-			}
-
-		}
-	}
-
-	/**
 	 * deleteFile triggers the removal of any deleted files from the index
 	 *
 	 * @param $param array from deleteFile-Hook

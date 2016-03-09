@@ -10,7 +10,7 @@
 
 		<label><input type="checkbox" /> <?php p($l->t('Scan external storages'));?></label>
 
-		<br/><span class="status"></span>
+		<br/><span class="message"></span>
 
 	</div>
 

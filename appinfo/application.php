@@ -34,6 +34,7 @@ class Application extends App {
 		$serverArr = explode(',', $servers);
 		$results = array();
 		foreach ($serverArr as $server) {
+			//FIXME Undefined offset: 1 at \/var\/www\/owncloud\/apps-repos\/search_elastic\/appinfo\/application.php#37
 			list($host, $port) = explode(':', $server, 2);
 			$results[] = array('host' => $host, 'port' => $port);
 		}
@@ -63,11 +64,13 @@ class Application extends App {
 		});
 
 		$container->registerService('Index', function($c) {
-			return $c->query('Elastica')->getIndex('owncloud');
+			$instanceId = \OC::$server->getSystemConfig()->getValue('instanceid', '');
+			return $c->query('Elastica')->getIndex('oc-'.$instanceId);
 		});
 
 		$container->registerService('ContentExtractionIndex', function($c) {
-			$index = $c->query('Elastica')->getIndex('owncloud_temp_ce');
+			$instanceId = \OC::$server->getSystemConfig()->getValue('instanceid', '');
+			$index = $c->query('Elastica')->getIndex("oc-$instanceId-temp-ce");
 			return $index;
 		});
 

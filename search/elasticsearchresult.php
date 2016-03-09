@@ -42,25 +42,26 @@ class ElasticSearchResult extends File {
 		$data = $result->getData();
 		$highlights = $result->getHighlights();
 		$this->id = (int)$result->getId();
-		$this->path = $this->getRelativePath($data['file']['_name']);
+		$this->path = $this->getRelativePath($this->id);
 		$this->name = basename($this->path);
 		$this->size = (int)$data['file']['content_length'];
 		$this->score = $result->getScore();
 		$this->link = \OCP\Util::linkTo(
 			'files',
 			'index.php',
-			array('dir' => dirname($this->path), 'file' => $this->name)
+			array('dir' => dirname($this->path), 'scrollto' => $this->name)
 		);
 		$this->permissions = $this->getPermissions($this->path);
 		$this->modified = (int)$data['file']['mtime'];
 		$this->mime = $data['file']['content_type'];
-		$this->highlights = $highlights['content'];
+		$this->highlights = $highlights['file.content'];
 	}
 
 	//FIXME resolve path for shared files
-	protected function getRelativePath ($path) {
-		$root = \OC::$server->getUserFolder();
-		return $root->getRelativePath($path);
+	protected function getRelativePath ($id) {
+		$home = \OC::$server->getUserFolder();
+		$node = $home->getById($id);
+		return $home->getRelativePath($node[0]->getPath());
   	}
 
 	/**
@@ -70,21 +71,21 @@ class ElasticSearchResult extends File {
 	 */
 	function getPermissions($path) {
 		// add read permissions
-		$permissions = \OCP\PERMISSION_READ;
+		$permissions = \OCP\Constants::PERMISSION_READ;
 		// get directory
 		$fileInfo = pathinfo($path);
 		$dir = $fileInfo['dirname'] . '/';
 		// add update permissions
 		if (Filesystem::isUpdatable($dir)) {
-			$permissions |= \OCP\PERMISSION_UPDATE;
+			$permissions |= \OCP\Constants::PERMISSION_UPDATE;
 		}
 		// add delete permissions
 		if (Filesystem::isDeletable($dir)) {
-			$permissions |= \OCP\PERMISSION_DELETE;
+			$permissions |= \OCP\Constants::PERMISSION_DELETE;
 		}
 		// add share permissions
 		if (Filesystem::isSharable($dir)) {
-			$permissions |= \OCP\PERMISSION_SHARE;
+			$permissions |= \OCP\Constants::PERMISSION_SHARE;
 		}
 		// return
 		return $permissions;

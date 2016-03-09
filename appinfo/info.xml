@@ -2,13 +2,16 @@
 <info>
 	<id>search_elastic</id>
 	<name>Elasticsearch</name>
+	<version>0.0.3</version>
 	<licence>Commercial</licence>
-	<author>ownCloud, Inc. / Jörn Friedrich Dreyer</author>
+	<author>ownCloud Inc.</author>
+	<dependencies>
+		<owncloud min-version="8.2" max-version="9.0" />
+	</dependencies>
 	<types>
 		<filesystem/>
 	</types>
 	<shipped>true</shipped>
-	<require>7</require>
 	<description>This app uses a separate elasticsearch cluster to enable
 		searching in content and meta data of files.
 	</description>

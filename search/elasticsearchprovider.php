@@ -15,7 +15,7 @@
 namespace OCA\Search_Elastic\Search;
 
 use Elastica\Query;
-use Elastica\Query\Bool;
+use Elastica\Query\BoolQuery;
 use Elastica\Result;
 use Elastica\Client;
 use Elastica\Type;
@@ -43,20 +43,31 @@ class ElasticSearchProvider extends PagedProvider {
 				$client = $container->query('Elastica');
 				$index = $container->query('Index');
 
+				$user = $container->getServer()->getUserSession()->getUser();
 				$es_matchUser = new \Elastica\Query\Match();
-				$es_matchUser->setField('file.users', $container->getServer()->getUserSession()->getUser()->getUID());
+				$es_matchUser->setField('file.users', $user->getUID());
+
+				$es_or = new BoolQuery();
+				$es_or->addShould($es_matchUser);
+
+				$groups = $container->getServer()->getGroupManager()->getUserGroups($user);
+				foreach($groups as $group) {
+					$es_matchGroup = new \Elastica\Query\Match();
+					$es_matchGroup->setField('file.groups', $group->getGID());
+					$es_or->addShould($es_matchGroup);
+				}
 
 				$es_match = new \Elastica\Query\Match();
-				$es_match->setField('content', $query);
+				$es_match->setField('file.content', $query);
 
-				$es_bool = new Bool();
-				$es_bool->addMust($es_matchUser);
+				$es_bool = new BoolQuery();
+				$es_bool->addFilter($es_or);
 				$es_bool->addMust($es_match);
 
 				$es_query = new Query($es_bool);
 				$es_query->setHighlight(array(
 					'fields' => array(
-						'content' => new \stdClass,
+						'file.content' => new \stdClass,
 					),
 				));
 

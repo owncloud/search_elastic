@@ -112,17 +112,27 @@ class AdminSettingsController extends APIController {
 			$servers = $this->config->getAppValue($this->appName, self::SERVERS, 'localhost:9200');
 			return new JSONResponse(array('message' => 'Elasticsearch Server unreachable at '.$servers), Http::STATUS_SERVICE_UNAVAILABLE);
 		}
-		$stats = $this->index->getStats();
-		return new JSONResponse(array('stats' => $stats->getData()));
+		$stats = $this->index->getStats()->getData();
+		$instanceId = \OC::$server->getSystemConfig()->getValue('instanceid', '');
+		return new JSONResponse(['stats' => [
+			'_all'    => $stats['_all'],
+			'_shards' => $stats['_shards'],
+			'oc_index'   => $stats['indices']["oc-$instanceId"],
+		]]);
 	}
 
 	/**
 	 * @return JSONResponse
 	 */
 	public function setup() {
-		$this->setUpIndex();
-		$this->setUpContentExtractionIndex();
-		$this->mapper->clear();
+		try {
+			$this->setUpIndex();
+			$this->setUpContentExtractionIndex();
+			$this->mapper->clear();
+		} catch (\Exception $e) {
+			// TODO log exception
+			return new JSONResponse(array('message' => $e->getMessage()), Http::STATUS_INTERNAL_SERVER_ERROR);
+		}
 		return $this->checkStatus();
 	}
 
@@ -159,41 +169,40 @@ class AdminSettingsController extends APIController {
 		$type = new Type($this->index, 'file');
 
 		$mapping = new Type\Mapping($type, array(
-			'file' => array(
-				'type' => 'object',
-				'fields' => array(
-					'content' => array(
-						'type' => 'string',
-						'term_vector' => 'with_positions_offsets',
-						'store' => 'yes',
-					),
-					'title' => array(
-						'type' => 'string',
-						'term_vector' => 'with_positions_offsets',
-						'store' => 'yes',
-					),
-					'date' => array(
-						'store' => 'yes',
-					),
-					'author' => array(
-						'type' => 'string',
-						'store' => 'yes',
-					),
-					'keywords' => array(
-						'type' => 'string',
-						'store' => 'yes',
-					),
-					'content_type' => array(
-						'store' => 'yes',
-					),
-					'content_length' => array(
-						'store' => 'yes',
-					),
-					'language' => array(
-						'store' => 'yes',
-					),
-				)
-			)
+			'content' => array(
+				'type' => 'string',
+				'term_vector' => 'with_positions_offsets',
+				'store' => 'yes',
+			),
+			'title' => array(
+				'type' => 'string',
+				'term_vector' => 'with_positions_offsets',
+				'store' => 'yes',
+			),
+			'date' => array(
+				'type' => 'string',
+				'store' => 'yes',
+			),
+			'author' => array(
+				'type' => 'string',
+				'store' => 'yes',
+			),
+			'keywords' => array(
+				'type' => 'string',
+				'store' => 'yes',
+			),
+			'content_type' => array(
+				'type' => 'string',
+				'store' => 'yes',
+			),
+			'content_length' => array(
+				'type' => 'long',
+				'store' => 'yes',
+			),
+			'language' => array(
+				'type' => 'string',
+				'store' => 'yes',
+			),
 		));
 		$type->setMapping($mapping);
 	}
@@ -210,25 +219,21 @@ class AdminSettingsController extends APIController {
 		$mapping = new Type\Mapping($type, array(
 			'file' => array(
 				'type' => 'attachment',
-				'path' => 'full',
-				'fields' => array(
-					'file' => array(
+				'fields' => [
+					'content' => array(
 						'type' => 'string',
-						'store' => 'yes',
+						'store' => true,
 					),
 					'title' => array(
-						'type' => 'string',
 						'store' => 'yes',
 					),
 					'date' => array(
 						'store' => 'yes',
 					),
 					'author' => array(
-						'type' => 'string',
 						'store' => 'yes',
 					),
 					'keywords' => array(
-						'type' => 'string',
 						'store' => 'yes',
 					),
 					'content_type' => array(
@@ -240,8 +245,8 @@ class AdminSettingsController extends APIController {
 					'language' => array(
 						'store' => 'yes',
 					),
-				)
-			)
+				],
+			),
 		));
 		// do not store file in es
 		$mapping->setParam('_source', array('excludes' => array('file.content')));

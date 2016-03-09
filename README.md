@@ -33,5 +33,27 @@ When you recently edited a file, chances are that you still know where it reside
 
 # Todo
 
+- [x] update elastica lib
+- [x] restore compatability with oc8.2
+- [x] restore compatability with elasticsearch (requires new indexes)
+- [x] store groups and users with access to filter search results by group membership
+- [x] store fileid instead of filenames so we don't have to handle renames 
+- [x] use instanceid to set up index - allows using the same elasticsearch instance for muliple oc instances
+- [ ] dont bother storing the filename / path
+- [ ] check js for result link handling so clicking a result dos not do a full page load, there seems to be js in place that already does the file highlighting
+- [ ] send code snippets for search_lucene
+- sharing a file immediately after it has been uploadad throws an exception
+  - [ ] fix exception / do not try to update a nonexisting document
+  - [ ] get all users and groups when initially indexing the document
+- [ ] move share updates to background job -> eventually searchable
+  - [ ] descend subdirs when updating
+  - [ ] check permissions again on search and remove results if no longer accessible
+- [ ] index in batches (make batch size configurable, 0 = unlimited)
+- [ ] use file tab
+  - [ ] show index status
+  - [ ] remember index error message in db
+- [ ] statistics on admin settings page
+- [ ] statistics on personal settings page
+- [ ] cleanup code
 - [ ] port test suite from search_lucene
-- [ ] resolve path for shared files
+- [x] resolve path for shared files

@@ -19,7 +19,9 @@ use Elastica\Request;
 use Elastica\Response;
 use Elastica\Type;
 use Elastica\Document;
+use OC\Files\Filesystem;
 use OCA\Search_Elastic\Db\StatusMapper;
+use OC\Share\Constants;
 use OCP\Files\File;
 use OCP\ILogger;
 use OCP\IServerContainer;
@@ -176,7 +178,7 @@ class Client {
 
 	/**
 	 * @param $fileId
-	 * @return Node
+	 * @return File
 	 * @throws NotIndexedException
 	 * @throws VanishedException
 	 */
@@ -217,13 +219,20 @@ class Client {
 
 			if (!empty($data)) {
 				$data['_name'] = $file->getPath();
-				$data['users'] = $this->getUsersWithReadPermission($file);
+				//FIXME use groups in addition to users so we don't have to track group membership changes
+				//FIXME dont store user / group but storage instead if we can get
+				//      a list of all storages that we have access to?
+				//      hm shared storages are implicit ... may be a problem
+				//FIXME how does the new storage layer impact search relying on the fileid to be unique
+				$access = $this->getUsersWithReadPermission($file);
+				$data['users'] = $access['users'];
+				$data['groups'] = $access['groups'];
 				$data['mtime'] = $file->getMTime();
 
-				$doc1 = new Document($file->getId());
+				$doc = new Document($file->getId());
 
-				$doc1->set('file', $data);
-				$this->type->addDocument($doc1);
+				$doc->set('file', $data);
+				$this->type->addDocument($doc);
 			}
 
 		}
@@ -235,17 +244,136 @@ class Client {
 	public function getUsersWithReadPermission(File $file) {
 		$owner = $this->server->getUserSession()->getUser()->getUID();
 		// get path for lookup in sharing
-		$path = $file->getInternalPath();
+		$path = $file->getPath();
 		//TODO test this hack with subdirs and other storages like objectstore and files_external
-		if ($file->getStorage()->instanceOfStorage('\OC\Files\Storage\Home') && substr($path, 0, 6) === 'files/') {
-			$path = substr($path, 6);
+		//if ($file->getStorage()->instanceOfStorage('\OC\Files\Storage\Home') && substr($path, 0, 6) === 'files/') {
+		//	$path = substr($path, 6);
+		//}
+		$path = substr($path, strlen('/' . $owner . '/files'));
+		return $this->getUsersSharingFile( $path, $owner );
+	}
+
+	/**
+	 * Find which users can access a shared item
+	 * @param string $path to the file
+	 * @param string $ownerUser owner of the file
+	 * @param boolean $includeOwner include owner to the list of users with access to the file
+	 * @param boolean $returnUserPaths Return an array with the user => path map
+	 * @return array
+	 * @note $path needs to be relative to user data dir, e.g. 'file.txt'
+	 *       not '/admin/data/file.txt'
+	 */
+	public function getUsersSharingFile($path, $ownerUser) {
+
+		Filesystem::initMountPoints($ownerUser);
+		$users = $groups = $sharePaths = $fileTargets = [];
+//		$publicShare = false;
+//		$remoteShare = false;
+		$source = -1;
+		$cache = false;
+
+		$view = new \OC\Files\View('/' . $ownerUser . '/files');
+		$meta = $view->getFileInfo($path);
+		if ($meta === false) {
+			// if the file doesn't exists yet we start with the parent folder
+			$meta = $view->getFileInfo(dirname($path));
 		}
-		$result = \OCP\Share::getUsersSharingFile( $path, $owner, true );
-		if (isset($result['users'])) {
-			return $result['users'];
-		} else {
-			return array($owner);
+
+		if($meta !== false) {
+			$source = $meta['fileid'];
+			$cache = new \OC\Files\Cache\Cache($meta['storage']);
 		}
+
+		while ($source !== -1) {
+			// Fetch all shares with another user
+			$query = \OC_DB::prepare(
+				'SELECT `share_with`, `file_source`, `file_target`
+				FROM
+				`*PREFIX*share`
+				WHERE
+				`item_source` = ? AND `share_type` = ? AND `item_type` IN (\'file\', \'folder\')'
+			);
+			$result = $query->execute(array($source, Constants::SHARE_TYPE_USER));
+
+			if (\OCP\DB::isError($result)) {
+				\OCP\Util::writeLog('OCP\Share', \OC_DB::getErrorMessage(), \OCP\Util::ERROR);
+			} else {
+				while ($row = $result->fetchRow()) {
+					$users[] = $row['share_with'];
+				}
+			}
+
+			// We also need to take group shares into account
+			$query = \OC_DB::prepare(
+				'SELECT `share_with`, `file_source`, `file_target`
+				FROM
+				`*PREFIX*share`
+				WHERE
+				`item_source` = ? AND `share_type` = ? AND `item_type` IN (\'file\', \'folder\')'
+			);
+
+			$result = $query->execute(array($source, Constants::SHARE_TYPE_GROUP));
+
+			if (\OCP\DB::isError($result)) {
+				\OCP\Util::writeLog('OCP\Share', \OC_DB::getErrorMessage(), \OCP\Util::ERROR);
+			} else {
+				while ($row = $result->fetchRow()) {
+					$groups[] = $row['share_with'];
+				}
+			}
+/*
+			//check for public link shares
+			if (!$publicShare) {
+				$query = \OC_DB::prepare('
+					SELECT `share_with`
+					FROM `*PREFIX*share`
+					WHERE `item_source` = ? AND `share_type` = ? AND `item_type` IN (\'file\', \'folder\')', 1
+				);
+
+				$result = $query->execute(array($source, self::SHARE_TYPE_LINK));
+
+				if (\OCP\DB::isError($result)) {
+					\OCP\Util::writeLog('OCP\Share', \OC_DB::getErrorMessage(), \OCP\Util::ERROR);
+				} else {
+					if ($result->fetchRow()) {
+						$publicShare = true;
+					}
+				}
+			}
+
+			//check for remote share
+			if (!$remoteShare) {
+				$query = \OC_DB::prepare('
+					SELECT `share_with`
+					FROM `*PREFIX*share`
+					WHERE `item_source` = ? AND `share_type` = ? AND `item_type` IN (\'file\', \'folder\')', 1
+				);
+
+				$result = $query->execute(array($source, self::SHARE_TYPE_REMOTE));
+
+				if (\OCP\DB::isError($result)) {
+					\OCP\Util::writeLog('OCP\Share', \OC_DB::getErrorMessage(), \OCP\Util::ERROR);
+				} else {
+					if ($result->fetchRow()) {
+						$remoteShare = true;
+					}
+				}
+			}
+*/
+			// let's get the parent for the next round
+			$meta = $cache->get((int)$source);
+			if($meta !== false) {
+				$source = (int)$meta['parent'];
+			} else {
+				$source = -1;
+			}
+		}
+
+		// Include owner in list of users
+		$users[] = $ownerUser;
+
+		//return array('users' => array_unique($shares), 'public' => $publicShare, 'remote' => $remoteShare);
+		return array('users' => array_unique($users), 'groups' => array_unique($groups));
 	}
 
 	/**
@@ -279,13 +407,13 @@ class Client {
 		sleep(1);
 
 		// now get the file content
-		$response = $this->tempType->request(urlencode($file->getId()).'?fields=file,file.title,file.date,file.author,file.keywords,file.content_type,file.content_length,file.language', Request::GET, array(), array());
+		$response = $this->tempType->request(urlencode($file->getId()).'?fields=file,file.content,file.title,file.date,file.author,file.keywords,file.content_type,file.content_length,file.language', Request::GET, array(), array());
 
 		$data = $response->getData();
 		$result = array();
 		if (isset($data['fields'])) {
-			if (isset($data['fields']['file'])) {
-				$result['content'] = $data['fields']['file'][0];
+			if (isset($data['fields']['file.content'])) {
+				$result['content'] = $data['fields']['file.content'][0];
 			}
 			if (isset($data['fields']['file.title'])) {
 				$result['title'] = $data['fields']['file.title'][0];
@@ -336,9 +464,9 @@ class Client {
 
 	public function updateFile ($fileId) {
 		$file = $this->getFileForId($fileId);
-		$users = $this->getUsersWithReadPermission($file);
+		$access = $this->getUsersWithReadPermission($file);
 		$doc = new Document($fileId);
-		$doc->setData(array('file' => array('users' => $users)));
+		$doc->setData(array('file' => $access));
 		$this->type->updateDocument($doc);
 
 	}

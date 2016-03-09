@@ -53,14 +53,14 @@
 				$searchElasticSettings.find('button').text(t('search_elastic', 'Reset index'));
 
 				console.debug(result.stats);
-				var count = result.stats.indices.owncloud.total.docs.count;
-				var size_in_bytes = result.stats.indices.owncloud.total.store.size_in_bytes;
-				$searchElasticSettings.find('.status').text(
+				var count = result.stats.oc_index.total.docs.count;
+				var size_in_bytes = result.stats.oc_index.total.store.size_in_bytes;
+				$searchElasticSettings.find('.message').text(
 					n('search_elastic', '{count} document uses {size} bytes', '{count} documents using {size} bytes', count, {count: count, size: size_in_bytes})
 				);
 			}).fail(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
-				$searchElasticSettings.find('.status').text(result.responseJSON.message);
+				$searchElasticSettings.find('.message').text(result.responseJSON.message);
 				$searchElasticSettings.find('button').text(t('search_elastic', 'Setup index'));
 			});
 		}
@@ -73,9 +73,9 @@
 				$searchElasticSettings.find('button').text(t('search_elastic', 'Reset index'));
 
 				console.debug(result.stats);
-				var count = result.stats.indices.owncloud.total.docs.count;
-				var size_in_bytes = result.stats.indices.owncloud.total.store.size_in_bytes;
-				$searchElasticSettings.find('.status').text(
+				var count = result.stats.oc-index.total.docs.count;
+				var size_in_bytes = result.stats.oc-index.total.store.size_in_bytes;
+				$searchElasticSettings.find('.message').text(
 					n('search_elastic', '{count} document uses {size} bytes', '{count} documents using {size} bytes', count, {count: count, size: size_in_bytes})
 				);
 			}).fail(function( result ) {

@@ -76,6 +76,7 @@ class ElasticSearchProvider extends PagedProvider {
 
 				$search = new \Elastica\Search($client);
 				$search->addType(new Type($index, 'file'));
+				$search->addIndex($index);
 				$resultSet = $search->search($es_query);
 
 				/** @var Result $result */

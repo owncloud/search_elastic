@@ -44,6 +44,14 @@
 				OC.dialogs.alert(result.responseJSON.message, t('search_elastic', 'Could not set scanExternalStorages'));
 			});
 		}
+		function renderStatus(stats) {
+			console.debug(stats);
+			var count = stats.oc_index.total.docs.count;
+			var size_in_bytes = stats.oc_index.total.store.size_in_bytes;
+			$searchElasticSettings.find('.message').text(
+				n('search_elastic', '{count} document uses {size} bytes', '{count} documents using {size} bytes', count, {count: count, size: size_in_bytes})
+			);
+		}
 		function checkStatus() {
 			$searchElasticSettings.find('.icon').addClass('icon-loading-small').removeClass('error success');
 			$.get(
@@ -51,13 +59,7 @@
 			).done(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('success').removeClass('error icon-loading-small');
 				$searchElasticSettings.find('button').text(t('search_elastic', 'Reset index'));
-
-				console.debug(result.stats);
-				var count = result.stats.oc_index.total.docs.count;
-				var size_in_bytes = result.stats.oc_index.total.store.size_in_bytes;
-				$searchElasticSettings.find('.message').text(
-					n('search_elastic', '{count} document uses {size} bytes', '{count} documents using {size} bytes', count, {count: count, size: size_in_bytes})
-				);
+				renderStatus(result.stats);
 			}).fail(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
 				$searchElasticSettings.find('.message').text(result.responseJSON.message);
@@ -71,15 +73,10 @@
 			).done(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('success').removeClass('error icon-loading-small');
 				$searchElasticSettings.find('button').text(t('search_elastic', 'Reset index'));
-
-				console.debug(result.stats);
-				var count = result.stats.oc-index.total.docs.count;
-				var size_in_bytes = result.stats.oc-index.total.store.size_in_bytes;
-				$searchElasticSettings.find('.message').text(
-					n('search_elastic', '{count} document uses {size} bytes', '{count} documents using {size} bytes', count, {count: count, size: size_in_bytes})
-				);
+				renderStatus(result.stats);
 			}).fail(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
+				console.error(result);
 				OC.dialogs.alert(result.responseJSON.message, t('search_elastic', 'Could not setup indexes'));
 			});
 		}

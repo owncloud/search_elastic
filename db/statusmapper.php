@@ -161,6 +161,10 @@ class StatusMapper extends Mapper {
 			$mounts[] = $mount;
 		}
 
+		// investigate optimizing with AND `size` BETWEEN 1 AND ?
+		// should we ORDER BY `mtime` DESC to index recent files first?
+		// how will they affect query time for large filecaches?
+
 		$query = $this->db->prepareQuery('
 			SELECT `*PREFIX*filecache`.`fileid`
 			FROM `*PREFIX*filecache`

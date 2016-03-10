@@ -88,27 +88,6 @@ class Client {
 
 	}
 
-	public function autocreateIndexes () {
-		// only check if autocreate is true, set to false after creating
-		if ( $this->server->getConfig()->getSystemValue('elasticsearch_autocreate', true) ) {
-			try {
-				if (!$this->index->exists()) {
-					$this->setUpIndex();
-				}
-			} catch (\Exception $ex) {
-				$this->logger->warning('index \''.$this->index->getName().'\' already exists');
-			}
-			try {
-				if (!$this->tempIndex->exists()) {
-					$this->setUpTempIndex();
-				}
-			} catch (\Exception $ex) {
-				$this->logger->warning('index \''.$this->tempIndex->getName().'\' already exists');
-			}
-			$this->server->getConfig()->setSystemValue('elasticsearch_autocreate', false);
-		}
-	}
-
 	/**
 	 * @param array $fileIds
 	 * @param \OC_EventSource $eventSource

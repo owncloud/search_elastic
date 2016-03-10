@@ -134,13 +134,30 @@ class Files {
 	 * @param $param array
 	 */
 	public static function shareFile(array $param) {
+
 		$app = new Application();
 		$container = $app->getContainer();
+		$userId = $container->query('UserId');
 
-		/** @var Client $client */
-		$client = $container->query('Client');
+		if (!empty($userId)) {
 
-		$client->updateFile($param['fileSource']);
+			// mark written file as new
+			/** @var Folder $userFolder */
+			$home = \OC::$server->getUserFolder($userId);
+			$node = $home->get($param['path']);
+
+			//Add Background Job:
+			\OC::$server->getJobList()->add(
+				'OCA\Search_Elastic\Jobs\UpdateAccess', [
+					'userId' => $userId,
+					'nodeId' => $node->getId()
+				]
+			);
+		} else {
+			$container->query('Logger')->debug(
+				'Hook indexFile could not determine user when called with param '.json_encode($param)
+			);
+		}
 
 	}
 

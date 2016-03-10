@@ -41,10 +41,10 @@ When you recently edited a file, chances are that you still know where it reside
 - [x] use instanceid to set up index - allows using the same elasticsearch instance for muliple oc instances
 - [x] dont bother storing the filename / path
 - sharing a file immediately after it has been uploadad throws an exception
-  - [ ] fix exception / do not try to update a nonexisting document
-  - [ ] get all users and groups when initially indexing the document
-- [ ] move share updates to background job -> eventually searchable
-  - [ ] descend subdirs when updating
+  - [x] fix exception / do not try to update a nonexisting document
+  - [x] get all users and groups when initially indexing the document
+- [x] move share updates to background job -> eventually searchable
+  - [x] descend subdirs when updating
   - [ ] check permissions again on search and remove results if no longer accessible
 - [-] --index in batches (make batch size configurable, 0 = unlimited)--
       CLI cron.php executes all jobs

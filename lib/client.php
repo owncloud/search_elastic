@@ -14,6 +14,7 @@
 
 namespace OCA\Search_Elastic;
 
+use Elastica\Exception\NotFoundException;
 use Elastica\Index;
 use Elastica\Request;
 use Elastica\Response;
@@ -432,13 +433,19 @@ class Client {
 		return 0;
 	}
 
-	public function updateFile ($fileId) {
-		$file = $this->getFileForId($fileId);
+	public function updateFile (File $file) {
 		$access = $this->getUsersWithReadPermission($file);
-		$doc = new Document($fileId);
+		$doc = new Document($file->getId());
 		$doc->setData(array('file' => $access));
-		$this->type->updateDocument($doc);
-
+		try {
+			$this->type->updateDocument($doc);
+		} catch (NotFoundException $e) {
+			// Typically happens when a freshly uploaded file is shared because
+			// it has not yet been indexed
+			$this->logger->debug("File {$file->getPath()} ({$file->getId()}) not yet in index",
+				['app' => 'search_elastic']
+			);
+		}
 	}
 
 } 

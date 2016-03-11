@@ -15,10 +15,7 @@
 namespace OCA\Search_Elastic\AppInfo;
 
 use Elastica\Type;
-use OCA\Search_Elastic\ContentExtractor;
 use OCA\Search_Elastic\Controller\AdminSettingsController;
-use OCA\Search_Elastic\Core\Db;
-use OCA\Search_Elastic\Core\Logger;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\Client;
 use OCA\Search_Elastic\Core\Files;
@@ -81,8 +78,8 @@ class Application extends App {
 				$c->query('ContentExtractionIndex'),
 				$c->query('SkippedDirs'),
 				$c->query('StatusMapper'),
-				$c->query('Logger'),
-				$c->query('OCP\IConfig')->getAppValue('search_elastic', 'scanExternalStorages', true)
+				\OC::$server->getLogger(),
+				\OC::$server->getConfig()->getAppValue('search_elastic', 'scanExternalStorages', true)
 			);
 		});
 
@@ -101,8 +98,8 @@ class Application extends App {
 		$container->registerService('StatusMapper', function($c) {
 			return new StatusMapper(
 				$c->query('Db'),
-				$c->query('Logger'),
-				$c->query('OCP\IConfig')->getAppValue('search_elastic', 'scanExternalStorages', true)
+				\OC::$server->getLogger(),
+				\OC::$server->getConfig()->getAppValue('search_elastic', 'scanExternalStorages', true)
 			);
 		});
 
@@ -117,31 +114,8 @@ class Application extends App {
 			return false;
 		});
 
-		$container->registerService('Logger', function($c) {
-			return new Logger(
-				$c->query('AppName'),
-				$c->query('ServerContainer')->getLogger()
-			);
-		});
-
 		$container->registerService('Db', function($c) {
 			return $c->query('ServerContainer')->getDb();
-		});
-
-		$container->registerService('FileUtility', function($c) {
-			return new Files(
-				$c->query('ServerContainer')->getUserManager(),
-				$c->query('ServerContainer')->getUserSession(),
-				$c->query('RootFolder')
-			);
-		});
-
-		$container->registerService('RootFolder', function($c) {
-			return $c->query('ServerContainer')->getRootFolder();
-		});
-
-		$container->registerService('UserFolder', function($c) {
-			return $c->query('ServerContainer')->getUserFolder();
 		});
 
 		/**
@@ -151,7 +125,7 @@ class Application extends App {
 			return new AdminSettingsController(
 				$c->query('AppName'),
 				$c->query('Request'),
-				$c->query('OCP\IConfig'),
+				\OC::$server->getConfig(),
 				$c->query('Index'),
 				$c->query('ContentExtractionIndex'),
 				$c->query('StatusMapper')

@@ -16,7 +16,6 @@ namespace OCA\Search_Elastic\Hooks;
 
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\Client;
-use OCA\Search_Elastic\Core\Logger;
 use OCA\Search_Elastic\Db\Status;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCP\BackgroundJob;
@@ -66,12 +65,13 @@ class Files {
 		$container = $app->getContainer();
 		$userId = $container->query('UserId');
 
+		$logger = \OC::$server->getLogger();
+
 		if (!empty($userId)) {
 
 			// mark written file as new
-			/** @var Folder $userFolder */
-			$userFolder = $container->query('UserFolder');
-			$node = $userFolder->get($param['path']);
+			$home = \OC::$server->getUserFolder($userId);
+			$node = $home->get($param['path']);
 
 			/** @var StatusMapper $mapper */
 			$mapper = $container->query('StatusMapper');
@@ -79,16 +79,25 @@ class Files {
 
 			// only index files
 			if ($node instanceof File) {
+				$logger->debug(
+					"Hook indexFile: marking as New {$node->getPath()} ({$node->getId()})",
+					['app' => 'search_elastic']
+				);
 				$mapper->markNew($status);
 
 				//Add Background Job:
 				BackgroundJob::registerJob( 'OCA\Search_Elastic\Jobs\IndexJob', array('userId' => $userId) );
 			} else {
+				$logger->debug(
+					"Hook indexFile: marking Skipped {$node->getPath()} ({$node->getId()})",
+					['app' => 'search_elastic']
+				);
 				$mapper->markSkipped($status);
 			}
 		} else {
-			$container->query('Logger')->debug(
-				'Hook indexFile could not determine user when called with param '.json_encode($param)
+			$logger->debug(
+				'Hook indexFile could not determine user when called with param '
+				.json_encode($param), ['app' => 'search_elastic']
 			);
 		}
 	}
@@ -108,23 +117,28 @@ class Files {
 		/** @var StatusMapper $mapper */
 		$mapper = $container->query('StatusMapper');
 
-		/** @var Logger $logger */
-		$logger = $container->query('Logger');
+		$logger = \OC::$server->getLogger();
 
 		$deletedIds = $mapper->getDeleted();
 		$count = 0;
 		foreach ($deletedIds as $fileId) {
-			$logger->debug( 'deleting status for ('.$fileId.') ' );
+			$logger->debug( 'deleting status for ('.$fileId.') ',
+				['app' => 'search_elastic']
+			);
 			//delete status
 			$status = new Status($fileId);
 			$mapper->delete($status);
 			$count++;
 
 		}
-		$logger->debug( 'removed '.$count.' files from status table' );
+		$logger->debug( 'removed '.$count.' files from status table',
+			['app' => 'search_elastic']
+		);
 
 		$count = $client->deleteFiles($deletedIds);
-		$logger->debug( 'removed '.$count.' files from index' );
+		$logger->debug( 'removed '.$count.' files from index',
+			['app' => 'search_elastic']
+		);
 
 	}
 
@@ -142,7 +156,6 @@ class Files {
 		if (!empty($userId)) {
 
 			// mark written file as new
-			/** @var Folder $userFolder */
 			$home = \OC::$server->getUserFolder($userId);
 			$node = $home->get($param['path']);
 
@@ -154,8 +167,9 @@ class Files {
 				]
 			);
 		} else {
-			$container->query('Logger')->debug(
-				'Hook indexFile could not determine user when called with param '.json_encode($param)
+			\OC::$server->getLogger()->debug(
+				'Hook indexFile could not determine user when called with param '.json_encode($param),
+				['app' => 'search_elastic']
 			);
 		}
 

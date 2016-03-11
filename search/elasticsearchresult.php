@@ -15,13 +15,14 @@
 namespace OCA\Search_Elastic\Search;
 
 use Elastica\Result;
-use OC\Files\Filesystem;
-use OC\Search\Result\File;
+use OC\Search\Result\File as FileResult;
+use OCP\Files\File;
+use OCP\Files\Folder;
 
 /**
  * A found file
  */
-class ElasticSearchResult extends File {
+class ElasticSearchResult extends FileResult {
 
 	/**
 	 * Type name; translated in templates
@@ -38,11 +39,11 @@ class ElasticSearchResult extends File {
 	 * Create a new content search result
 	 * @param Result $result file data given by provider
 	 */
-	public function __construct(Result $result) {
+	public function __construct(Result $result, File $file, Folder $home) {
 		$data = $result->getData();
 		$highlights = $result->getHighlights();
 		$this->id = (int)$result->getId();
-		$this->path = $this->getRelativePath($this->id);
+		$this->path = $home->getRelativePath($file->getPath());
 		$this->name = basename($this->path);
 		$this->size = (int)$data['file']['content_length'];
 		$this->score = $result->getScore();
@@ -51,43 +52,10 @@ class ElasticSearchResult extends File {
 			'index.php',
 			array('dir' => dirname($this->path), 'scrollto' => $this->name)
 		);
-		$this->permissions = $this->getPermissions($this->path);
+		$this->permissions = $file->getPermissions();
 		$this->modified = (int)$data['file']['mtime'];
 		$this->mime = $data['file']['content_type'];
 		$this->highlights = $highlights['file.content'];
-	}
-
-	protected function getRelativePath ($id) {
-		$home = \OC::$server->getUserFolder();
-		$node = $home->getById($id);
-		return $home->getRelativePath($node[0]->getPath());
-  	}
-
-	/**
-	 * Determine permissions for a given file path
-	 * @param string $path
-	 * @return int
-	 */
-	function getPermissions($path) {
-		// add read permissions
-		$permissions = \OCP\Constants::PERMISSION_READ;
-		// get directory
-		$fileInfo = pathinfo($path);
-		$dir = $fileInfo['dirname'] . '/';
-		// add update permissions
-		if (Filesystem::isUpdatable($dir)) {
-			$permissions |= \OCP\Constants::PERMISSION_UPDATE;
-		}
-		// add delete permissions
-		if (Filesystem::isDeletable($dir)) {
-			$permissions |= \OCP\Constants::PERMISSION_DELETE;
-		}
-		// add share permissions
-		if (Filesystem::isSharable($dir)) {
-			$permissions |= \OCP\Constants::PERMISSION_SHARE;
-		}
-		// return
-		return $permissions;
 	}
 
 }

@@ -16,7 +16,6 @@ namespace OCA\Search_Elastic\Jobs;
 
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\Client;
-use OCA\Search_Elastic\Core\Logger;
 use OC\BackgroundJob\QueuedJob;
 use OCP\Files\File;
 use OCP\Files\Folder;
@@ -33,6 +32,8 @@ class UpdateAccess extends QueuedJob {
 	 * @var Client
 	 */
 	private $client;
+
+	private $userId;
 	/**
 	 * updates the users ad groups that have access to a file or folder
 	 * @param array $arguments
@@ -41,10 +42,10 @@ class UpdateAccess extends QueuedJob {
 		$app = new Application();
 		$container = $app->getContainer();
 
-		/** @var Logger $logger */
-		$this->logger = $container->query('Logger');
+		$this->logger = \OC::$server->getLogger();
 
 		if (isset($arguments['userId']) && $arguments['nodeId']) {
+			$this->userId = $arguments['userId'];
 
 			$home = \OC::$server->getUserFolder($arguments['userId']);
 
@@ -58,7 +59,10 @@ class UpdateAccess extends QueuedJob {
 				$this->updateNode($nodes[0]);
 			}
 		} else {
-			$logger->debug('indexer job did not receive userId or nodeId in arguments: '.json_encode($arguments));
+			$this->logger->debug(
+				'indexer job did not receive userId or nodeId in arguments: '.json_encode($arguments),
+				['app' => 'search_elastic']
+			);
 		}
  	}
 
@@ -80,7 +84,7 @@ class UpdateAccess extends QueuedJob {
 	public function updateFile(File $file) {
 		$this->logger->debug('background job updating '.$file->getPath()
 			. '('.$file->getId().')', ['app' => 'search_elastic'] );
-		$this->client->updateFile($file);
+		$this->client->updateFile($file, $this->userId);
 	}
 
 }

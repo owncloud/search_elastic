@@ -9,6 +9,17 @@ The search_elastic app adds a full text search for files stored in ownCloud. It 
  apache tika, eg. plain text, .docx, .xlsx, .pptx, .odt, .ods and .pdf files. The source
 code is [available on GitHub](https://github.com/owncloud/search_elastic)
 
+## Installation ef elasticsearch
+- Do not use 2.2 / 2.3, The bugfix for indexing docx files needs to be released: https://github.com/elastic/elasticsearch/pull/17059 
+- Downloud elasticsearch 2.1.2 from https://www.elastic.co/downloads/past-releases/elasticsearch-2-1-2
+- after installation install attachments mapper plugin: `bin/plugin install elasticsearch/elasticsearch-mapper-attachments/3.1.2`
+
+## Installation of search_elastic
+- install & enable the app
+- go to the admin settings, set up url and port, click "setup index"  
+
+To trigger indexing create, upload or change a file. The next cron.php will index all unindexed files for the user who did the change.
+
 # Design decisions
 
 ## Asynchronous indexing & eventually searchable
@@ -27,10 +38,6 @@ When you recently edited a file, chances are that you still know where it reside
 
 * [Jörn Friedrich Dreyer](https://github.com/butonic)
 
-# Known limitations
-
-* Incompatible with encryption.
-
 # Todo
 
 - [x] update elastica lib
@@ -45,17 +52,26 @@ When you recently edited a file, chances are that you still know where it reside
   - [x] get all users and groups when initially indexing the document
 - [x] move share updates to background job -> eventually searchable
   - [x] descend subdirs when updating
-  - [ ] check permissions again on search and remove results if no longer accessible
+  - [x] check permissions again on search and remove results if no longer accessible
+    - [ ] compensate for removed entries in search results, too many will confuse the paging logic
 - [-] --index in batches (make batch size configurable, 0 = unlimited)--
       CLI cron.php executes all jobs
       - [ ] limit number of files to 250? per job?
-- [ ] check js for result link handling so clicking a result dos not do a full page load, there seems to be js in place that already does the file highlighting
+- add occ commands
+  - [ ] index all files or only those of a specific user
+  - [ ] enable / disable automatic background scanning via cron
+    - [ ] admin settings ui for this 
+- [x] check js for result link handling so clicking a result dos not do a full page load, there seems to be js in place that already does the file highlighting
+     - the old filehandler logic does not seem to work, removed it, now using plain link
 - [ ] send code snippets for search_lucene
 - [ ] use file tab
   - [ ] show index status
   - [ ] remember index error message in db
+- [ ] check encryption compatability (master key mode should work)
 - [ ] statistics on admin settings page
 - [ ] statistics on personal settings page
 - [ ] cleanup code
 - [ ] port test suite from search_lucene
 - [x] resolve path for shared files
+- [ ] files with empty content extraction are reindexed indefinitely? eg empty text file
+- [x] more debug logging

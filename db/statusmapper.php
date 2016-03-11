@@ -15,10 +15,10 @@
 namespace OCA\Search_Elastic\Db;
 
 use OC\Files\Filesystem;
-use OC\Files\Mount\Mount;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\Mapper;
+use OCP\Files\Folder;
 use OCP\IDb;
 use OCP\ILogger;
 
@@ -41,6 +41,24 @@ class StatusMapper extends Mapper {
 	public function delete(Entity $status){
 		$sql = 'DELETE FROM `' . $this->tableName . '` WHERE `fileid` = ?';
 		$this->execute($sql, array($status->getFileId()));
+	}
+	/**
+	 * Deletes a status from the table
+	 * @param array $ids the fileids whose status should be deleted
+	 */
+	public function deleteIds(array $ids){
+		if (empty($ids)) {
+			return 0;
+		}
+		$values = '?';
+		for($i = 1; $i < count($ids); $i++) {
+			$values .= ',?';
+		}
+
+		$sql = "DELETE FROM `{$this->tableName}` WHERE `fileid` IN ($values)";
+		$stmt = $this->execute($sql, array($ids));
+
+		return $stmt->rowCount();
 	}
 
 	/**
@@ -151,12 +169,11 @@ class StatusMapper extends Mapper {
 	 *
 	 * @return array
 	 */
-	public function getUnindexed() {
+	public function getUnindexed(Folder $home) {
+		$home->getMountPoint();
+		$mounts = \OC::$server->getMountManager()->findIn($home->getPath());
+		$mount = $home->getMountPoint();
 		$files = array();
-		//TODO use server api for mounts & root
-		$absoluteRoot = Filesystem::getView()->getAbsolutePath('/');
-		$mounts = Filesystem::getMountPoints($absoluteRoot);
-		$mount = Filesystem::getMountPoint($absoluteRoot);
 		if (!in_array($mount, $mounts)) {
 			$mounts[] = $mount;
 		}
@@ -175,15 +192,7 @@ class StatusMapper extends Mapper {
 		');
 
 		foreach ($mounts as $mount) {
-			if (is_string($mount)) {
-				$storage = Filesystem::getStorage($mount);
-			} else if ($mount instanceof Mount) {
-				$storage = $mount->getStorage();
-			} else {
-				$storage = null;
-				$this->logger->
-					debug( 'expected string or instance of \OC\Files\Mount\Mount got ' . json_encode($mount) );
-			}
+			$storage = $mount->getStorage();
 			//only index external files if the admin enabled it
 			if ($this->scanExternalStorages || $storage->isLocal()) {
 				$cache = $storage->getCache();

@@ -16,14 +16,12 @@ namespace OCA\Search_Elastic\Jobs;
 
 use Elastica\Index;
 use OCA\Search_Elastic\AppInfo\Application;
-use OCA\Search_Elastic\Core\Logger;
 use OC\BackgroundJob\TimedJob;
-use OCA\Search_Elastic\Db\Status;
 use OCA\Search_Elastic\Db\StatusMapper;
 
 class DeleteJob extends TimedJob {
 
-	public function __construct() {
+	public function  __construct() {
 		//execute once a minute
 		$this->setInterval(60);
 	}
@@ -36,43 +34,43 @@ class DeleteJob extends TimedJob {
 		$app = new Application();
 		$container = $app->getContainer();
 
-		/** @var Logger $logger */
-		$logger = $container->query('Logger');
+		$logger = \OC::$server->getLogger();
 
-
-		if (empty($arguments['user'])) {
-			$logger->debug('indexer job did not receive user in arguments: '.json_encode($arguments) );
-			return;
-		}
-
-		$userId = $arguments['user'];
-		$logger->debug('background job optimizing index for '.$userId );
-
-		/** @var Index $index */
-		$index = $container->query('Index');
+		$logger->debug('removing deleted files', ['app' => 'search_elastic'] );
 
 		/** @var StatusMapper $mapper */
 		$mapper = $container->query('StatusMapper');
 
 		$deletedIds = $mapper->getDeleted();
-		$count = 0;
+
 		if (!empty($deletedIds)) {
+			$logger->debug(
+				count($deletedIds).' fileids need to be removed',
+				['app' => 'search_elastic']
+			);
+
+			//delete from status table
+			$deletedInDb = $mapper->deleteIds($deletedIds);
 
 			$deletedDocuments = array();
 			foreach ($deletedIds as $fileId) {
-				$logger->debug('deleting status for (' . $fileId . ') ');
-				//delete status
-				//FIXME use IN in sql
-				$status = new Status($fileId);
-				$mapper->delete($status);
+				$logger->debug(
+					'deleting index document for (' . $fileId . ')',
+					['app' => 'search_elastic']
+				);
 
 				$deletedDocuments[] = new \Elastica\Document($fileId, array(), 'file');
 			}
 			//delete from elasticsearch
+			/** @var Index $index */
+			$index = $container->query('Index');
 			$response = $index->deleteDocuments($deletedDocuments);
 
-			$count = $response->count();
+			$deletedInIndex = $response->count();
+			$logger->debug(
+				"removed $deletedInDb ids from status table and $deletedInIndex documents from index",
+				['app' => 'search_elastic']
+			);
 		}
-		$logger->debug( 'removed '.$count.' files from index' );
  	}
 }

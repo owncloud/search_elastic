@@ -24,6 +24,7 @@ use OC\Files\Filesystem;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OC\Share\Constants;
 use OCP\Files\File;
+use OCP\Files\Node;
 use OCP\ILogger;
 use OCP\IServerContainer;
 
@@ -90,22 +91,22 @@ class Client {
 	}
 
 	/**
+	 * @param string $userId
 	 * @param array $fileIds
-	 * @param \OC_EventSource $eventSource
 	 */
-	public function indexFiles (array $fileIds, \OC_EventSource $eventSource = null) {
+	public function indexFiles ($userId, array $fileIds) {
 
 		foreach ($fileIds as $id) {
 
 			$fileStatus = $this->mapper->getOrCreateFromFileId($id);
-
+			$path = 'unresolved';
 			try {
 				// before we start mark the file as error so we know there
 				// was a problem in case the php execution dies and we don't try
 				// the file again
 				$this->mapper->markError($fileStatus);
 
-				$file = $this->getFileForId($id);
+				$file = $this->getFileForId($userId, $id);
 
 				$path = $file->getPath();
 
@@ -113,43 +114,39 @@ class Client {
 					if (strpos($path, '/' . $skippedDir . '/') !== false //contains dir
 						|| strrpos($path, '/' . $skippedDir) === strlen($path) - (strlen($skippedDir) + 1) // ends with dir
 					) {
-						throw new SkippedException('skipping file '.$id.':'.$path);
+						throw new SkippedException("dir $path ($id) matches filter '$skippedDir'");
 					}
 				}
 
-				if ($eventSource) {
-					$eventSource->send('indexing', $path);
-				}
-
-				if ($this->indexFile($file)) {
+				if ($this->indexFile($file, $userId)) {
 					$this->mapper->markIndexed($fileStatus);
 				}
 
 			} catch (VanishedException $e) {
 
+				$this->logger->debug( "indexFiles: ($id) Vanished", ['app' => 'search_elastic'] );
 				$fileStatus->setMessage('File vanished');
 				$this->mapper->markVanished($fileStatus);
 
 			} catch (NotIndexedException $e) {
 
+				$this->logger->debug( "indexFiles: $path ($id) Not indexed", ['app' => 'search_elastic'] );
 				$fileStatus->setMessage('Not indexed');
 				$this->mapper->markUnIndexed($fileStatus);
 
 			} catch (SkippedException $e) {
 
+				$this->logger->debug( "indexFiles: $path ($id) Skipped", ['app' => 'search_elastic'] );
+				$this->logger->debug( $e->getMessage(), ['app' => 'search_elastic']);
 				$this->mapper->markSkipped($fileStatus, 'Skipped');
-				$this->logger->debug( $e->getMessage() );
 
 			} catch (\Exception $e) {
 				//sqlite might report database locked errors when stock filescan is in progress
 				//this also catches db locked exception that might come up when using sqlite
-				$this->logger->error($e->getMessage() . ' Trace:\n' . $e->getTraceAsString() );
+				$this->logger->logException($e, ['app' => 'search_elastic']);
 
 				$this->mapper->markError($fileStatus, substr($e->getMessage(), 0, 255));
 				// TODO Add UI to trigger rescan of files with status 'E'rror?
-				if ($eventSource) {
-					$eventSource->send('error', $e->getMessage());
-				}
 			}
 		}
 
@@ -162,14 +159,17 @@ class Client {
 	 * @throws NotIndexedException
 	 * @throws VanishedException
 	 */
-	function getFileForId ($fileId) {
+	function getFileForId ($userId, $fileId) {
 
 		/* @var Node[] */
-		$nodes = $this->server->getUserFolder()->getById($fileId);
+		$nodes = \OC::$server->getUserFolder($userId)->getById($fileId);
 		// getById can return more than one id because the containing storage might be mounted more than once
 		// Since we only want to index the file once, we only use the first entry
 
 		if (isset($nodes[0])) {
+			$this->logger->debug("getFileForId: $fileId -> node {$nodes[0]->getPath()} ({$nodes[0]->getId()})",
+				['app' => 'search_elastic']
+			);
 			$node = $nodes[0];
 		} else {
 			throw new VanishedException($fileId);
@@ -189,7 +189,11 @@ class Client {
 	 * @return bool true when something was stored in the index, false otherwise (eg, folders are not indexed)
 	 * @throws NotIndexedException when an unsupported file type is encountered
 	 */
-	public function indexFile(File $file) {
+	public function indexFile(File $file, $userId) {
+
+		$this->logger->debug("indexFile {$file->getPath()} ({$file->getId()}) for $userId",
+			['app' => 'search_elastic']
+		);
 
 		// index content for local files only
 		$storage = $file->getStorage();
@@ -198,7 +202,7 @@ class Client {
 			$data = $this->extractContent($file);
 
 			if (!empty($data)) {
-				$access = $this->getUsersWithReadPermission($file);
+				$access = $this->getUsersWithReadPermission($file, $userId);
 				$data['users'] = $access['users'];
 				$data['groups'] = $access['groups'];
 				$data['mtime'] = $file->getMTime();
@@ -206,17 +210,29 @@ class Client {
 				$doc = new Document($file->getId());
 
 				$doc->set('file', $data);
+				$this->logger->debug("indexFile: adding document to index: ".
+					json_encode($data), ['app' => 'search_elastic']
+				);
 				$this->type->addDocument($doc);
+			} else {
+				$this->logger->debug("indexFile: no content extracted for ".
+					"{$file->getPath()} ({$file->getId()})",
+					['app' => 'search_elastic']
+				);
 			}
 
+		} else {
+			$this->logger->debug("indexFile: ignoring non local storage "
+				.$storage->getId(),
+				['app' => 'search_elastic']
+			);
 		}
 
 		return true;
 
 	}
 
-	public function getUsersWithReadPermission(File $file) {
-		$owner = $this->server->getUserSession()->getUser()->getUID();
+	public function getUsersWithReadPermission(File $file, $owner) {
 		// get path for lookup in sharing
 		$path = $file->getPath();
 		//TODO test this hack with subdirs and other storages like objectstore and files_external
@@ -236,6 +252,9 @@ class Client {
 	 *       not '/admin/data/file.txt'
 	 */
 	public function getUsersSharingFile($path, $ownerUser) {
+		$this->logger->debug("determining access to $path",
+			['app' => 'search_elastic']
+		);
 
 		Filesystem::initMountPoints($ownerUser);
 		$users = $groups = $sharePaths = $fileTargets = [];
@@ -293,45 +312,7 @@ class Client {
 					$groups[] = $row['share_with'];
 				}
 			}
-/*
-			//check for public link shares
-			if (!$publicShare) {
-				$query = \OC_DB::prepare('
-					SELECT `share_with`
-					FROM `*PREFIX*share`
-					WHERE `item_source` = ? AND `share_type` = ? AND `item_type` IN (\'file\', \'folder\')', 1
-				);
 
-				$result = $query->execute(array($source, self::SHARE_TYPE_LINK));
-
-				if (\OCP\DB::isError($result)) {
-					\OCP\Util::writeLog('OCP\Share', \OC_DB::getErrorMessage(), \OCP\Util::ERROR);
-				} else {
-					if ($result->fetchRow()) {
-						$publicShare = true;
-					}
-				}
-			}
-
-			//check for remote share
-			if (!$remoteShare) {
-				$query = \OC_DB::prepare('
-					SELECT `share_with`
-					FROM `*PREFIX*share`
-					WHERE `item_source` = ? AND `share_type` = ? AND `item_type` IN (\'file\', \'folder\')', 1
-				);
-
-				$result = $query->execute(array($source, self::SHARE_TYPE_REMOTE));
-
-				if (\OCP\DB::isError($result)) {
-					\OCP\Util::writeLog('OCP\Share', \OC_DB::getErrorMessage(), \OCP\Util::ERROR);
-				} else {
-					if ($result->fetchRow()) {
-						$remoteShare = true;
-					}
-				}
-			}
-*/
 			// let's get the parent for the next round
 			$meta = $cache->get((int)$source);
 			if($meta !== false) {
@@ -344,8 +325,11 @@ class Client {
 		// Include owner in list of users
 		$users[] = $ownerUser;
 
-		//return array('users' => array_unique($shares), 'public' => $publicShare, 'remote' => $remoteShare);
-		return array('users' => array_unique($users), 'groups' => array_unique($groups));
+		$result = array('users' => array_unique($users), 'groups' => array_unique($groups));
+		$this->logger->debug("access to $path:".json_encode($result),
+			['app' => 'search_elastic']
+		);
+		return $result;
 	}
 
 	/**
@@ -354,13 +338,13 @@ class Client {
 	 *
 	 * @return array with file content as plain text and metadata
 	 */
-	public function extractContent (File $file, \OC_EventSource $eventSource = null) {
+	public function extractContent (File $file) {
 
 		$path = $file->getPath();
 
-		if ($eventSource) {
-			$eventSource->send('extracting content', $path);
-		}
+		$this->logger->debug("Extracting content for $path",
+			['app' => 'search_elastic']
+		);
 
 		$doc = new Document($file->getId());
 
@@ -408,6 +392,10 @@ class Client {
 				$result['language'] = $data['fields']['file.language'][0];
 			}
 		}
+		$this->logger->debug("$path content is:".json_encode($result),
+			['app' => 'search_elastic']
+		);
+
 		return $result;
 
 		//TODO delete temp index
@@ -433,8 +421,8 @@ class Client {
 		return 0;
 	}
 
-	public function updateFile (File $file) {
-		$access = $this->getUsersWithReadPermission($file);
+	public function updateFile (File $file, $userId) {
+		$access = $this->getUsersWithReadPermission($file, $userId);
 		$doc = new Document($file->getId());
 		$doc->setData(array('file' => $access));
 		try {

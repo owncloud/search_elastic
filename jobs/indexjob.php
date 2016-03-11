@@ -15,7 +15,6 @@
 namespace OCA\Search_Elastic\Jobs;
 
 use OCA\Search_Elastic\AppInfo\Application;
-use OCA\Search_Elastic\Core\Logger;
 use OC\BackgroundJob\QueuedJob;
 
 class IndexJob extends QueuedJob {
@@ -27,26 +26,31 @@ class IndexJob extends QueuedJob {
 		$app = new Application();
 		$container = $app->getContainer();
 
-		/** @var Logger $logger */
-		$logger = $container->query('Logger');
+		$logger = \OC::$server->getLogger();
 
 		if (isset($arguments['userId'])) {
 			$userId = $arguments['userId'];
 
-			// we use our own fs setup code to also set the user in the session
-			$folder = $container->query('FileUtility')->setUpUserHome($userId);
+			// This sets up the correct storage. The db mapper does some magic with the filesystem
+			$home = \OC::$server->getUserFolder($userId);
 
-			if ($folder) {
+			if ($home) {
 
-				$fileIds = $container->query('StatusMapper')->getUnindexed();
+				$fileIds = $container->query('StatusMapper')->getUnindexed($home);
 
-				$logger->debug('background job indexing '.count($fileIds).' files for '.$userId );
+				$logger->debug(
+					'background job indexing '.count($fileIds).' files for '.$userId,
+					['app' => 'search_elastic']
+				);
 
-				$container->query('Client')->indexFiles($fileIds);
+				$container->query('Client')->indexFiles($userId, $fileIds);
 
 			}
 		} else {
-			$logger->debug('indexer job did not receive userId in arguments: '.json_encode($arguments));
+			$logger->debug(
+				'indexer job did not receive userId in arguments: '.json_encode($arguments),
+				['app' => 'search_elastic']
+			);
 		}
  	}
 }

@@ -1,9 +1,7 @@
 (function() {
 	OCA.Search.ElasticSearch = {
 		attach: function(search) {
-
 			search.setRenderer('search_elastic', OCA.Search.ElasticSearch.renderFileResult);
-			search.setHandler('search_elastic', OCA.Search.ElasticSearch.handleFileClick);
 		},
 		renderFileResult: function($row, result) {
 			var $fileResultRow = OCA.Search.files.renderFileResult($row, result);
@@ -44,9 +42,6 @@
 				$row.find('td.info div.path').after($highlightsDiv);
 			}
 			return $fileResultRow;
-		},
-		handleFileClick: function($row, result, event) {
-			OCA.Search.files.handleFileClick($row, result, event);
 		}
 	};
 })();

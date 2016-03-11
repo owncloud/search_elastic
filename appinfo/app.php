@@ -25,10 +25,7 @@ OCP\Util::addStyle('search_elastic', 'results');
 \OC::$server->getSearch()->registerProvider('OCA\Search_Elastic\Search\ElasticSearchProvider', array('apps' => array('files')));
 
 // if we know the user add background job for deletion
-if (\OC::$server->getUserSession()->getUser()) {
-	$arguments = array('user' => \OC::$server->getUserSession()->getUser()->getUID());
-	\OC::$server->getJobList()->add(new \OCA\Search_Elastic\Jobs\DeleteJob(), $arguments);
-}
+\OC::$server->getJobList()->add(new \OCA\Search_Elastic\Jobs\DeleteJob());
 
 // --- add hooks -----------------------------------------------
 

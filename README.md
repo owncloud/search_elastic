@@ -46,7 +46,9 @@ When you recently edited a file, chances are that you still know where it reside
 - [x] store groups and users with access to filter search results by group membership
 - [x] store fileid instead of filenames so we don't have to handle renames 
 - [x] use instanceid to set up index - allows using the same elasticsearch instance for muliple oc instances
-- [x] dont bother storing the filename / path
+- [ ] store the filename to allow faster search in shared files
+  - index files and folders
+- [ ] store tags?
 - sharing a file immediately after it has been uploadad throws an exception
   - [x] fix exception / do not try to update a nonexisting document
   - [x] get all users and groups when initially indexing the document

@@ -201,25 +201,25 @@ class Client {
 		if ($this->scanExternalStorages || $storage->isLocal()) {
 			$data = $this->extractContent($file);
 
-			if (!empty($data)) {
-				$access = $this->getUsersWithReadPermission($file, $userId);
-				$data['users'] = $access['users'];
-				$data['groups'] = $access['groups'];
-				$data['mtime'] = $file->getMTime();
+			$access = $this->getUsersWithReadPermission($file, $userId);
+			$data['users'] = $access['users'];
+			$data['groups'] = $access['groups'];
+			$data['mtime'] = $file->getMTime();
 
-				$doc = new Document($file->getId());
+			$doc = new Document($file->getId());
 
-				$doc->set('file', $data);
-				$this->logger->debug("indexFile: adding document to index: ".
-					json_encode($data), ['app' => 'search_elastic']
-				);
-				$this->type->addDocument($doc);
-			} else {
+			if (empty($data)) {
 				$this->logger->debug("indexFile: no content extracted for ".
 					"{$file->getPath()} ({$file->getId()})",
 					['app' => 'search_elastic']
 				);
+			} else {
+				$doc->set('file', $data);
 			}
+			$this->logger->debug("indexFile: adding document to index: ".
+				json_encode($data), ['app' => 'search_elastic']
+			);
+			$this->type->addDocument($doc);
 
 		} else {
 			$this->logger->debug("indexFile: ignoring non local storage "

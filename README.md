@@ -77,3 +77,4 @@ When you recently edited a file, chances are that you still know where it reside
 - [x] resolve path for shared files
 - [x] files with empty content extraction are reindexed indefinitely? eg empty text file
 - [x] more debug logging
+- [x] wildcard search ... but there is a bug in core js code preventing wildcard search, see https://github.com/owncloud/core/pull/23531

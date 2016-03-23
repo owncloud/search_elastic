@@ -3,7 +3,7 @@
  * ownCloud
  *
  * @author Jörn Friedrich Dreyer <jfd@owncloud.com>
- * @copyright (C) 2014 ownCloud, Inc.
+ * @copyright (C) 2014-2016 ownCloud, Inc.
  *
  * This code is covered by the ownCloud Commercial License.
  *
@@ -16,7 +16,6 @@ namespace OCA\Search_Elastic\Search;
 
 use Elastica\Result;
 use OC\Search\Result\File as FileResult;
-use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\Node;
 
@@ -37,13 +36,15 @@ class ElasticSearchResult extends FileResult {
 	public $score;
 
 	/**
-	 * @var float
+	 * @var string[]
 	 */
 	public $highlights;
 
 	/**
 	 * Create a new content search result
 	 * @param Result $result file data given by provider
+	 * @param Node $node
+	 * @param Folder $home
 	 */
 	public function __construct(Result $result, Node $node, Folder $home) {
 		$data = $result->getData();
@@ -53,7 +54,7 @@ class ElasticSearchResult extends FileResult {
 		$this->name = basename($this->path);
 		$this->size = (int)$node->getSize();
 		$this->score = $result->getScore();
-		$this->link = \OCP\Util::linkTo(
+		$this->link = \OC::$server->getURLGenerator()->linkTo(
 			'files',
 			'index.php',
 			array('dir' => dirname($this->path), 'scrollto' => $this->name)
@@ -63,6 +64,8 @@ class ElasticSearchResult extends FileResult {
 		$this->mime_type = $node->getMimetype();
 		if (isset($highlights['file.content'])) {
 			$this->highlights = $highlights['file.content'];
+		} else {
+			$this->highlights = [];
 		}
 	}
 

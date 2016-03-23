@@ -9,7 +9,7 @@
 				/*render preview icon, show path beneath filename,
 				 show size and last modified date on the right */
 
-				$pathDiv = $('<div class="path"></div>').text(result.path);
+				var $pathDiv = $('<div class="path"></div>').text(result.path);
 				$row.find('td.info div.name').after($pathDiv).text(result.name);
 
 				$row.find('td.result a').attr('href', result.link);
@@ -36,7 +36,7 @@
 				}
 				$fileResultRow = $row;
 			}
-			if ($fileResultRow && typeof result.highlights == undefined) {
+			if ($fileResultRow && typeof result.highlights === 'object' && result.highlights !== null) {
 				var highlights = result.highlights.join(' … ');
 				var $highlightsDiv = $('<div class="highlights"></div>').html(highlights);
 				$row.find('td.info div.path').after($highlightsDiv);

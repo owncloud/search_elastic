@@ -3,7 +3,7 @@
  * ownCloud
  *
  * @author Jörn Friedrich Dreyer <jfd@owncloud.com>
- * @copyright (C) 2014 ownCloud, Inc.
+ * @copyright (C) 2014-2016 ownCloud, Inc.
  *
  * This code is covered by the ownCloud Commercial License.
  *
@@ -19,7 +19,9 @@ use Elastica\Request;
 use Elastica\Response;
 use Elastica\Type;
 use Elastica\Document;
+use OC\Files\Cache\Cache;
 use OC\Files\Filesystem;
+use OC\Files\View;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OC\Share\Constants;
 use OCP\Files\File;
@@ -172,6 +174,7 @@ class Client {
 
 		$size = $node->getSize();
 		$maxSize = $this->config->getAppValue('search_elastic', 'max_size', 10485760);
+
 		// only extract content for files that have content
 		if ( $node instanceof Folder ) {
 			$this->logger->debug("indexNode: folder, skipping content extraction",
@@ -386,7 +389,7 @@ class Client {
 		$source = -1;
 		$cache = false;
 
-		$view = new \OC\Files\View('/' . $ownerUser . '/files');
+		$view = new  View('/' . $ownerUser . '/files');
 		$meta = $view->getFileInfo($path);
 		if ($meta === false) {
 			// if the file doesn't exists yet we start with the parent folder
@@ -395,7 +398,7 @@ class Client {
 
 		if($meta !== false) {
 			$source = $meta['fileid'];
-			$cache = new \OC\Files\Cache\Cache($meta['storage']);
+			$cache = new Cache($meta['storage']);
 		}
 
 		while ($source !== -1) {

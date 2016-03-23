@@ -3,7 +3,7 @@
  * ownCloud
  *
  * @author Jörn Friedrich Dreyer <jfd@owncloud.com>
- * @copyright (C) 2014 ownCloud, Inc.
+ * @copyright (C) 2014-2016 ownCloud, Inc.
  *
  * This code is covered by the ownCloud Commercial License.
  *
@@ -48,6 +48,10 @@ class AdminSettingsController extends APIController {
 	/**
 	 * @param string $appName
 	 * @param IRequest $request
+	 * @param IConfig $config
+	 * @param Index $index
+	 * @param Index $contentExtractionIndex
+	 * @param StatusMapper $mapper
 	 */
 	public function __construct($appName, IRequest $request, IConfig $config, Index $index, Index $contentExtractionIndex, StatusMapper $mapper) {
 		parent::__construct($appName, $request);

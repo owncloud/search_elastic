@@ -3,7 +3,7 @@
  * ownCloud
  *
  * @author Jörn Friedrich Dreyer <jfd@owncloud.com>
- * @copyright (C) 2014 ownCloud, Inc.
+ * @copyright (C) 2014-2016 ownCloud, Inc.
  *
  * This code is covered by the ownCloud Commercial License.
  *
@@ -20,6 +20,7 @@ use Elastica\Query;
 use Elastica\Query\BoolQuery;
 use Elastica\Query\Match;
 use Elastica\Result;
+use Elastica\Search;
 use Elastica\Type;
 use OCA\Search_Elastic\AppInfo\Application;
 use OCP\Files\Node;
@@ -133,8 +134,8 @@ class ElasticSearchProvider extends PagedProvider {
 
 		$es_bool = new BoolQuery();
 		$es_bool->addFilter($es_filter);
-		$es_bool->addShould(new Match('file.content', $query));
-		$es_bool->addShould(new Match('file.name', $query));
+		$es_bool->addShould(new Query\Wildcard('file.content', $query));
+		$es_bool->addShould(new Query\Wildcard('file.name', $query));
 		$es_bool->setMinimumNumberShouldMatch(1);
 
 		$es_query = new Query($es_bool);
@@ -147,7 +148,7 @@ class ElasticSearchProvider extends PagedProvider {
 		$es_query->setSize($size);
 		$es_query->setFrom(($page - 1) * $size);
 
-		$search = new \Elastica\Search($this->client);
+		$search = new Search($this->client);
 		$search->addType(new Type($this->index, 'file'));
 		$search->addIndex($this->index);
 		return $search->search($es_query);

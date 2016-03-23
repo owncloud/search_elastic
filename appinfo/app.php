@@ -3,7 +3,7 @@
  * ownCloud
  *
  * @author Jörn Friedrich Dreyer <jfd@owncloud.com>
- * @copyright (C) 2014 ownCloud, Inc.
+ * @copyright (C) 2014-2016 ownCloud, Inc.
  *
  * This code is covered by the ownCloud Commercial License.
  *
@@ -18,7 +18,7 @@ OCP\Util::addScript('search_elastic', 'search');
 OCP\Util::addStyle('search_elastic', 'results');
 
 // --- register settings -----------------------------------------------
-\OCP\App::registerAdmin('search_elastic', 'settings-admin');
+\OCP\App::registerAdmin('search_elastic', 'settings/admin');
 
 // --- add file search provider -----------------------------------------------
 

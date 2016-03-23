@@ -2,7 +2,7 @@
 <info>
 	<id>search_elastic</id>
 	<name>Elasticsearch</name>
-	<version>0.0.4</version>
+	<version>0.0.5</version>
 	<licence>Commercial</licence>
 	<author>ownCloud Inc.</author>
 	<dependencies>

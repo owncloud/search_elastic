@@ -1,3 +1,9 @@
+/* fix icon size */
+#searchresults td.icon {
+	background-size: 32px;
+}
+
+/* highlights */
 
 #searchresults .highlights {
 	overflow: hidden;

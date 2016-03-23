@@ -3,7 +3,7 @@
  * ownCloud
  *
  * @author Jörn Friedrich Dreyer <jfd@owncloud.com>
- * @copyright (C) 2014 ownCloud, Inc.
+ * @copyright (C) 2014-2016 ownCloud, Inc.
  *
  * This code is covered by the ownCloud Commercial License.
  *
@@ -12,6 +12,11 @@
  *
  */
 
-namespace OCA\Search_Elastic\Core;
+\OC_Util::checkAdminUser();
 
-class SetUpException extends \Exception {}
+\OCP\Util::addStyle('search_elastic', 'settings/admin');
+\OCP\Util::addScript('search_elastic', 'settings/admin');
+
+$tmpl = new \OCP\Template('search_elastic', 'settings/admin');
+
+return $tmpl->fetchPage();

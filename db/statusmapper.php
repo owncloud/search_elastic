@@ -3,7 +3,7 @@
  * ownCloud
  *
  * @author Jörn Friedrich Dreyer <jfd@owncloud.com>
- * @copyright (C) 2014 ownCloud, Inc.
+ * @copyright (C) 2014-2016 ownCloud, Inc.
  *
  * This code is covered by the ownCloud Commercial License.
  *
@@ -14,7 +14,6 @@
 
 namespace OCA\Search_Elastic\Db;
 
-use OC\Files\Filesystem;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\Mapper;
@@ -37,14 +36,16 @@ class StatusMapper extends Mapper {
 	/**
 	 * Deletes a status from the table
 	 * @param Entity $status the status that should be deleted
+	 * @return \PDOStatement the database query result
 	 */
 	public function delete(Entity $status){
 		$sql = 'DELETE FROM `' . $this->tableName . '` WHERE `fileid` = ?';
-		$this->execute($sql, array($status->getFileId()));
+		return $this->execute($sql, array($status->getFileId()));
 	}
 	/**
 	 * Deletes a status from the table
 	 * @param array $ids the fileids whose status should be deleted
+	 * @return int the number of affected rows
 	 */
 	public function deleteIds(array $ids){
 		if (empty($ids)) {
@@ -70,8 +71,8 @@ class StatusMapper extends Mapper {
 
 	/**
 	 * Creates a new entry in the db from an entity
-	 * @param Status $entity the entity that should be created
-	 * @return Status the saved entity with the set id
+	 * @param Entity $entity the entity that should be created
+	 * @return Entity the saved entity with the set id
 	 */
 	public function insert(Entity $entity){
 		// get updated fields to save, fields have to be set using a setter to
@@ -160,12 +161,13 @@ class StatusMapper extends Mapper {
 			$columns . ' WHERE `fileid` = ?';
 		array_push($params, $fileId);
 
-		$this->execute($sql, $params);
+		return $this->execute($sql, $params);
 	}
 
 
 	/**
 	 * get the list of all files that need a metadata reindexing
+	 * @param Folder $home the home folder used to deduce the storages
 	 *
 	 * @return array
 	 */
@@ -182,6 +184,7 @@ class StatusMapper extends Mapper {
 	}
 	/**
 	 * get the list of all files that need a full reindexing with content extraction
+	 * @param Folder $home the home folder used to deduce the storages
 	 *
 	 * @return array
 	 */
@@ -199,6 +202,9 @@ class StatusMapper extends Mapper {
 	}
 	/**
 	 * get the list of all unindexed files for the user
+	 * @param Folder $home the home folder used to deduce the storages
+	 * @param string $sql
+	 * @param string $status
 	 *
 	 * @return array
 	 */

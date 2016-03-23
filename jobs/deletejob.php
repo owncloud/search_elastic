@@ -14,6 +14,7 @@
 
 namespace OCA\Search_Elastic\Jobs;
 
+use Elastica\Document;
 use Elastica\Index;
 use OCA\Search_Elastic\AppInfo\Application;
 use OC\BackgroundJob\TimedJob;
@@ -59,7 +60,7 @@ class DeleteJob extends TimedJob {
 					['app' => 'search_elastic']
 				);
 
-				$deletedDocuments[] = new \Elastica\Document($fileId, array(), 'file');
+				$deletedDocuments[] = new Document($fileId, array(), 'file');
 			}
 			//delete from elasticsearch
 			/** @var Index $index */

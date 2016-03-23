@@ -3,7 +3,7 @@
  * ownCloud
  *
  * @author Jörn Friedrich Dreyer <jfd@owncloud.com>
- * @copyright (C) 2014 ownCloud, Inc.
+ * @copyright (C) 2014-2016 ownCloud, Inc.
  *
  * This code is covered by the ownCloud Commercial License.
  *
@@ -18,7 +18,6 @@ use Elastica\Type;
 use OCA\Search_Elastic\Controller\AdminSettingsController;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\Client;
-use OCA\Search_Elastic\Core\Files;
 use OCP\AppFramework\App;
 
 class Application extends App {

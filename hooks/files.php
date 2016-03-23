@@ -21,7 +21,13 @@ use OCA\Search_Elastic\Db\StatusMapper;
 use OCP\BackgroundJob;
 use OCP\Files\File;
 use OCP\Files\Folder;
+use OCP\Files\Node;
 
+/**
+ * Class Files
+ *
+ * @package OCA\Search_Elastic\Hooks
+ */
 class Files {
 
 	/**
@@ -29,14 +35,21 @@ class Files {
 	 *
 	 * @param string $path
 	 */
-	const handle_post_write = 'indexFile';
+	const handle_post_write = 'contentChanged';
 
 	/**
 	 * handle for renaming file
 	 *
 	 * @param string $path
 	 */
-	const handle_post_rename = 'renameFile';
+	const handle_post_rename = 'metadataChanged';
+
+	/**
+	 * handle for sharing file
+	 *
+	 * @param string $path
+	 */
+	const handle_share = 'metadataChanged';
 
 	/**
 	 * handle for removing file
@@ -46,20 +59,13 @@ class Files {
 	const handle_delete = 'deleteFile';
 
 	/**
-	 * handle for sharing file
-	 *
-	 * @param string $path
-	 */
-	const handle_share = 'shareFile';
-
-	/**
 	 * handle file writes (triggers reindexing)
 	 * 
 	 * the file indexing is queued as a background job
 	 * 
 	 * @param $param array from postWriteFile-Hook
 	 */
-	public static function indexFile(array $param) {
+	public static function contentChanged(array $param) {
 
 		$app = new Application();
 		$container = $app->getContainer();
@@ -77,32 +83,109 @@ class Files {
 			$mapper = $container->query('StatusMapper');
 			$status = $mapper->getOrCreateFromFileId($node->getId());
 
-			// only index files
-			if ($node instanceof File) {
+			if ($node instanceof File || $node instanceof Folder) {
 				$logger->debug(
-					"Hook indexFile: marking as New {$node->getPath()} ({$node->getId()})",
+					"Hook contentChanged: marking as New {$node->getPath()} ({$node->getId()})",
 					['app' => 'search_elastic']
 				);
 				$mapper->markNew($status);
 
 				//Add Background Job:
-				BackgroundJob::registerJob( 'OCA\Search_Elastic\Jobs\IndexJob', array('userId' => $userId) );
+				\OC::$server->getJobList()->add( 'OCA\Search_Elastic\Jobs\UpdateContent', ['userId' => $userId] );
 			} else {
 				$logger->debug(
-					"Hook indexFile: marking Skipped {$node->getPath()} ({$node->getId()})",
+					"Hook contentChanged: marking Skipped {$node->getPath()} ({$node->getId()})",
 					['app' => 'search_elastic']
 				);
 				$mapper->markSkipped($status);
 			}
 		} else {
 			$logger->debug(
-				'Hook indexFile could not determine user when called with param '
+				'Hook contentChanged could not determine user when called with param '
 				.json_encode($param), ['app' => 'search_elastic']
 			);
 		}
 	}
 
 	/**
+	 * handle file shares
+	 *
+	 * @param $param array
+	 */
+	public static function metadataChanged(array $param) {
+
+		$app = new Application();
+		$container = $app->getContainer();
+		$userId = $container->query('UserId');
+
+		$logger = \OC::$server->getLogger();
+
+		if (!empty($userId)) {
+
+			// mark written file as new
+			$home = \OC::$server->getUserFolder($userId);
+			if (isset($param['path'])) {
+				$node = $home->get($param['path']);
+			} else if (isset($param['fileSource'])) {
+				$nodes = $home->getById($param['fileSource']);
+				if (isset($nodes[0])) {
+					$node = $nodes[0];
+				}
+			}
+			if (empty($node)) {
+				\OC::$server->getLogger()->debug(
+					'Hook metadataChanged could not determine node when called with param ' . json_encode($param),
+					['app' => 'search_elastic']
+				);
+				return;
+			}
+
+			/** @var StatusMapper $mapper */
+			$mapper = $container->query('StatusMapper');
+			$status = $mapper->getOrCreateFromFileId($node->getId());
+
+			if ($status->getStatus() === Status::STATUS_NEW) {
+				$logger->debug(
+					"Hook metadataChanged: file needs content indexing {$node->getPath()} ({$node->getId()})",
+					['app' => 'search_elastic']
+				);
+			} else if ($node instanceof Node) {
+				$logger->debug(
+					"Hook metadataChanged: marking as Metadata Changed {$node->getPath()} ({$node->getId()})",
+					['app' => 'search_elastic']
+				);
+				$mapper->markMetadataChanged($status);
+				if ($node instanceof Folder) {
+					//Add Background Job and tell it to also update children of a certain folder:
+					\OC::$server->getJobList()->add(
+						'OCA\Search_Elastic\Jobs\UpdateMetadata',
+						['userId' => $userId, 'folderId' => $node->getId() ]
+					);
+				} else {
+					//Add Background Job:
+					\OC::$server->getJobList()->add(
+						'OCA\Search_Elastic\Jobs\UpdateMetadata',
+						['userId' => $userId]
+					);
+				}
+
+			} else {
+				$logger->debug(
+					"Hook metadataChanged: marking Skipped {$node->getPath()} ({$node->getId()})",
+					['app' => 'search_elastic']
+				);
+				$mapper->markSkipped($status);
+			}
+		} else {
+			\OC::$server->getLogger()->debug(
+				'Hook metadataChanged could not determine user when called with param ' . json_encode($param),
+				['app' => 'search_elastic']
+			);
+		}
+	}
+
+
+		/**
 	 * deleteFile triggers the removal of any deleted files from the index
 	 *
 	 * @param $param array from deleteFile-Hook
@@ -139,39 +222,6 @@ class Files {
 		$logger->debug( 'removed '.$count.' files from index',
 			['app' => 'search_elastic']
 		);
-
-	}
-
-	/**
-	 * handle file shares
-	 *
-	 * @param $param array
-	 */
-	public static function shareFile(array $param) {
-
-		$app = new Application();
-		$container = $app->getContainer();
-		$userId = $container->query('UserId');
-
-		if (!empty($userId)) {
-
-			// mark written file as new
-			$home = \OC::$server->getUserFolder($userId);
-			$node = $home->get($param['path']);
-
-			//Add Background Job:
-			\OC::$server->getJobList()->add(
-				'OCA\Search_Elastic\Jobs\UpdateAccess', [
-					'userId' => $userId,
-					'nodeId' => $node->getId()
-				]
-			);
-		} else {
-			\OC::$server->getLogger()->debug(
-				'Hook indexFile could not determine user when called with param '.json_encode($param),
-				['app' => 'search_elastic']
-			);
-		}
 
 	}
 

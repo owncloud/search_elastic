@@ -26,6 +26,7 @@ use OCP\AppFramework\Db\Entity;
 class Status extends Entity {
 
 	const STATUS_NEW = 'N';
+	const STATUS_METADATA_CHANGED = 'M';
 	const STATUS_INDEXED = 'I';
 	const STATUS_SKIPPED = 'S';
 	const STATUS_UNINDEXED = 'U';

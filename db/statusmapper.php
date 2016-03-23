@@ -165,11 +165,44 @@ class StatusMapper extends Mapper {
 
 
 	/**
+	 * get the list of all files that need a metadata reindexing
+	 *
+	 * @return array
+	 */
+	public function findFilesWhereMetadataChanged(Folder $home) {
+		$sql = "
+			SELECT `*PREFIX*filecache`.`fileid`
+			FROM `*PREFIX*filecache`
+			LEFT JOIN `{$this->tableName}`
+			ON `*PREFIX*filecache`.`fileid` = `{$this->tableName}`.`fileid`
+			WHERE `storage` = ?
+			AND `status` = ?
+		";
+		return $this->findNodesWithStatus($home, $sql, Status::STATUS_METADATA_CHANGED);
+	}
+	/**
+	 * get the list of all files that need a full reindexing with content extraction
+	 *
+	 * @return array
+	 */
+	public function findFilesWhereContentChanged(Folder $home) {
+
+		$sql = "
+			SELECT `*PREFIX*filecache`.`fileid`
+			FROM `*PREFIX*filecache`
+			LEFT JOIN `{$this->tableName}`
+			ON `*PREFIX*filecache`.`fileid` = `{$this->tableName}`.`fileid`
+			WHERE `storage` = ?
+			AND ( `status` IS NULL OR `status` = ? )
+		";
+		return $this->findNodesWithStatus($home, $sql, Status::STATUS_NEW);
+	}
+	/**
 	 * get the list of all unindexed files for the user
 	 *
 	 * @return array
 	 */
-	public function getUnindexed(Folder $home) {
+	public function findNodesWithStatus(Folder $home, $sql, $status) {
 		$home->getMountPoint();
 		$mounts = \OC::$server->getMountManager()->findIn($home->getPath());
 		$mount = $home->getMountPoint();
@@ -178,18 +211,10 @@ class StatusMapper extends Mapper {
 			$mounts[] = $mount;
 		}
 
-		// investigate optimizing with AND `size` BETWEEN 1 AND ?
 		// should we ORDER BY `mtime` DESC to index recent files first?
 		// how will they affect query time for large filecaches?
 
-		$query = $this->db->prepareQuery('
-			SELECT `*PREFIX*filecache`.`fileid`
-			FROM `*PREFIX*filecache`
-			LEFT JOIN `' . $this->tableName . '`
-			ON `*PREFIX*filecache`.`fileid` = `' . $this->tableName . '`.`fileid`
-			WHERE `storage` = ?
-			AND ( `status` IS NULL OR `status` = ? )
-		');
+		$query = $this->db->prepareQuery($sql);
 
 		foreach ($mounts as $mount) {
 			$storage = $mount->getStorage();
@@ -198,7 +223,7 @@ class StatusMapper extends Mapper {
 				$cache = $storage->getCache();
 				$numericId = $cache->getNumericStorageId();
 
-				$result = $query->execute(array($numericId, Status::STATUS_NEW));
+				$result = $query->execute(array($numericId, $status));
 
 				while ($row = $result->fetchRow()) {
 					$files[] = $row['fileid'];
@@ -227,9 +252,13 @@ class StatusMapper extends Mapper {
 		}
 	}
 
-	// always write status to db immediately
 	public function markNew(Status $status) {
 		$status->setStatus(Status::STATUS_NEW);
+		return $this->update($status);
+	}
+
+	public function markMetadataChanged(Status $status) {
+		$status->setStatus(Status::STATUS_METADATA_CHANGED);
 		return $this->update($status);
 	}
 

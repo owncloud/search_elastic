@@ -3,7 +3,7 @@
  * ownCloud
  *
  * @author Jörn Friedrich Dreyer <jfd@owncloud.com>
- * @copyright (C) 2014 ownCloud, Inc.
+ * @copyright (C) 2014-2016 ownCloud, Inc.
  *
  * This code is covered by the ownCloud Commercial License.
  *
@@ -16,10 +16,13 @@ namespace OCA\Search_Elastic\Jobs;
 
 use OCA\Search_Elastic\AppInfo\Application;
 use OC\BackgroundJob\QueuedJob;
+use OCA\Search_Elastic\Db\StatusMapper;
+use OCP\Files\Folder;
 
-class IndexJob extends QueuedJob {
+class UpdateContent extends QueuedJob {
 
 	/**
+	 * updates changed content for files
 	 * @param array $arguments
 	 */
 	public function run($arguments){
@@ -31,24 +34,32 @@ class IndexJob extends QueuedJob {
 		if (isset($arguments['userId'])) {
 			$userId = $arguments['userId'];
 
-			// This sets up the correct storage. The db mapper does some magic with the filesystem
+			// This sets up the correct storage.
+			// The db mapper does some magic with the filesystem
 			$home = \OC::$server->getUserFolder($userId);
 
-			if ($home) {
+			if ($home instanceof Folder) {
 
-				$fileIds = $container->query('StatusMapper')->getUnindexed($home);
+				/** @var StatusMapper $statusMapper */
+				$statusMapper = $container->query('StatusMapper');
+				$fileIds = $statusMapper->findFilesWhereContentChanged($home);
 
 				$logger->debug(
-					'background job indexing '.count($fileIds).' files for '.$userId,
+					count($fileIds)." files of $userId need content indexing",
 					['app' => 'search_elastic']
 				);
 
-				$container->query('Client')->indexFiles($userId, $fileIds);
+				$container->query('Client')->indexNodes($userId, $fileIds);
 
+			} else {
+				$logger->debug(
+					'could not resolve user home: '.json_encode($arguments),
+					['app' => 'search_elastic']
+				);
 			}
 		} else {
 			$logger->debug(
-				'indexer job did not receive userId in arguments: '.json_encode($arguments),
+				'did not receive userId in arguments: '.json_encode($arguments),
 				['app' => 'search_elastic']
 			);
 		}

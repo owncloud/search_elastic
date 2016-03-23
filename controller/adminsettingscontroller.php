@@ -115,9 +115,9 @@ class AdminSettingsController extends APIController {
 		$stats = $this->index->getStats()->getData();
 		$instanceId = \OC::$server->getSystemConfig()->getValue('instanceid', '');
 		return new JSONResponse(['stats' => [
-			'_all'    => $stats['_all'],
-			'_shards' => $stats['_shards'],
-			'oc_index'   => $stats['indices']["oc-$instanceId"],
+			'_all'     => $stats['_all'],
+			'_shards'  => $stats['_shards'],
+			'oc_index' => $stats['indices']["oc-$instanceId"],
 		]]);
 	}
 
@@ -169,40 +169,27 @@ class AdminSettingsController extends APIController {
 		$type = new Type($this->index, 'file');
 
 		$mapping = new Type\Mapping($type, array(
-			'content' => array(
-				'type' => 'string',
+			// indexed for all files and folders
+			'size'           => [ 'type' => 'long',   'store' => true ],
+			'name'           => [ 'type' => 'string', 'store' => true ],
+			'mtime'          => [ 'type' => 'long',   'store' => true ],
+			'users'          => [ 'type' => 'string', 'store' => true ],
+			'groups'         => [ 'type' => 'string', 'store' => true ],
+			// only indexed when content was extracted
+			'content' => [
+				'type' => 'string', 'store' => true,
 				'term_vector' => 'with_positions_offsets',
-				'store' => 'yes',
-			),
-			'title' => array(
-				'type' => 'string',
+			],
+			'title' => [
+				'type' => 'string', 'store' => true,
 				'term_vector' => 'with_positions_offsets',
-				'store' => 'yes',
-			),
-			'date' => array(
-				'type' => 'string',
-				'store' => 'yes',
-			),
-			'author' => array(
-				'type' => 'string',
-				'store' => 'yes',
-			),
-			'keywords' => array(
-				'type' => 'string',
-				'store' => 'yes',
-			),
-			'content_type' => array(
-				'type' => 'string',
-				'store' => 'yes',
-			),
-			'content_length' => array(
-				'type' => 'long',
-				'store' => 'yes',
-			),
-			'language' => array(
-				'type' => 'string',
-				'store' => 'yes',
-			),
+			],
+			'date'           => [ 'type' => 'string', 'store' => true ],
+			'author'         => [ 'type' => 'string', 'store' => true ],
+			'keywords'       => [ 'type' => 'string', 'store' => true ],
+			'content_type'   => [ 'type' => 'string', 'store' => true ],
+			'content_length' => [ 'type' => 'long',   'store' => true ],
+			'language'       => [ 'type' => 'string', 'store' => true ],
 		));
 		$type->setMapping($mapping);
 	}
@@ -220,31 +207,14 @@ class AdminSettingsController extends APIController {
 			'file' => array(
 				'type' => 'attachment',
 				'fields' => [
-					'content' => array(
-						'type' => 'string',
-						'store' => true,
-					),
-					'title' => array(
-						'store' => 'yes',
-					),
-					'date' => array(
-						'store' => 'yes',
-					),
-					'author' => array(
-						'store' => 'yes',
-					),
-					'keywords' => array(
-						'store' => 'yes',
-					),
-					'content_type' => array(
-						'store' => 'yes',
-					),
-					'content_length' => array(
-						'store' => 'yes',
-					),
-					'language' => array(
-						'store' => 'yes',
-					),
+					'content'        => [ 'store' => true, 'type' => 'string' ],
+					'title'          => [ 'store' => true ],
+					'date'           => [ 'store' => true ],
+					'author'         => [ 'store' => true ],
+					'keywords'       => [ 'store' => true ],
+					'content_type'   => [ 'store' => true ],
+					'content_length' => [ 'store' => true ],
+					'language'       => [ 'store' => true ],
 				],
 			),
 		));

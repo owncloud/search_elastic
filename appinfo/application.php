@@ -76,10 +76,9 @@ class Application extends App {
 				$c->getServer(),
 				$c->query('Index'),
 				$c->query('ContentExtractionIndex'),
-				$c->query('SkippedDirs'),
 				$c->query('StatusMapper'),
 				\OC::$server->getLogger(),
-				\OC::$server->getConfig()->getAppValue('search_elastic', 'scanExternalStorages', true)
+				\OC::$server->getConfig()
 			);
 		});
 

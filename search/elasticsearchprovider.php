@@ -18,10 +18,11 @@ use Elastica\Client;
 use Elastica\Index;
 use Elastica\Query;
 use Elastica\Query\BoolQuery;
+use Elastica\Query\Match;
 use Elastica\Result;
 use Elastica\Type;
 use OCA\Search_Elastic\AppInfo\Application;
-use OCP\Files\File;
+use OCP\Files\Node;
 use OCP\IGroup;
 use OCP\ILogger;
 use OCP\IUser;
@@ -79,7 +80,6 @@ class ElasticSearchProvider extends PagedProvider {
 						$fileId = (int)$result->getId();
 						$nodes = $home->getById($fileId);
 
-						//FIXME keep looping until $size elements have been found
 						if (empty($nodes[0])) {
 							$this->logger->debug("Could not find file for id $fileId in"
 								. " storage {$home->getStorage()->getId()}'."
@@ -87,11 +87,11 @@ class ElasticSearchProvider extends PagedProvider {
 								. " for {$this->user->getUID()}. A background job will"
 								. " update the index with the new permissions.",
 								['app' => 'search_elastic']);
-						} else if ($nodes[0] instanceof File) {
+						} else if ($nodes[0] instanceof Node) {
 							$results[] = new ElasticSearchResult($result, $nodes[0], $home);
 						} else {
 							$this->logger->error(
-								"Expected a File for $fileId, received "
+								"Expected a Node for $fileId, received "
 								. json_encode($nodes[0]),
 								['app' => 'search_elastic']);
 						}
@@ -124,24 +124,18 @@ class ElasticSearchProvider extends PagedProvider {
 
 	public function fetchResults ($query, $size, $page) {
 
-		$es_matchUser = new \Elastica\Query\Match();
-		$es_matchUser->setField('file.users', $this->user->getUID());
-
-		$es_or = new BoolQuery();
-		$es_or->addShould($es_matchUser);
+		$es_filter = new BoolQuery();
+		$es_filter->addShould(new Match('file.users', $this->user->getUID()));
 
 		foreach ($this->groups as $group) {
-			$es_matchGroup = new \Elastica\Query\Match();
-			$es_matchGroup->setField('file.groups', $group->getGID());
-			$es_or->addShould($es_matchGroup);
+			$es_filter->addShould(new Match('file.groups', $group->getGID()));
 		}
 
-		$es_match = new \Elastica\Query\Match();
-		$es_match->setField('file.content', $query);
-
 		$es_bool = new BoolQuery();
-		$es_bool->addFilter($es_or);
-		$es_bool->addMust($es_match);
+		$es_bool->addFilter($es_filter);
+		$es_bool->addShould(new Match('file.content', $query));
+		$es_bool->addShould(new Match('file.name', $query));
+		$es_bool->setMinimumNumberShouldMatch(1);
 
 		$es_query = new Query($es_bool);
 		$es_query->setHighlight(array(

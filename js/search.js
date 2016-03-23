@@ -17,14 +17,14 @@
 				if (OCA.Search.files.fileAppLoaded()) {
 					OCA.Files.App.fileList.lazyLoadPreview({
 						path: result.path,
-						mime: result.mime,
+						mime: result.mime_type,
 						callback: function (url) {
 							$row.find('td.icon').css('background-image', 'url(' + url + ')');
 						}
 					});
 				} else {
 					// FIXME how to get mime icon if not in files app
-					var mimeicon = result.mime.replace('/', '-');
+					var mimeicon = result.mime_type.replace('/', '-');
 					$row.find('td.icon').css('background-image', 'url(' + OC.imagePath('core', 'filetypes/' + mimeicon) + ')');
 					var dir = OC.dirname(result.path);
 					if (dir === '') {
@@ -36,7 +36,7 @@
 				}
 				$fileResultRow = $row;
 			}
-			if ($fileResultRow && typeof result.highlights === 'object') {
+			if ($fileResultRow && typeof result.highlights == undefined) {
 				var highlights = result.highlights.join(' … ');
 				var $highlightsDiv = $('<div class="highlights"></div>').html(highlights);
 				$row.find('td.info div.path').after($highlightsDiv);

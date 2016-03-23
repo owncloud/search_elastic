@@ -46,7 +46,7 @@ When you recently edited a file, chances are that you still know where it reside
 - [x] store groups and users with access to filter search results by group membership
 - [x] store fileid instead of filenames so we don't have to handle renames 
 - [x] use instanceid to set up index - allows using the same elasticsearch instance for muliple oc instances
-- [ ] store the filename to allow faster search in shared files
+- [x] store the filename to allow faster search in shared files
   - index files and folders
 - [ ] store tags?
 - sharing a file immediately after it has been uploadad throws an exception
@@ -75,5 +75,5 @@ When you recently edited a file, chances are that you still know where it reside
 - [ ] cleanup code
 - [ ] port test suite from search_lucene
 - [x] resolve path for shared files
-- [ ] files with empty content extraction are reindexed indefinitely? eg empty text file
+- [x] files with empty content extraction are reindexed indefinitely? eg empty text file
 - [x] more debug logging

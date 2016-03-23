@@ -22,9 +22,10 @@ OCP\Util::addStyle('search_elastic', 'results');
 
 // --- add file search provider -----------------------------------------------
 
+\OC::$server->getSearch()->removeProvider('OC\Search\Provider\File');
 \OC::$server->getSearch()->registerProvider('OCA\Search_Elastic\Search\ElasticSearchProvider', array('apps' => array('files')));
 
-// if we know the user add background job for deletion
+// add background job for deletion
 \OC::$server->getJobList()->add(new \OCA\Search_Elastic\Jobs\DeleteJob());
 
 // --- add hooks -----------------------------------------------
@@ -38,6 +39,13 @@ OCP\Util::connectHook(
 		'OCA\Search_Elastic\Hooks\Files',
 		OCA\Search_Elastic\Hooks\Files::handle_post_write);
 
+//connect to the filesystem for rename
+OCP\Util::connectHook(
+	OC\Files\Filesystem::CLASSNAME,
+	OC\Files\Filesystem::signal_post_rename,
+	'OCA\Search_Elastic\Hooks\Files',
+	OCA\Search_Elastic\Hooks\Files::handle_post_rename);
+
 //listen for file shares to update read permission in index
 OCP\Util::connectHook(
 	'OCP\Share',
@@ -45,9 +53,16 @@ OCP\Util::connectHook(
 	'OCA\Search_Elastic\Hooks\Files',
 	OCA\Search_Elastic\Hooks\Files::handle_share);
 
-//listen for file shares to update read permission in index
+//listen for file un shares to update read permission in index
 OCP\Util::connectHook(
 	'OCP\Share',
 	'post_unshare',
 	'OCA\Search_Elastic\Hooks\Files',
 	OCA\Search_Elastic\Hooks\Files::handle_share);
+
+//connect to the filesystem for delete
+OCP\Util::connectHook(
+	OC\Files\Filesystem::CLASSNAME,
+	OC\Files\Filesystem::signal_delete,
+	'OCA\Search_Elastic\Hooks\Files',
+	OCA\Search_Elastic\Hooks\Files::handle_delete);

@@ -69,7 +69,10 @@ When you recently edited a file, chances are that you still know where it reside
 - [ ] use file tab
   - [ ] show index status
   - [ ] remember index error message in db
-- [ ] check encryption compatability (master key mode should work)
+- [x] check encryption compatability
+  - [x] had to jump a few hoops to get master key working
+  - not compatible with user individual keys
+    - [ ] at least index metadata in this case (catch encryption exception and ignore content extraction)
 - [ ] statistics on admin settings page
 - [ ] statistics on personal settings page
 - [ ] cleanup code

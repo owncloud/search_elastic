@@ -12,57 +12,69 @@
  *
  */
 
-// --- always add js & css -----------------------------------------------
 
-OCP\Util::addScript('search_elastic', 'search');
-OCP\Util::addStyle('search_elastic', 'results');
+$mode = \OC::$server->getConfig()->getAppValue('search_elastic', 'mode', 'active');
+if ($mode === 'active') {
+	// --- add js & css -----------------------------------------------
 
-// --- register settings -----------------------------------------------
-\OCP\App::registerAdmin('search_elastic', 'settings/admin');
+	OCP\Util::addScript('search_elastic', 'search');
+	OCP\Util::addStyle('search_elastic', 'results');
 
-// --- add file search provider -----------------------------------------------
+	// --- register settings -----------------------------------------------
+	\OCP\App::registerAdmin('search_elastic', 'settings/admin');
 
-\OC::$server->getSearch()->removeProvider('OC\Search\Provider\File');
-\OC::$server->getSearch()->registerProvider('OCA\Search_Elastic\Search\ElasticSearchProvider', array('apps' => array('files')));
+	// --- add file search provider -----------------------------------------------
+	$group = \OC::$server->getConfig()->getAppValue('search_elastic', 'group', null);
+	if (empty($group) || (
+			\OC::$server->getUserSession()->getUser()
+			&& \OC::$server->getGroupManager()->isInGroup(
+				\OC::$server->getUserSession()->getUser()->getUID(), $group
+			)
+		)
+	) {
+		\OC::$server->getSearch()->removeProvider('OC\Search\Provider\File');
+		\OC::$server->getSearch()->registerProvider('OCA\Search_Elastic\Search\ElasticSearchProvider', array('apps' => array('files')));
+	}
+	// add background job for deletion
+	\OC::$server->getJobList()->add(new \OCA\Search_Elastic\Jobs\DeleteJob());
 
-// add background job for deletion
-\OC::$server->getJobList()->add(new \OCA\Search_Elastic\Jobs\DeleteJob());
+	// --- add hooks -----------------------------------------------
 
-// --- add hooks -----------------------------------------------
+	//post_create is ignored, as write will be triggered afterwards anyway
 
-//post_create is ignored, as write will be triggered afterwards anyway
+	//connect to the filesystem for auto updating
+	OCP\Util::connectHook(
+			OC\Files\Filesystem::CLASSNAME,
+			OC\Files\Filesystem::signal_post_write,
+			'OCA\Search_Elastic\Hooks\Files',
+			OCA\Search_Elastic\Hooks\Files::handle_post_write);
 
-//connect to the filesystem for auto updating
-OCP\Util::connectHook(
+	//connect to the filesystem for rename
+	OCP\Util::connectHook(
 		OC\Files\Filesystem::CLASSNAME,
-		OC\Files\Filesystem::signal_post_write,
+		OC\Files\Filesystem::signal_post_rename,
 		'OCA\Search_Elastic\Hooks\Files',
-		OCA\Search_Elastic\Hooks\Files::handle_post_write);
+		OCA\Search_Elastic\Hooks\Files::handle_post_rename);
 
-//connect to the filesystem for rename
-OCP\Util::connectHook(
-	OC\Files\Filesystem::CLASSNAME,
-	OC\Files\Filesystem::signal_post_rename,
-	'OCA\Search_Elastic\Hooks\Files',
-	OCA\Search_Elastic\Hooks\Files::handle_post_rename);
+	//listen for file shares to update read permission in index
+	OCP\Util::connectHook(
+		'OCP\Share',
+		'post_shared',
+		'OCA\Search_Elastic\Hooks\Files',
+		OCA\Search_Elastic\Hooks\Files::handle_share);
 
-//listen for file shares to update read permission in index
-OCP\Util::connectHook(
-	'OCP\Share',
-	'post_shared',
-	'OCA\Search_Elastic\Hooks\Files',
-	OCA\Search_Elastic\Hooks\Files::handle_share);
+	//listen for file un shares to update read permission in index
+	OCP\Util::connectHook(
+		'OCP\Share',
+		'post_unshare',
+		'OCA\Search_Elastic\Hooks\Files',
+		OCA\Search_Elastic\Hooks\Files::handle_share);
 
-//listen for file un shares to update read permission in index
-OCP\Util::connectHook(
-	'OCP\Share',
-	'post_unshare',
-	'OCA\Search_Elastic\Hooks\Files',
-	OCA\Search_Elastic\Hooks\Files::handle_share);
+	//connect to the filesystem for delete
+	OCP\Util::connectHook(
+		OC\Files\Filesystem::CLASSNAME,
+		OC\Files\Filesystem::signal_delete,
+		'OCA\Search_Elastic\Hooks\Files',
+		OCA\Search_Elastic\Hooks\Files::handle_delete);
 
-//connect to the filesystem for delete
-OCP\Util::connectHook(
-	OC\Files\Filesystem::CLASSNAME,
-	OC\Files\Filesystem::signal_delete,
-	'OCA\Search_Elastic\Hooks\Files',
-	OCA\Search_Elastic\Hooks\Files::handle_delete);
+}

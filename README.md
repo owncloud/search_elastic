@@ -20,6 +20,60 @@ code is [available on GitHub](https://github.com/owncloud/search_elastic)
 
 To trigger indexing create, upload or change a file. The next cron.php will index all unindexed files for the user who did the change.
 
+# App Modes
+
+After enabling the app it will be in *active mode*
+- file changes will be indexed in background jobs (System
+  cron is recommended, because otherwise a lot of jobs might queue up).
+- Search results will be based on elasticsearch.
+- The core search functionality based on database queries will no longer be used.
+This might cause a downtime for search when enabling the app in an
+already heavily used instance because it takes a while until all files
+have been indexed.
+
+To do an initial full indexing, without the app interfering it can
+be put in *passive mode* with 
+```
+# sudo -u www-data ./occ config:app:set search_elastic mode --value passive
+```
+- The administrator will be able to run occ commands
+- The app will not index any changes by itself.
+- Search results will still be based on the core search.
+Switching back to active mode can be done with
+```
+# sudo -u www-data ./occ config:app:set search_elastic mode --value active
+```
+
+It is possible to limit the users that will have access to full text
+search by setting a group eg. to 'admin' with
+```
+# sudo -u www-data php occ config:app:set search_elastic group --value admin
+```
+This will cause only members of tha admin group to do a full text search.
+If you want the index to be built subsequently in *active mode* use a 
+group that no user is a member of or that des not exist, eg. 'nobody'.
+If you leave the group empty every user will be able to use the app.
+This functionality also allows you to provide full text search as an 
+added value eg for the 'premium' users.
+
+# Commands
+
+To index any not yet indexed files run
+```
+# sudo -u www-data php occ search:index --all
+Indexing user admin
+Indexing user user1
+Indexing user user2
+...
+```
+
+This will not reindex already indexed files, so it can be run immediately
+after an initial full indexing and should take significantly less time.
+
+- [ ] Implement a force option
+- [ ] add console output for every file (currently using loglevel debug
+      will show what is going on)
+
 # Design decisions
 
 ## Asynchronous indexing & eventually searchable

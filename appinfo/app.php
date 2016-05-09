@@ -13,15 +13,15 @@
  */
 
 
+// --- register settings -----------------------------------------------
+\OCP\App::registerAdmin('search_elastic', 'settings/admin');
+
 $mode = \OC::$server->getConfig()->getAppValue('search_elastic', 'mode', 'active');
 if ($mode === 'active') {
 	// --- add js & css -----------------------------------------------
 
 	OCP\Util::addScript('search_elastic', 'search');
 	OCP\Util::addStyle('search_elastic', 'results');
-
-	// --- register settings -----------------------------------------------
-	\OCP\App::registerAdmin('search_elastic', 'settings/admin');
 
 	// --- add file search provider -----------------------------------------------
 	$group = \OC::$server->getConfig()->getAppValue('search_elastic', 'group', null);

@@ -134,8 +134,10 @@ class ElasticSearchProvider extends PagedProvider {
 
 		$es_bool = new BoolQuery();
 		$es_bool->addFilter($es_filter);
-		$es_bool->addShould(new Query\Wildcard('file.content', $query));
-		$es_bool->addShould(new Query\Wildcard('file.name', $query));
+		// wildcard queries are not analyzed, so ignore case. See http://stackoverflow.com/a/17280591
+		$loweredQuery = strtolower($query);
+		$es_bool->addShould(new Query\MatchPhrasePrefix('file.content', $loweredQuery));
+		$es_bool->addShould(new Query\MatchPhrasePrefix('file.name', $loweredQuery));
 		$es_bool->setMinimumNumberShouldMatch(1);
 
 		$es_query = new Query($es_bool);

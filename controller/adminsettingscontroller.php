@@ -118,10 +118,12 @@ class AdminSettingsController extends APIController {
 		}
 		$stats = $this->index->getStats()->getData();
 		$instanceId = \OC::$server->getSystemConfig()->getValue('instanceid', '');
+		$countIndexed = $this->mapper->countIndexed();
 		return new JSONResponse(['stats' => [
 			'_all'     => $stats['_all'],
 			'_shards'  => $stats['_shards'],
 			'oc_index' => $stats['indices']["oc-$instanceId"],
+			'countIndexed'  => $countIndexed,
 		]]);
 	}
 

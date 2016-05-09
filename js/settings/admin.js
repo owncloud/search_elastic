@@ -48,8 +48,9 @@
 			console.debug(stats);
 			var count = stats.oc_index.total.docs.count;
 			var size_in_bytes = stats.oc_index.total.store.size_in_bytes;
+			var countIndexed = stats.countIndexed;
 			$searchElasticSettings.find('.message').text(
-				n('search_elastic', '{count} document uses {size} bytes', '{count} documents using {size} bytes', count, {count: count, size: size_in_bytes})
+				n('search_elastic', '{countIndexed} nodes marked as indexed, {count} document in index uses {size} bytes', '{countIndexed} nodes marked as indexed, {count} documents in index using {size} bytes', count, {count: count, countIndexed:countIndexed, size: size_in_bytes})
 			);
 		}
 		function checkStatus() {

@@ -239,6 +239,16 @@ class StatusMapper extends Mapper {
 		return $files;
 	}
 
+	public function countIndexed() {
+		$sql = "
+			SELECT count(*) AS `count_indexed` FROM `*PREFIX*search_elastic_status` WHERE `status` = ?
+		";
+		$query = $this->db->prepareQuery($sql);
+		$result = $query->execute(array(Status::STATUS_INDEXED));
+		$row = $result->fetchRow();
+		return (int)$row['count_indexed'];
+	}
+
 
 	/**
 	 * @param $fileId

@@ -57,7 +57,7 @@ class StatusMapper extends Mapper {
 		}
 
 		$sql = "DELETE FROM `{$this->tableName}` WHERE `fileid` IN ($values)";
-		$stmt = $this->execute($sql, array($ids));
+		$stmt = $this->execute($sql, $ids);
 
 		return $stmt->rowCount();
 	}

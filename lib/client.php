@@ -302,11 +302,9 @@ class Client {
 		$this->logger->debug("$path content is:".json_encode($result),
 			['app' => 'search_elastic']
 		);
-
+		
+		$this->tempType->deleteById($file->getId());
 		return $result;
-
-		//TODO delete temp index
-		//$this->tempType->deleteDocument($doc);
 
 	}
 

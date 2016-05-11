@@ -13,6 +13,8 @@
  */
 
 use \OCA\Search_Elastic\Command\Index;
+use \OCA\Search_Elastic\Command\Reset;
 
 /** @var Symfony\Component\Console\Application $application */
 $application->add(new Index(\OC::$server->getUserManager()));
+$application->add(new Reset());

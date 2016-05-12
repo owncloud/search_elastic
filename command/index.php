@@ -41,19 +41,19 @@ class Index extends Command {
 			->addArgument(
 				'user_id',
 				InputArgument::OPTIONAL | InputArgument::IS_ARRAY,
-				'will index all files of the given user(s)'
+				'Will index all files of the given user(s)'
 			)
 			->addOption(
 				'quiet',
 				'q',
 				InputOption::VALUE_NONE,
-				'suppress output'
+				'Suppress output'
 			)
 			->addOption(
 				'all',
 				null,
 				InputOption::VALUE_NONE,
-				'will index all files of all known users'
+				'Will index all files of all known users'
 			);
 	}
 

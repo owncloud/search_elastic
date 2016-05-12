@@ -58,6 +58,7 @@ added value eg for the 'premium' users.
 
 # Commands
 
+## search:index
 To index any not yet indexed files run
 ```
 # sudo -u www-data php occ search:index --all
@@ -72,7 +73,13 @@ after an initial full indexing and should take significantly less time.
 
 - [ ] Implement a force option
 - [ ] add console output for every file (currently using loglevel debug
-      will show what is going on)
+      will log what is going on)
+
+## search:reset
+Reset an index. Can be "index" or "temp". Resetting "index" will also reset the "temp" index.
+```
+# sudo -u www-data php occ search:reset temp
+```
 
 # Design decisions
 
@@ -103,6 +110,7 @@ When you recently edited a file, chances are that you still know where it reside
 - [x] store the filename to allow faster search in shared files
   - index files and folders
 - [ ] store tags?
+- [ ] store image / video dimensions?
 - sharing a file immediately after it has been uploadad throws an exception
   - [x] fix exception / do not try to update a nonexisting document
   - [x] get all users and groups when initially indexing the document
@@ -114,8 +122,8 @@ When you recently edited a file, chances are that you still know where it reside
       CLI cron.php executes all jobs
       - [ ] limit number of files to 250? per job?
 - add occ commands
-  - [ ] index all files or only those of a specific user
-  - [ ] enable / disable automatic background scanning via cron
+  - [x] index all files or only those of a specific user
+  - [x] enable / disable automatic background scanning via cron
     - [ ] admin settings ui for this 
 - [x] check js for result link handling so clicking a result dos not do a full page load, there seems to be js in place that already does the file highlighting
      - the old filehandler logic does not seem to work, removed it, now using plain link
@@ -136,4 +144,4 @@ When you recently edited a file, chances are that you still know where it reside
 - [x] more debug logging
 - [x] wildcard search ... but there is a bug in core js code preventing wildcard search, see https://github.com/owncloud/core/pull/23531
   - well partly. * and ? are no longer supported. Instead we now mimic core, which is called a "match phrase prefix" type query: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html#query-dsl-match-query-phrase-prefix
-- [ ] to find out why a node cannot be found by its contents mark it as "NO CONTENT EXTRACTED". 
+- [ ] to find out why a node cannot be found by its contents mark it as "NO CONTENT EXTRACTED"? 

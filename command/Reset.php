@@ -33,7 +33,7 @@ class Reset extends Command {
 			->addArgument(
 				'index',
 				InputArgument::REQUIRED,
-				'reset an index. can be "index" or "temp". resetting "index" will also reset the "temp" index'
+				'Can be "index" or "temp". Resetting "index" will also reset the "temp" index'
 			);
 	}
 

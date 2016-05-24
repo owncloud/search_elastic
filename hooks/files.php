@@ -90,6 +90,15 @@ class Files {
 				);
 				$mapper->markNew($status);
 
+				if ($node->isShared()) {
+					$storage = $node->getStorage();
+					$userId = $storage->getOwner(); // is in the public API with 9
+					$logger->debug(
+						"Hook metadataChanged: resolved owner to $userId",
+						['app' => 'search_elastic']
+					);
+				}
+
 				//Add Background Job:
 				\OC::$server->getJobList()->add( 'OCA\Search_Elastic\Jobs\UpdateContent', ['userId' => $userId] );
 			} else {
@@ -155,6 +164,16 @@ class Files {
 					['app' => 'search_elastic']
 				);
 				$mapper->markMetadataChanged($status);
+
+				if ($node->isShared()) {
+					$storage = $node->getStorage();
+					$userId = $storage->getOwner(); // is in the public API with 9
+					$logger->debug(
+						"Hook metadataChanged: resolved owner to $userId",
+						['app' => 'search_elastic']
+					);
+				}
+
 				if ($node instanceof Folder) {
 					//Add Background Job and tell it to also update children of a certain folder:
 					\OC::$server->getJobList()->add(

@@ -20,7 +20,7 @@ code is [available on GitHub](https://github.com/owncloud/search_elastic)
 
 To trigger indexing create, upload or change a file. The next cron.php will index all unindexed files for the user who did the change.
 
-# App Modes
+# App Modes and Configuration
 
 After enabling the app it will be in *active mode*
 - file changes will be indexed in background jobs (System
@@ -30,6 +30,8 @@ After enabling the app it will be in *active mode*
 This might cause a downtime for search when enabling the app in an
 already heavily used instance because it takes a while until all files
 have been indexed.
+
+## App mode
 
 To do an initial full indexing, without the app interfering it can
 be put in *passive mode* with 
@@ -44,17 +46,32 @@ Switching back to active mode can be done with
 # sudo -u www-data ./occ config:app:set search_elastic mode --value active
 ```
 
+## Limit search_elastic access to a group
+
 It is possible to limit the users that will have access to full text
 search by setting a group eg. to 'admin' with
 ```
 # sudo -u www-data php occ config:app:set search_elastic group --value admin
 ```
-This will cause only members of tha admin group to do a full text search.
+This will cause only members of the admin group to do a full text search.
 If you want the index to be built subsequently in *active mode* use a 
 group that no user is a member of or that des not exist, eg. 'nobody'.
 If you leave the group empty every user will be able to use the app.
 This functionality also allows you to provide full text search as an 
 added value eg for the 'premium' users.
+
+## Limit a group to only search in metadata
+
+If you only want to use the search in shared filenames you can disable
+full text search for a specific group by setting `group.nocontent` to the
+group whose users should only receive results based on filenames (not the
+full path), eg. users in group 'nofulltext':
+```
+# sudo -u www-data php occ config:app:set search_elastic group.nocontent --value nofulltext
+```
+This allows a scalable search in shared files without clouding the
+results with content based hits. 
+
 
 # Commands
 

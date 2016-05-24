@@ -128,15 +128,23 @@ class ElasticSearchProvider extends PagedProvider {
 		$es_filter = new BoolQuery();
 		$es_filter->addShould(new Match('file.users', $this->user->getUID()));
 
+		$noContentGroup = \OC::$server->getConfig()->getAppValue('search_elastic', 'group.nocontent', null);
+		$searchContent = true;
 		foreach ($this->groups as $group) {
-			$es_filter->addShould(new Match('file.groups', $group->getGID()));
+			$groupId = $group->getGID();
+			$es_filter->addShould(new Match('file.groups', $groupId));
+			if ($noContentGroup === $groupId) {
+				$searchContent = false;
+			}
 		}
 
 		$es_bool = new BoolQuery();
 		$es_bool->addFilter($es_filter);
 		// wildcard queries are not analyzed, so ignore case. See http://stackoverflow.com/a/17280591
 		$loweredQuery = strtolower($query);
-		$es_bool->addShould(new Query\MatchPhrasePrefix('file.content', $loweredQuery));
+		if ($searchContent) {
+			$es_bool->addShould(new Query\MatchPhrasePrefix('file.content', $loweredQuery));
+		}
 		$es_bool->addShould(new Query\MatchPhrasePrefix('file.name', $loweredQuery));
 		$es_bool->setMinimumNumberShouldMatch(1);
 

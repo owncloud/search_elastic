@@ -60,6 +60,20 @@ If you leave the group empty every user will be able to use the app.
 This functionality also allows you to provide full text search as an 
 added value eg for the 'premium' users.
 
+## Only index metadata
+
+If you only want to use search_elastic as a more scalable search on 
+filenames you can disable content indexing by setting `nocontent` to 
+`true` (default is `false`):
+```
+# sudo -u www-data php occ config:app:set search_elastic nocontent --value true
+```
+
+Note that you will have to reindex all files if you change this back to
+`false`. Setting it to `true` does not require reindexing. Nevertheless,
+go with limiting full text search to certain groups, by setting 
+`group.nocontent` which is more flexible anyway.
+
 ## Limit a group to only search in metadata
 
 If you only want to use the search in shared filenames you can disable

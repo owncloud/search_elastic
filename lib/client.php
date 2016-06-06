@@ -175,8 +175,15 @@ class Client {
 		$size = $node->getSize();
 		$maxSize = $this->config->getAppValue('search_elastic', 'max_size', 10485760);
 
-		// only extract content for files that have content
-		if ( $node instanceof Folder ) {
+		// there are various reasons for not indexing the content
+		$noContent = $this->config->getAppValue('search_elastic', 'nocontent', false);
+		if ( $noContent === true || $noContent === 1
+			|| $noContent === 'true' || $noContent === '1' || $noContent === 'on' ) {
+			$this->logger->debug("indexNode: folder, skipping content extraction",
+				['app' => 'search_elastic']
+			);
+			$extractContent = false;
+		} else if ( $node instanceof Folder ) {
 			$this->logger->debug("indexNode: folder, skipping content extraction",
 				['app' => 'search_elastic']
 			);

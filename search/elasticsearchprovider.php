@@ -129,7 +129,8 @@ class ElasticSearchProvider extends PagedProvider {
 		$es_filter->addShould(new Match('file.users', $this->user->getUID()));
 
 		$noContent = \OC::$server->getConfig()->getAppValue('search_elastic', 'nocontent', false);
-		$noContentGroup = \OC::$server->getConfig()->getAppValue('search_elastic', 'group.nocontent', null);
+		$noContentGroupCfg = \OC::$server->getConfig()->getAppValue('search_elastic', 'group.nocontent', '');
+		$noContentGroups = str_getcsv($noContentGroupCfg,',','"',"\\");
 		if ( $noContent === true || $noContent === 1
 			|| $noContent === 'true' || $noContent === '1' || $noContent === 'on' ) {
 			$searchContent = false;
@@ -139,7 +140,7 @@ class ElasticSearchProvider extends PagedProvider {
 		foreach ($this->groups as $group) {
 			$groupId = $group->getGID();
 			$es_filter->addShould(new Match('file.groups', $groupId));
-			if ($noContentGroup === $groupId) {
+			if (in_array($groupId, $noContentGroups)) {
 				$searchContent = false;
 			}
 		}

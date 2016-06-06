@@ -83,6 +83,10 @@ full path), eg. users in group 'nofulltext':
 ```
 # sudo -u www-data php occ config:app:set search_elastic group.nocontent --value nofulltext
 ```
+You can also configure multiple groups by separating them with comma:
+```
+# sudo -u www-data php occ config:app:set search_elastic group.nocontent --value nofulltext,anothergroup,"group with blanks"
+```
 This allows a scalable search in shared files without clouding the
 results with content based hits. 
 

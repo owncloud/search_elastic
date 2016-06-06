@@ -4,7 +4,12 @@
 			search.setRenderer('search_elastic', OCA.Search.ElasticSearch.renderFileResult);
 		},
 		renderFileResult: function($row, result) {
-			var $fileResultRow = OCA.Search.files.renderFileResult($row, result);
+			var $fileResultRow;
+			if (result.mime_type && result.mime_type === 'httpd/unix-directory') {
+				$fileResultRow = OCA.Search.files.renderFolderResult($row, result);
+			} else {
+				$fileResultRow = OCA.Search.files.renderFileResult($row, result);
+			}
 			if (!$fileResultRow && result.name.toLowerCase().indexOf(OC.Search.getLastQuery()) === -1) {
 				/*render preview icon, show path beneath filename,
 				 show size and last modified date on the right */

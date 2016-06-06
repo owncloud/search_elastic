@@ -54,14 +54,22 @@ class ElasticSearchResult extends FileResult {
 		$this->name = basename($this->path);
 		$this->size = (int)$node->getSize();
 		$this->score = $result->getScore();
-		$this->link = \OC::$server->getURLGenerator()->linkTo(
-			'files',
-			'index.php',
-			array('dir' => dirname($this->path), 'scrollto' => $this->name)
-		);
+		$this->mime_type = $node->getMimetype();
+		if ($this->mime_type === 'httpd/unix-directory') {
+			$this->link = \OC::$server->getURLGenerator()->linkTo(
+				'files',
+				'index.php',
+				array('dir' => $this->path)
+			);
+		} else {
+			$this->link = \OC::$server->getURLGenerator()->linkTo(
+				'files',
+				'index.php',
+				array('dir' => dirname($this->path), 'scrollto' => $this->name)
+			);
+		}
 		$this->permissions = $node->getPermissions();
 		$this->modified = (int)$data['file']['mtime'];
-		$this->mime_type = $node->getMimetype();
 		if (isset($highlights['file.content'])) {
 			$this->highlights = $highlights['file.content'];
 		} else {

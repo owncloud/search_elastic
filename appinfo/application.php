@@ -28,11 +28,20 @@ class Application extends App {
 	 */
 	public function parseServers($servers) {
 		$serverArr = explode(',', $servers);
-		$results = array();
-		foreach ($serverArr as $server) {
-			//FIXME Undefined offset: 1 at \/var\/www\/owncloud\/apps-repos\/search_elastic\/appinfo\/application.php#37
-			list($host, $port) = explode(':', $server, 2);
-			$results[] = array('host' => $host, 'port' => $port);
+		$results = [];
+		foreach ($serverArr as $serverPart) {
+			$hostAndPort = explode(':', trim($serverPart), 2);
+			$server = [
+				'host' => 'localhost',
+				'port' => 9200
+			];
+			if (!empty($hostAndPort[0])) {
+				$server['host'] = $hostAndPort[0];
+			}
+			if (!empty($hostAndPort[1])) {
+				$server['port'] = (int)$hostAndPort[1];
+			}
+			$results[] = $server;
 		}
 		if (count($results) === 1) {
 			return $results[0];

@@ -168,8 +168,7 @@ class Files {
 				$mapper->markMetadataChanged($status);
 
 				if ($node->isShared()) {
-					$storage = $node->getStorage();
-					$userId = $storage->getOwner(); // is in the public API with 9
+					$userId = $node->getOwner()->getUID();
 					$logger->debug(
 						"Hook metadataChanged: resolved owner to $userId",
 						['app' => 'search_elastic']

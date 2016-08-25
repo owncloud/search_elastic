@@ -135,6 +135,8 @@ class Files {
 			$home = \OC::$server->getUserFolder($userId);
 			if (isset($param['path'])) {
 				$node = $home->get($param['path']);
+			} else if (isset($param['newpath'])) {
+				$node = $home->get($param['newpath']);
 			} else if (isset($param['fileSource'])) {
 				$nodes = $home->getById($param['fileSource']);
 				if (isset($nodes[0])) {

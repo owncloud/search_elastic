@@ -9,7 +9,7 @@ The search_elastic app adds a full text search for files stored in ownCloud. It 
  apache tika, eg. plain text, .docx, .xlsx, .pptx, .odt, .ods and .pdf files. The source
 code is [available on GitHub](https://github.com/owncloud/search_elastic)
 
-## Installation ef elasticsearch
+## Installation of elasticsearch
 - Do not use 2.2 / 2.3, The bugfix for indexing docx files needs to be released: https://github.com/elastic/elasticsearch/pull/17059 
 - Downloud elasticsearch 2.1.2 from https://www.elastic.co/downloads/past-releases/elasticsearch-2-1-2
 - after installation install attachments mapper plugin: `bin/plugin install elasticsearch/elasticsearch-mapper-attachments/3.1.2`

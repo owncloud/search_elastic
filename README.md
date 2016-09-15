@@ -182,3 +182,4 @@ When you recently edited a file, chances are that you still know where it reside
 - [x] wildcard search ... but there is a bug in core js code preventing wildcard search, see https://github.com/owncloud/core/pull/23531
   - well partly. * and ? are no longer supported. Instead we now mimic core, which is called a "match phrase prefix" type query: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html#query-dsl-match-query-phrase-prefix
 - [ ] to find out why a node cannot be found by its contents mark it as "NO CONTENT EXTRACTED"? 
+- [ ] how should we handle files in userhome/files_versions/ ... currently a 'vanished' message will be logged ... annoying 

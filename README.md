@@ -13,7 +13,7 @@ code is [available on GitHub](https://github.com/owncloud/search_elastic)
 > Do not use 2.2 / 2.3, The bugfix for indexing docx files needs to be released: https://github.com/elastic/elasticsearch/pull/17059 
 
 1. Download elasticsearch 2.1.2 from https://www.elastic.co/downloads/past-releases/elasticsearch-2-1-2
-2. After installation go into the elasticsearch home and install attachments mapper plugin: `bin/plugin install elasticsearch/elasticsearch-mapper-attachments/3.1.2`
+2. After installation go into the elasticsearch home (/usr/share/elasticsearch/ on Ubuntu) and install attachments mapper plugin: `bin/plugin install elasticsearch/elasticsearch-mapper-attachments/3.1.2`
 3. (Re)start elasticsearch
 
 ## Installation of search_elastic

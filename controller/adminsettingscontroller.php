@@ -24,7 +24,7 @@ use OCP\IConfig;
 use OCP\IRequest;
 use OCP\AppFramework\ApiController;
 
-class AdminSettingsController extends APIController {
+class AdminSettingsController extends ApiController {
 
 	const SERVERS = 'servers';
 	const SCAN_EXTERNAL_STORAGE = 'scanExternalStorages';

@@ -56,10 +56,12 @@ class UpdateMetadata extends QueuedJob {
 
 						do {
 							$child = array_pop($children);
-							$status = $statusMapper->getOrCreateFromFileId($child->getId());
-							$statusMapper->markMetadataChanged($status);
-							if ($child instanceof Folder) {
-								$children = array_merge($children, $child->getDirectoryListing());
+							if ($child !== null) {
+								$status = $statusMapper->getOrCreateFromFileId($child->getId());
+								$statusMapper->markMetadataChanged($status);
+								if ($child instanceof Folder) {
+									$children = array_merge($children, $child->getDirectoryListing());
+								}
 							}
 						} while (!empty($children));
 

@@ -16,6 +16,7 @@ namespace OCA\Search_Elastic\Command;
 
 use \OC\User\Manager;
 use OCA\Search_Elastic\Jobs\UpdateContent;
+use OCP\IUser;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -66,29 +67,33 @@ class Index extends Command {
 		$job->run(['userId' => $user]);
 	}
 	public function execute(InputInterface $input, OutputInterface $output) {
+		$quiet = $input->getOption('quiet');
 		if ($input->getOption('all')) {
-			$users = $this->userManager->search('');
+			$this->userManager->callForSeenUsers(function(IUser $user) use ($p, $quiet, $output) {
+				// TODO when scanning all just do a single query for all users, not per user queries?
+				$this->indexFiles($user, $quiet, $output);
+			});
 		} else {
 			$users = $input->getArgument('user_id');
-		}
-		$quiet = $input->getOption('quiet');
-
-
-		if (count($users) === 0) {
-			$output->writeln('<error>Please specify the user id to index, "--all" to index for all users</error>');
-			return;
-		}
-
-		foreach ($users as $user) {
-			if (is_object($user)) {
-				$user = $user->getUID();
+			if (count($users) === 0) {
+				$output->writeln('<error>Please specify the user id to index, "--all" to index for all users</error>');
+				return;
 			}
-			if ($this->userManager->userExists($user)) {
-				$this->indexFiles($user, $quiet, $output);
-			} else {
-				$output->writeln("<error>Unknown user $user</error>");
+			foreach ($users as $user) {
+				if (is_object($user)) {
+					$user = $user->getUID();
+				}
+				if ($this->userManager->userExists($user)) {
+					$this->indexFiles($user, $quiet, $output);
+				} else {
+					$output->writeln("<error>Unknown user $user</error>");
+				}
 			}
 		}
+
+
+
+
 	}
 
 }

@@ -137,7 +137,7 @@ When you recently edited a file, chances are that you still know where it reside
 * [Jörn Friedrich Dreyer](https://github.com/butonic)
 
 # Todo
-
+- [ ] add dedicated occ command to check for changes every minute?
 - [x] update elastica lib
 - [x] restore compatability with oc8.2
 - [x] restore compatability with elasticsearch (requires new indexes)

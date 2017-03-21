@@ -18,7 +18,7 @@ code is [available on GitHub](https://github.com/owncloud/search_elastic)
 ### Elasticsearch 2.4.4/2.3.5
 
 1. Download elasticsearch 2.4.4/2.3.5 from https://www.elastic.co/downloads/past-releases/elasticsearch-2-4-4 / https://www.elastic.co/downloads/past-releases/elasticsearch-2-3-5
-2. After installation go into the elasticsearch home (/usr/share/elasticsearch/ on Ubuntu) and install attachments mapper plugin: `bin/plugin install mapper-attachments`
+2. After installation go into the elasticsearch home and install attachments mapper plugin: `bin/plugin install mapper-attachments`
 3. (Re)start elasticsearch
 
 ```

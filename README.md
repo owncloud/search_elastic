@@ -10,7 +10,28 @@ The search_elastic app adds a full text search for files stored in ownCloud. It 
 code is [available on GitHub](https://github.com/owncloud/search_elastic)
 
 ## Installation of elasticsearch
-> Do not use 2.2 / 2.3, The bugfix for indexing docx files needs to be released: https://github.com/elastic/elasticsearch/pull/17059 
+
+### Elasticsearch 5.x
+
+> Elasticsearch 5 is not yet supported. See Todo section below for what needs to be done
+
+### Elasticsearch 2.4.4/2.3.5
+
+1. Download elasticsearch 2.4.4/2.3.5 from https://www.elastic.co/downloads/past-releases/elasticsearch-2-4-4 / https://www.elastic.co/downloads/past-releases/elasticsearch-2-3-5
+2. After installation go into the elasticsearch home (/usr/share/elasticsearch/ on Ubuntu) and install attachments mapper plugin: `bin/plugin install mapper-attachments`
+3. (Re)start elasticsearch
+
+```
+cd /usr/share/elasticsearch/
+bin/plugin install mapper-attachments
+service elasticsearch restart
+```
+
+### Elasticsearch 2.2.x
+
+> Do not use 2.2. The bugfix for indexing docx files (https://github.com/elastic/elasticsearch/pull/17059) has only been merged since 2.3.0
+
+### Elasticsearch 2.1.2
 
 1. Download elasticsearch 2.1.2 from https://www.elastic.co/downloads/past-releases/elasticsearch-2-1-2
 2. After installation go into the elasticsearch home and install attachments mapper plugin: `bin/plugin install elasticsearch/elasticsearch-mapper-attachments/3.1.2`

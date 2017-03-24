@@ -1,6 +1,10 @@
+<?php
+script('search_elastic', 'settings/admin');
+style('search_elastic', 'settings/admin');
+?>
 <div class="section" id="searchElasticSettings" >
 
-	<h2><?php p($l->t('Elasticsearch'));?></h2>
+	<h2 class="appname"><?php p($l->t('Elasticsearch'));?></h2>
 	<div>
 		<span class="icon"></span>
 

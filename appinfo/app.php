@@ -12,10 +12,6 @@
  *
  */
 
-
-// --- register settings -----------------------------------------------
-\OCP\App::registerAdmin('search_elastic', 'settings/admin');
-
 $mode = \OC::$server->getConfig()->getAppValue('search_elastic', 'mode', 'active');
 if ($mode === 'active') {
 	// --- add js & css -----------------------------------------------

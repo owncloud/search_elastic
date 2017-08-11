@@ -2,12 +2,13 @@
 <info>
 	<id>search_elastic</id>
 	<name>Elasticsearch</name>
-	<version>0.2.4</version>
+	<version>0.2.5</version>
 	<licence>Commercial</licence>
 	<author>ownCloud Inc.</author>
 	<dependencies>
-		<owncloud min-version="10.0" max-version="10.0" />
+		<owncloud min-version="10.0.3" max-version="10.0" />
 	</dependencies>
+	<use-migrations>true</use-migrations>
 	<types>
 		<filesystem/>
 	</types>

@@ -177,25 +177,25 @@ class AdminSettingsController extends ApiController {
 		$mapping = new Type\Mapping($type, array(
 			// indexed for all files and folders
 			'size'           => [ 'type' => 'long',   'store' => true ],
-			'name'           => [ 'type' => 'string', 'store' => true ],
+			'name'           => [ 'type' => 'text', 'store' => true ],
 			'mtime'          => [ 'type' => 'long',   'store' => true ],
-			'users'          => [ 'type' => 'string', 'store' => true ],
-			'groups'         => [ 'type' => 'string', 'store' => true ],
+			'users'          => [ 'type' => 'text', 'store' => true ],
+			'groups'         => [ 'type' => 'text', 'store' => true ],
 			// only indexed when content was extracted
 			'content' => [
-				'type' => 'string', 'store' => true,
+				'type' => 'text', 'store' => true,
 				'term_vector' => 'with_positions_offsets',
 			],
 			'title' => [
-				'type' => 'string', 'store' => true,
+				'type' => 'text', 'store' => true,
 				'term_vector' => 'with_positions_offsets',
 			],
-			'date'           => [ 'type' => 'string', 'store' => true ],
-			'author'         => [ 'type' => 'string', 'store' => true ],
-			'keywords'       => [ 'type' => 'string', 'store' => true ],
-			'content_type'   => [ 'type' => 'string', 'store' => true ],
+			'date'           => [ 'type' => 'text', 'store' => true ],
+			'author'         => [ 'type' => 'text', 'store' => true ],
+			'keywords'       => [ 'type' => 'text', 'store' => true ],
+			'content_type'   => [ 'type' => 'text', 'store' => true ],
 			'content_length' => [ 'type' => 'long',   'store' => true ],
-			'language'       => [ 'type' => 'string', 'store' => true ],
+			'language'       => [ 'type' => 'text', 'store' => true ],
 		));
 		$type->setMapping($mapping);
 	}
@@ -213,7 +213,7 @@ class AdminSettingsController extends ApiController {
 			'file' => array(
 				'type' => 'attachment',
 				'fields' => [
-					'content'        => [ 'store' => true, 'type' => 'string' ],
+					'content'        => [ 'store' => true, 'type' => 'text' ],
 					'title'          => [ 'store' => true ],
 					'date'           => [ 'store' => true ],
 					'author'         => [ 'store' => true ],

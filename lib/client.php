@@ -276,7 +276,7 @@ class Client {
 		// TODO use exists check
 
 		// now get the file content
-		$response = $this->tempType->request(urlencode($file->getId()).'?fields=file,file.content,file.title,file.date,file.author,file.keywords,file.content_type,file.content_length,file.language', Request::GET, array(), array());
+		$response = $this->tempType->request(urlencode($file->getId()).'?stored_fields=file,file.content,file.title,file.date,file.author,file.keywords,file.content_type,file.content_length,file.language', Request::GET, array(), array());
 
 		$data = $response->getData();
 		$result = array();

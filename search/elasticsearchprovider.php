@@ -153,7 +153,7 @@ class ElasticSearchProvider extends PagedProvider {
 			$es_bool->addShould(new Query\MatchPhrasePrefix('file.content', $loweredQuery));
 		}
 		$es_bool->addShould(new Query\MatchPhrasePrefix('file.name', $loweredQuery));
-		$es_bool->setMinimumNumberShouldMatch(1);
+		$es_bool->setMinimumShouldMatch(1);
 
 		$es_query = new Query($es_bool);
 		$es_query->setHighlight(array(

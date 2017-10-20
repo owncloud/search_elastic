@@ -12,6 +12,11 @@
  *
  */
 
+
+if ((@include_once __DIR__ . '/../vendor/autoload.php') === false) {
+	throw new Exception('Cannot include autoload. Did you run install dependencies using composer?');
+}
+
 $mode = \OC::$server->getConfig()->getAppValue('search_elastic', 'mode', 'active');
 if ($mode === 'active') {
 	// --- add js & css -----------------------------------------------

@@ -150,7 +150,7 @@ class Client {
 			}
 		}
 
-		$this->index->optimize();
+		$this->index->forcemerge();
 	}
 
 	/**

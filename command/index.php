@@ -65,6 +65,8 @@ class Index extends Command {
 		}
 		$job->run(['userId' => $user]);
 	}
+
+
 	public function execute(InputInterface $input, OutputInterface $output) {
 		if ($input->getOption('all')) {
 			$users = $this->userManager->search('');

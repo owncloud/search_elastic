@@ -55,9 +55,6 @@ class Application extends App {
 
 		$container = $this->getContainer();
 
-		//add 3rdparty composer autoloader
-		require_once __DIR__ . '/../3rdparty/autoload.php';
-
 		/**
 		 * Client
 		 */

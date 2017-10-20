@@ -10,12 +10,14 @@
 		}
 	],
 	"config": {
-		"vendor-dir": "3rdparty"
+		"platform": {
+			"php": "5.6"
+		}
 	},
 	"support": {
 		"issues": "https://github.com/owncloud/elasticsearch/issues"
 	},
 	"require": {
-		"ruflin/Elastica": "dev-master"
+		"ruflin/Elastica": "^5.3.0"
 	}
 }

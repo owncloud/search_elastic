@@ -65,12 +65,19 @@ class SearchElasticService {
 	private $config;
 
 	/**
+	 * @var \Elastica\Client
+	 */
+	private $client;
+
+
+	/**
+	 * SearchElasticService constructor.
+	 *
 	 * @param IServerContainer $server
 	 * @param Index $index
-	 * @param Index $tempIndex used only to extract content
 	 * @param StatusMapper $mapper
 	 * @param ILogger $logger
-	 * @param IConfig $config
+	 * @param SearchElasticConfigService $config
 	 */
 	public function __construct(
 		IServerContainer $server,
@@ -84,6 +91,7 @@ class SearchElasticService {
 		$this->logger = $logger;
 		$this->config = $config;
 		$this->index = $index;
+		$this->client = $this->index->getClient();
 
 		$this->type = new Type($this->index, 'file');
 
@@ -93,12 +101,58 @@ class SearchElasticService {
 	 * sets up index, processor and clears mapping
 	 */
 	public function setup() {
-		$this->setUpIndex();
-		$this->setUpProcessor();
+		$this->setpIndex();
+		$this->setupProcessor();
 		$this->mapper->clear();
 	}
 
-	private function setUpProcessor() {
+	/**
+	 * @return bool
+	 */
+	public function isSetup() {
+		return $this->isIndexSetup()
+			&& $this->isProcessorSetup();
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isIndexSetup() {
+		return $this->index->exists();
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isProcessorSetup() {
+		$result = $this->client->request("_ingest/pipeline/".self::PROCESSOR_NAME, Request::GET);
+		if ($result->getStatus() === 404) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getStats() {
+		$stats = $this->index->getStats()->getData();
+		$indexName = $this->index->getName();
+		$countIndexed = $this->mapper->countIndexed();
+		return [
+			'_all'     => $stats['_all'],
+			'_shards'  => $stats['_shards'],
+			'oc_index' => $stats['indices'][$indexName],
+			'countIndexed'  => $countIndexed,
+		];
+	}
+
+	/**
+	 * setup the processor pipeline for ingest-attachment processing
+	 * Note: creating the array manually is necessary, since Elastica < 6
+	 * does not have pipeline/ingest support
+	 */
+	private function setupProcessor() {
 		$processors = [
 			[
 				'attachment' => [
@@ -164,7 +218,7 @@ class SearchElasticService {
 	/**
 	 * WARNING: will delete the index if it exists
 	 */
-	private function setUpIndex() {
+	private function setpIndex() {
 		// the number of shards and replicas should be adjusted as necessary outside of owncloud
 		$this->index->create(array('index' => array('number_of_shards' => 1, 'number_of_replicas' => 0),), true);
 

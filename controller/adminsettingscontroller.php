@@ -97,22 +97,16 @@ class AdminSettingsController extends ApiController {
 	 */
 	public function checkStatus() {
 		try {
-			if (!$this->index->exists()) {
+			if (!$this->searchElasticService->isSetup()) {
 				return new JSONResponse(array('message' => 'Index not set up'), Http::STATUS_EXPECTATION_FAILED);
 			}
 		} catch (HttpException $ex) {
 			$servers = $this->config->getServers();
 			return new JSONResponse(array('message' => 'Elasticsearch Server unreachable at '.$servers), Http::STATUS_SERVICE_UNAVAILABLE);
 		}
-		$stats = $this->index->getStats()->getData();
-		$instanceId = \OC::$server->getSystemConfig()->getValue('instanceid', '');
-		$countIndexed = $this->mapper->countIndexed();
-		return new JSONResponse(['stats' => [
-			'_all'     => $stats['_all'],
-			'_shards'  => $stats['_shards'],
-			'oc_index' => $stats['indices']["oc-$instanceId"],
-			'countIndexed'  => $countIndexed,
-		]]);
+
+		$stats = $this->searchElasticService->getStats();
+		return new JSONResponse(['stats' => $stats]);
 	}
 
 	/**

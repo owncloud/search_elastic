@@ -32,14 +32,12 @@ class AdminSettingsController extends ApiController {
 	 * @var SearchElasticConfigService
 	 */
 	var $config;
+
 	/**
 	 * @var Index
 	 */
 	var $index;
-	/**
-	 * @var Index
-	 */
-	var $contentExtractionIndex;
+
 	/**
 	 * @var StatusMapper
 	 */
@@ -50,7 +48,6 @@ class AdminSettingsController extends ApiController {
 	 * @param IRequest $request
 	 * @param SearchElasticConfigService $config
 	 * @param Index $index
-	 * @param Index $contentExtractionIndex
 	 * @param StatusMapper $mapper
 	 */
 	public function __construct(
@@ -58,13 +55,11 @@ class AdminSettingsController extends ApiController {
 		IRequest $request,
 		SearchElasticConfigService $config,
 		Index $index,
-		Index $contentExtractionIndex,
 		StatusMapper $mapper
 	) {
 		parent::__construct($appName, $request);
 		$this->config = $config;
 		$this->index = $index;
-		$this->contentExtractionIndex = $contentExtractionIndex;
 		$this->mapper = $mapper;
 	}
 
@@ -111,15 +106,6 @@ class AdminSettingsController extends ApiController {
 		try {
 			if (!$this->index->exists()) {
 				return new JSONResponse(array('message' => 'Index not set up'), Http::STATUS_EXPECTATION_FAILED);
-			}
-			if (!$this->contentExtractionIndex->exists()) {
-				return new JSONResponse(array('message' => 'Content extraction index not set up'), Http::STATUS_EXPECTATION_FAILED);
-			}
-			$mapping = $this->contentExtractionIndex->getMapping();
-			if (!isset($mapping['file']['properties']['file']['type']) ||
-				$mapping['file']['properties']['file']['type'] !== 'attachment'
-			) {
-				return new JSONResponse(array('message' => 'Content extraction index requires attachment type. Did you install the elasticsearch mapper attachments plugin?'), Http::STATUS_EXPECTATION_FAILED);
 			}
 		} catch (HttpException $ex) {
 			$servers = $this->config->getServers();
@@ -269,35 +255,6 @@ class AdminSettingsController extends ApiController {
 			'content_length' => [ 'type' => 'long',   'store' => true ],
 			'language'       => [ 'type' => 'text', 'store' => true ],
 		));
-		$type->setMapping($mapping);
-	}
-
-	/**
-	 * WARNING: will delete the index if it exists
-	 */
-	function setUpContentExtractionIndex() {
-		// the number of shards and replicas should be adjusted as necessary outside of owncloud
-		$this->contentExtractionIndex->create(array('index' => array('number_of_shards' => 1, 'number_of_replicas' => 0),), true);
-
-		$type = new Type($this->contentExtractionIndex, 'file');
-
-		$mapping = new Type\Mapping($type, array(
-			'file' => array(
-				'type' => 'attachment',
-				'fields' => [
-					'content'        => [ 'store' => true, 'type' => 'text' ],
-					'title'          => [ 'store' => true ],
-					'date'           => [ 'store' => true ],
-					'author'         => [ 'store' => true ],
-					'keywords'       => [ 'store' => true ],
-					'content_type'   => [ 'store' => true ],
-					'content_length' => [ 'store' => true ],
-					'language'       => [ 'store' => true ],
-				],
-			),
-		));
-		// do not store file in es
-		$mapping->setParam('_source', array('excludes' => array('file.content')));
 		$type->setMapping($mapping);
 	}
 }

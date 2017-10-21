@@ -29,31 +29,15 @@ class Reset extends Command {
 	protected function configure() {
 		$this
 			->setName('search:reset')
-			->setDescription('Reset an index')
-			->addArgument(
-				'index',
-				InputArgument::REQUIRED,
-				'Can be "index" or "temp". Resetting "index" will also reset the "temp" index'
-			);
+			->setDescription('Reset the index');
 	}
 
 	public function execute(InputInterface $input, OutputInterface $output) {
-		$index = $input->getArgument('index');
 		$app = new Application();
 		$container = $app->getContainer();
 		/** @var AdminSettingsController $asc */
 		$asc = $container->query('AdminSettingsController');
-		switch ($index) {
-			case 'index':
-				$asc->setup();
-				break;
-			case 'temp':
-				$asc->setUpContentExtractionIndex();
-				break;
-			default:
-				$output->writeln("<error>Unknown index $index</error>");
-		}
-
+		$asc->setup();
 	}
 
 }

@@ -101,8 +101,7 @@ class Application extends App {
 				$c->query('AppName'),
 				$c->query('Request'),
 				$c->query('SearchElasticConfigService'),
-				$c->query('Index'),
-				$c->query('StatusMapper')
+				$c->query('SearchElasticService')
 			);
 		});
 	}

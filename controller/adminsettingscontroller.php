@@ -21,6 +21,7 @@ use Elastica\Type;
 use OC\AppFramework\Http;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\SearchElasticConfigService;
+use OCA\Search_Elastic\SearchElasticService;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IConfig;
 use OCP\IRequest;
@@ -31,36 +32,28 @@ class AdminSettingsController extends ApiController {
 	/**
 	 * @var SearchElasticConfigService
 	 */
-	var $config;
+	private $config;
 
 	/**
-	 * @var Index
+	 * @var SearchElasticService
 	 */
-	var $index;
-
-	/**
-	 * @var StatusMapper
-	 */
-	var $mapper;
+	private $SearchElasticService;
 
 	/**
 	 * @param string $appName
 	 * @param IRequest $request
 	 * @param SearchElasticConfigService $config
-	 * @param Index $index
-	 * @param StatusMapper $mapper
+	 * @param SearchElasticService $searchElasticService
 	 */
 	public function __construct(
 		$appName,
 		IRequest $request,
 		SearchElasticConfigService $config,
-		Index $index,
-		StatusMapper $mapper
+		SearchElasticService $searchElasticService
 	) {
 		parent::__construct($appName, $request);
 		$this->config = $config;
-		$this->index = $index;
-		$this->mapper = $mapper;
+		$this->SearchElasticService = $searchElasticService;
 	}
 
 	/**
@@ -127,9 +120,7 @@ class AdminSettingsController extends ApiController {
 	 */
 	public function setup() {
 		try {
-			$this->setUpIndex();
-			$this->setUpProcessor();
-			$this->mapper->clear();
+			$this->SearchElasticService->setup();
 		} catch (\Exception $e) {
 			// TODO log exception
 			return new JSONResponse(array('message' => $e->getMessage()), Http::STATUS_INTERNAL_SERVER_ERROR);
@@ -158,103 +149,5 @@ class AdminSettingsController extends ApiController {
 
 		}
 		*/
-	}
-
-	function setUpProcessor() {
-		$processors = [
-		 	[
-				'attachment' => [
-					'field' 		=> 'data',
-					'target_field' 	=> 'file',
-					'indexed_chars'	=> '-1',
-					'ignore_missing'=> true
-				]
-			],
-			[
-			'remove' => [
-				'field'			=> 'data',
-				'ignore_failure'=> true
-				]
-			],
-			[
-				'rename' => [
-					'field'			=> 'mtime',
-					'target_field'	=> 'file.mtime',
-					'ignore_missing'=> true
-				]
-			],
-			[
-				'rename' => [
-					'field'			=> 'name',
-					'target_field'	=> 'file.name',
-					'ignore_missing'=> true
-				]
-			],
-			[
-				'rename' => [
-					'field'			=> 'users',
-					'target_field'	=> 'file.users',
-					'ignore_missing'=> true
-				]
-			],
-			[
-				'rename' => [
-					'field'			=> 'size',
-					'target_field'	=> 'file.size',
-					'ignore_missing'=> true
-				]
-			],
-			[
-				'rename' => [
-					'field'			=> 'groups',
-					'target_field'	=> 'file.groups',
-					'ignore_missing'=> true
-				]
-			]
-		];
-
-		$payload = [];
-		$payload['description'] = 'Pipeline to process Entries for Owncloud Search';
-		$payload['processors'] = $processors;
-
-
-		$response = $this->index->getClient()->request("_ingest/pipeline/oc_processor", Request::PUT, $payload);
-		//TODO: verify that we setup the processor correctly
-
-	}
-
-	/**
-	 * WARNING: will delete the index if it exists
-	 */
-	function setUpIndex() {
-		// the number of shards and replicas should be adjusted as necessary outside of owncloud
-		$this->index->create(array('index' => array('number_of_shards' => 1, 'number_of_replicas' => 0),), true);
-
-		$type = new Type($this->index, 'file');
-
-		$mapping = new Type\Mapping($type, array(
-			// indexed for all files and folders
-			'size'           => [ 'type' => 'long',   'store' => true ],
-			'name'           => [ 'type' => 'text', 'store' => true ],
-			'mtime'          => [ 'type' => 'long',   'store' => true ],
-			'users'          => [ 'type' => 'text', 'store' => true ],
-			'groups'         => [ 'type' => 'text', 'store' => true ],
-			// only indexed when content was extracted
-			'content' => [
-				'type' => 'text', 'store' => true,
-				'term_vector' => 'with_positions_offsets',
-			],
-			'title' => [
-				'type' => 'text', 'store' => true,
-				'term_vector' => 'with_positions_offsets',
-			],
-			'date'           => [ 'type' => 'text', 'store' => true ],
-			'author'         => [ 'type' => 'text', 'store' => true ],
-			'keywords'       => [ 'type' => 'text', 'store' => true ],
-			'content_type'   => [ 'type' => 'text', 'store' => true ],
-			'content_length' => [ 'type' => 'long',   'store' => true ],
-			'language'       => [ 'type' => 'text', 'store' => true ],
-		));
-		$type->setMapping($mapping);
 	}
 }

@@ -16,6 +16,7 @@ namespace OCA\Search_Elastic\Controller;
 
 use Elastica\Exception\Connection\HttpException;
 use Elastica\Index;
+use Elastica\Request;
 use Elastica\Type;
 use OC\AppFramework\Http;
 use OCA\Search_Elastic\Db\StatusMapper;
@@ -134,6 +135,7 @@ class AdminSettingsController extends ApiController {
 		try {
 			$this->setUpIndex();
 			$this->setUpContentExtractionIndex();
+			$this->setUpProcessor();
 			$this->mapper->clear();
 		} catch (\Exception $e) {
 			// TODO log exception
@@ -163,6 +165,69 @@ class AdminSettingsController extends ApiController {
 
 		}
 		*/
+	}
+
+	function setUpProcessor() {
+		$processors = [
+		 	[
+				'attachment' => [
+					'field' 		=> 'data',
+					'target_field' 	=> 'file',
+					'indexed_chars'	=> '-1',
+					'ignore_missing'=> true
+				]
+			],
+			[
+			'remove' => [
+				'field'			=> 'data',
+				'ignore_failure'=> true
+				]
+			],
+			[
+				'rename' => [
+					'field'			=> 'mtime',
+					'target_field'	=> 'file.mtime',
+					'ignore_missing'=> true
+				]
+			],
+			[
+				'rename' => [
+					'field'			=> 'name',
+					'target_field'	=> 'file.name',
+					'ignore_missing'=> true
+				]
+			],
+			[
+				'rename' => [
+					'field'			=> 'users',
+					'target_field'	=> 'file.users',
+					'ignore_missing'=> true
+				]
+			],
+			[
+				'rename' => [
+					'field'			=> 'size',
+					'target_field'	=> 'file.size',
+					'ignore_missing'=> true
+				]
+			],
+			[
+				'rename' => [
+					'field'			=> 'groups',
+					'target_field'	=> 'file.groups',
+					'ignore_missing'=> true
+				]
+			]
+		];
+
+		$payload = [];
+		$payload['description'] = 'Pipeline to process Entries for Owncloud Search';
+		$payload['processors'] = $processors;
+
+
+		$response = $this->index->getClient()->request("_ingest/pipeline/oc_processor", Request::PUT, $payload);
+		//TODO: verify that we setup the processor correctly
+
 	}
 
 	/**

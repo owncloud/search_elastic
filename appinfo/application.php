@@ -52,17 +52,11 @@ class Application extends App {
 			return $c->query('Elastica')->getIndex('oc-'.$instanceId);
 		});
 
-		$container->registerService('ContentExtractionIndex', function($c) {
-			$instanceId = \OC::$server->getSystemConfig()->getValue('instanceid', '');
-			$index = $c->query('Elastica')->getIndex("oc-$instanceId-temp-ce");
-			return $index;
-		});
 
 		$container->registerService('Client', function($c) {
 			return new Client(
 				$c->getServer(),
 				$c->query('Index'),
-				$c->query('ContentExtractionIndex'),
 				$c->query('StatusMapper'),
 				\OC::$server->getLogger(),
 				$c->query('SearchElasticConfigService')
@@ -104,7 +98,6 @@ class Application extends App {
 				$c->query('Request'),
 				$c->query('SearchElasticConfigService'),
 				$c->query('Index'),
-				$c->query('ContentExtractionIndex'),
 				$c->query('StatusMapper')
 			);
 		});

@@ -45,19 +45,9 @@ class Client {
 	private $index;
 
 	/**
-	 * @var Index
-	 */
-	private $tempIndex;
-
-	/**
 	 * @var Type
 	 */
 	private $type;
-
-	/**
-	 * @var Type
-	 */
-	private $tempType;
 
 	/**
 	 * @var StatusMapper
@@ -85,7 +75,6 @@ class Client {
 	public function __construct(
 		IServerContainer $server,
 		Index $index,
-		Index $tempIndex,
 		StatusMapper $mapper,
 		ILogger $logger,
 		SearchElasticConfigService $config
@@ -95,10 +84,8 @@ class Client {
 		$this->logger = $logger;
 		$this->config = $config;
 		$this->index = $index;
-		$this->tempIndex = $tempIndex;
 
 		$this->type = new Type($this->index, 'file');
-		$this->tempType = new Type($this->tempIndex, 'file');
 
 	}
 

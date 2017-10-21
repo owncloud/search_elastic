@@ -14,6 +14,7 @@
 
 namespace OCA\Search_Elastic\Db;
 
+use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\Mapper;
@@ -23,14 +24,31 @@ use OCP\ILogger;
 
 class StatusMapper extends Mapper {
 
+	/**
+	 * @var ILogger
+	 */
 	private $logger;
 
-	private $scanExternalStorages;
+	/**
+	 * @var SearchElasticConfigService
+	 */
+	private $config;
 
-	public function __construct(IDb $db, ILogger $logger, $scanExternalStorages = true){
+	/**
+	 * StatusMapper constructor.
+	 *
+	 * @param IDb $db
+	 * @param SearchElasticConfigService $config
+	 * @param ILogger $logger
+	 */
+	public function __construct(
+		IDb $db,
+		SearchElasticConfigService $config,
+		ILogger $logger
+	) {
 		parent::__construct($db, 'search_elastic_status', '\OCA\Search_Elastic\Db\Status');
 		$this->logger = $logger;
-		$this->scanExternalStorages = $scanExternalStorages;
+		$this->config = $config;
 	}
 
 	/**
@@ -225,7 +243,8 @@ class StatusMapper extends Mapper {
 		foreach ($mounts as $mount) {
 			$storage = $mount->getStorage();
 			//only index external files if the admin enabled it
-			if ($this->scanExternalStorages || $storage->isLocal()) {
+
+			if ($this->config->getScanExternalStorageFlag() || $storage->isLocal()) {
 				$cache = $storage->getCache();
 				$numericId = $cache->getNumericStorageId();
 

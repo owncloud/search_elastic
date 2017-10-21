@@ -70,7 +70,6 @@ class Application extends App {
 			return new StatusMapper(
 				$c->query('Db'),
 				\OC::$server->getLogger(),
-				\OC::$server->getConfig()->getAppValue('search_elastic', 'scanExternalStorages', true)
 			);
 		});
 

@@ -37,7 +37,7 @@ class AdminSettingsController extends ApiController {
 	/**
 	 * @var SearchElasticService
 	 */
-	private $SearchElasticService;
+	private $searchElasticService;
 
 	/**
 	 * @param string $appName
@@ -53,7 +53,7 @@ class AdminSettingsController extends ApiController {
 	) {
 		parent::__construct($appName, $request);
 		$this->config = $config;
-		$this->SearchElasticService = $searchElasticService;
+		$this->searchElasticService = $searchElasticService;
 	}
 
 	/**
@@ -120,7 +120,7 @@ class AdminSettingsController extends ApiController {
 	 */
 	public function setup() {
 		try {
-			$this->SearchElasticService->setup();
+			$this->searchElasticService->setup();
 		} catch (\Exception $e) {
 			// TODO log exception
 			return new JSONResponse(array('message' => $e->getMessage()), Http::STATUS_INTERNAL_SERVER_ERROR);

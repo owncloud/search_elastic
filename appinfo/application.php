@@ -69,15 +69,6 @@ class Application extends App {
 			);
 		});
 
-		$container->registerService('SkippedDirs', function($c) {
-			/** @var \OCP\IConfig $config */
-			$config = $c->query('ServerContainer')->getConfig();
-			return explode(
-				';',
-				$config->getUserValue($c->query('UserId'), 'search_elastic', 'skipped_dirs', '.git;.svn;.CVS;.bzr')
-			);
-		});
-
 		/**
 		 * Mappers
 		 */

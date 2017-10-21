@@ -65,7 +65,7 @@ class Application extends App {
 				$c->query('ContentExtractionIndex'),
 				$c->query('StatusMapper'),
 				\OC::$server->getLogger(),
-				\OC::$server->getConfig()
+				$c->query('SearchElasticConfigService')
 			);
 		});
 

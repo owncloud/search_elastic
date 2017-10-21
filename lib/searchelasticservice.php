@@ -34,6 +34,8 @@ use OCP\IServerContainer;
 
 class SearchElasticService {
 
+	const PROCESSOR_NAME = 'oc-processor';
+
 	/**
 	 * @var IServerContainer
 	 */
@@ -210,7 +212,7 @@ class SearchElasticService {
 		$payload['processors'] = $processors;
 
 
-		$response = $this->index->getClient()->request("_ingest/pipeline/oc_processor", Request::PUT, $payload);
+		$response = $this->client->request("_ingest/pipeline/".self::PROCESSOR_NAME, Request::PUT, $payload);
 		//TODO: verify that we setup the processor correctly
 
 	}
@@ -360,7 +362,7 @@ class SearchElasticService {
 		// see: https://github.com/ruflin/Elastica/issues/1248
 		$bulk = new Bulk($this->index->getClient());
 		$bulk->setType($this->type);
-		$bulk->setRequestParam('pipeline', 'oc_processor');
+		$bulk->setRequestParam('pipeline', self::PROCESSOR_NAME);
 		$bulk->addDocuments([$doc]);
 		$bulk->send();
 

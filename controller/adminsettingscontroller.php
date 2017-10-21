@@ -134,7 +134,6 @@ class AdminSettingsController extends ApiController {
 	public function setup() {
 		try {
 			$this->setUpIndex();
-			$this->setUpContentExtractionIndex();
 			$this->setUpProcessor();
 			$this->mapper->clear();
 		} catch (\Exception $e) {

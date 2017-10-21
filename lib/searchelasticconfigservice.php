@@ -10,6 +10,9 @@ class SearchElasticConfigService {
 
 	const SERVERS = 'servers';
 	const SCAN_EXTERNAL_STORAGE = 'scanExternalStorages';
+	const INDEX_MAX_FILE_SIZE = 'max_size';
+	const INDEX_NO_CONTENT = 'nocontent';
+	const SKIPPED_DIRS = 'skipped_dirs';
 
 	/**
 	 * @var IConfig
@@ -43,8 +46,22 @@ class SearchElasticConfigService {
 	}
 
 	/**
-	 * @return string comma separated list of servers
+	 * @param $userId
+	 * @param $key
+	 * @param $value
 	 */
+	public function setUserValue($userId, $key, $value) {
+		$this->owncloudConfig->setUserValue($userId, Application::APP_ID, $key, $value);
+	}
+
+	/**
+	 * @param $userId
+	 * @param $key
+	 * @param string $default
+	 * @return string
+	 */
+	public function getUserValue($userId, $key, $default = '') {
+		return $this->owncloudConfig->getUserValue($userId, Application::APP_ID, $key, $default);
 	}
 
 	/**
@@ -82,6 +99,46 @@ class SearchElasticConfigService {
 	public function getScanExternalStorageFlag() {
 		return $this->getValue(self::SCAN_EXTERNAL_STORAGE, true);
 	}
+
+	/**
+	 * @param $maxFileSize
+	 */
+	public function setMaxFileSizeForIndex($maxFileSize) {
+		$this->setValue(self::INDEX_MAX_FILE_SIZE, $maxFileSize);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getMaxFileSizeForIndex() {
+		return $this->getValue(self::INDEX_MAX_FILE_SIZE, 10485760);
+	}
+
+	/**
+	 * @param $noContentFlag
+	 */
+	public function setIndexNoContentFlag($noContentFlag) {
+		$this->setValue(self::INDEX_NO_CONTENT, $noContentFlag);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getIndexNoContentFlag() {
+		return $this->getValue(self::INDEX_NO_CONTENT, false);
+	}
+
+	/**
+	 * @param $userId
+	 * @return array
+	 */
+	public function getUserSkippedDirs($userId) {
+		return explode(
+			';',
+			$this->getUserValue($userId, self::SKIPPED_DIRS, '.git;.svn;.CVS;.bzr')
+		);
+	}
+
 	/**
 	 * @param string $servers
 	 * @return array

@@ -38,30 +38,41 @@ class Client {
 	 * @var IServerContainer
 	 */
 	private $server;
+
 	/**
 	 * @var Index
 	 */
 	private $index;
+
 	/**
 	 * @var Index
 	 */
 	private $tempIndex;
+
 	/**
 	 * @var Type
 	 */
 	private $type;
+
 	/**
 	 * @var Type
 	 */
 	private $tempType;
+
 	/**
 	 * @var StatusMapper
 	 */
 	private $mapper;
+
 	/**
 	 * @var ILogger
 	 */
 	private $logger;
+
+	/**
+	 * @var SearchElasticConfigService
+	 */
+	private $config;
 
 	/**
 	 * @param IServerContainer $server
@@ -71,7 +82,14 @@ class Client {
 	 * @param ILogger $logger
 	 * @param IConfig $config
 	 */
-	public function __construct(IServerContainer $server, Index $index, Index $tempIndex, StatusMapper $mapper, ILogger $logger, IConfig $config) {
+	public function __construct(
+		IServerContainer $server,
+		Index $index,
+		Index $tempIndex,
+		StatusMapper $mapper,
+		ILogger $logger,
+		SearchElasticConfigService $config
+	) {
 		$this->server = $server;
 		$this->mapper = $mapper;
 		$this->logger = $logger;
@@ -106,10 +124,7 @@ class Client {
 
 				$path = $node->getPath();
 
-				$skippedDirs = explode(';',	$this->config->getUserValue(
-					$userId, 'search_elastic',
-					'skipped_dirs', '.git;.svn;.CVS;.bzr'
-				));
+				$skippedDirs = $this->config->getUserSkippedDirs($userId);
 
 				foreach ($skippedDirs as $skippedDir) {
 					if (strpos($path, '/' . $skippedDir . '/') !== false //contains dir
@@ -170,18 +185,17 @@ class Client {
 			['app' => 'search_elastic']
 		);
 
-		// index content for local files only
-
 		$data = ['size' => $size = $node->getSize()];
-		$data['name'] = $node->getName();
+
 		// we do not index the path because it might be different for each user
 		// FIXME what about shared files? the recipient can rename them ...
+		$data['name'] = $node->getName();
+
 		$data['mtime'] = $node->getMTime();
 
 		$access = $this->getUsersWithReadPermission($node, $userId);
 		$data['users'] = $access['users'];
 		$data['groups'] = $access['groups'];
-
 
 		if ($this->canExtractContent($node, $extractContent)) {
 			$data['data'] = base64_encode($node->getContent());
@@ -206,14 +220,19 @@ class Client {
 
 	}
 
+	/**
+	 * Function that checks if we should also extract content
+	 *
+	 * @param Node $node
+	 * @param bool $extractContent
+	 * @return bool
+	 */
 	private function canExtractContent(Node $node, $extractContent = true) {
 		$storage = $node->getStorage();
 		$size = $node->getSize();
 
-		$maxSize = $this->config->getAppValue('search_elastic', 'max_size', 10485760);
+		$noContent = $this->config->getIndexNoContentFlag();
 
-		// there are various reasons for not indexing the content
-		$noContent = $this->config->getAppValue('search_elastic', 'nocontent', false);
 		if ( $noContent === true || $noContent === 1
 			|| $noContent === 'true' || $noContent === '1' || $noContent === 'on' ) {
 			$this->logger->debug("indexNode: folder, skipping content extraction",
@@ -235,12 +254,12 @@ class Client {
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;
-		} else if ($size > $maxSize) {
+		} else if ($size > $this->config->getMaxFileSizeForIndex()) {
 			$this->logger->debug("indexNode: file exceeds $maxSize, skipping content extraction",
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;
-		} else if ($this->config->getAppValue('search_elastic', 'scanExternalStorages', true) === false
+		} else if ($this->config->getScanExternalStorageFlag() === false
 			&& $storage->isLocal() === false) {
 			$this->logger->debug("indexNode: not indexing on remote storage {$storage->getId()}, skipping content extraction",
 				['app' => 'search_elastic']

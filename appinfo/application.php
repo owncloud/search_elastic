@@ -20,6 +20,7 @@ use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\Client;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\AppFramework\App;
+use OCP\AppFramework\IAppContainer;
 
 class Application extends App {
 
@@ -30,22 +31,25 @@ class Application extends App {
 
 		$container = $this->getContainer();
 
-
 		// register internal configuration service
-		$container->registerService('SearchElasticConfigService', function($container) {
-			return new SearchElasticConfigService(
-				$container->query('ServerContainer')->getConfig()
-			);
-		}) ;
+		$container->registerService(
+			'SearchElasticConfigService',
+			function(IAppContainer $appContainer) {
+				return new SearchElasticConfigService(
+					$appContainer->query('ServerContainer')->getConfig()
+				);
+			}
+		);
 		
 		/**
 		 * Client
 		 */
-		$container->registerService('Elastica', function($c) {
-			/** @var SearchElasticConfigService $config */
-			$config = $c->query('SearchElasticConfigService');
-			return new \Elastica\Client($config->getParsedServers());
-		});
+		$container->registerService('Elastica',
+			function(IAppContainer $appContainer) {
+				$config = $appContainer->query('SearchElasticConfigService');
+				return new \Elastica\Client($config->getParsedServers());
+			}
+		);
 
 		$container->registerService('Index', function($c) {
 			$instanceId = \OC::$server->getSystemConfig()->getValue('instanceid', '');
@@ -58,7 +62,7 @@ class Application extends App {
 				$c->getServer(),
 				$c->query('Index'),
 				$c->query('StatusMapper'),
-				\OC::$server->getLogger(),
+				$c->query('OCP\\ILogger'),
 				$c->query('SearchElasticConfigService')
 			);
 		});
@@ -69,7 +73,8 @@ class Application extends App {
 		$container->registerService('StatusMapper', function($c) {
 			return new StatusMapper(
 				$c->query('Db'),
-				\OC::$server->getLogger(),
+				$c->query('SearchElasticConfigService'),
+				$c->query('OCP\\ILogger')
 			);
 		});
 

@@ -19,6 +19,7 @@ use Elastica\Request;
 use Elastica\Response;
 use Elastica\Type;
 use Elastica\Document;
+use Elastica\Bulk;
 use OC\Files\Cache\Cache;
 use OC\Files\Filesystem;
 use OC\Files\View;
@@ -170,9 +171,45 @@ class Client {
 		);
 
 		// index content for local files only
-		$storage = $node->getStorage();
 
+		$data = ['size' => $size = $node->getSize()];
+		$data['name'] = $node->getName();
+		// we do not index the path because it might be different for each user
+		// FIXME what about shared files? the recipient can rename them ...
+		$data['mtime'] = $node->getMTime();
+
+		$access = $this->getUsersWithReadPermission($node, $userId);
+		$data['users'] = $access['users'];
+		$data['groups'] = $access['groups'];
+
+
+		if ($this->canExtractContent($node, $extractContent)) {
+			$data['data'] = base64_encode($node->getContent());
+		}
+
+		$doc = new Document($node->getId());
+		$doc->setData($data);
+
+		$this->logger->debug("indexNode: upserting document to index: ".
+			json_encode($data), ['app' => 'search_elastic']
+		);
+		$doc->setDocAsUpsert(true);
+		// this is a workaround to acutally be able to use parameters when setting a document
+		// see: https://github.com/ruflin/Elastica/issues/1248
+		$bulk = new Bulk($this->index->getClient());
+		$bulk->setType($this->type);
+		$bulk->setRequestParam('pipeline', 'oc_processor');
+		$bulk->addDocuments([$doc]);
+		$bulk->send();
+
+		return true;
+
+	}
+
+	private function canExtractContent(Node $node, $extractContent = true) {
+		$storage = $node->getStorage();
 		$size = $node->getSize();
+
 		$maxSize = $this->config->getAppValue('search_elastic', 'max_size', 10485760);
 
 		// there are various reasons for not indexing the content
@@ -210,109 +247,7 @@ class Client {
 			);
 			$extractContent = false;
 		}
-
-		if ($extractContent) {
-			$data = $this->extractContent($node);
-			if (empty($data)) {
-				$this->logger->debug("indexNode: no content extracted for " .
-					"{$node->getPath()} ({$node->getId()})",
-					['app' => 'search_elastic']
-				);
-				$data = ['size' => $size];
-			}
-		} else {
-			$data = ['size' => $size];
-		}
-
-		$data['name'] = $node->getName();
-		// we do not index the path because it might be different for each user
-		// FIXME what about shared files? the recipient can rename them ...
-		$data['mtime'] = $node->getMTime();
-
-		$access = $this->getUsersWithReadPermission($node, $userId);
-		$data['users'] = $access['users'];
-		$data['groups'] = $access['groups'];
-
-		$doc = new Document($node->getId());
-		$doc->set('file', $data);
-
-		$this->logger->debug("indexNode: upserting document to index: ".
-			json_encode($data), ['app' => 'search_elastic']
-		);
-		$doc->setDocAsUpsert(true);
-		$this->type->updateDocument($doc);
-
-		return true;
-
-	}
-
-	/**
-	 * @param File $file
-	 *
-	 * @return array with file content as plain text and metadata
-	 */
-	public function extractContent (File $file) {
-
-		$path = $file->getPath();
-
-		$this->logger->debug("Extracting content for $path",
-			['app' => 'search_elastic']
-		);
-
-		$doc = new Document($file->getId());
-
-		$value = [
-			'_content_type' => $file->getMimeType(),
-			'_content' => base64_encode($file->getContent()),
-		];
-
-		$doc->set('file', $value);
-
-		// index with elasticsearch (uses apache tika to extract the file content)
-		$this->tempType->addDocument($doc);
-
-		//wait a sec to allow the doc to become searchable
-		sleep(1);
-		// TODO use exists check
-
-		// now get the file content
-		$response = $this->tempType->request(urlencode($file->getId()).'?stored_fields=file,file.content,file.title,file.date,file.author,file.keywords,file.content_type,file.content_length,file.language', Request::GET, array(), array());
-
-		$data = $response->getData();
-		$result = array();
-		if (isset($data['fields'])) {
-			if (isset($data['fields']['file.content'])) {
-				$result['content'] = $data['fields']['file.content'][0];
-			}
-			if (isset($data['fields']['file.title'])) {
-				$result['title'] = $data['fields']['file.title'][0];
-			}
-			if (isset($data['fields']['file.date'])) {
-				$result['date'] = $data['fields']['file.date'][0];
-			}
-			if (isset($data['fields']['file.author'])) {
-				$result['author'] = $data['fields']['file.author'][0];
-			}
-			if (isset($data['fields']['file.keywords'])) {
-				$result['keywords'] = $data['fields']['file.keywords'][0];
-			}
-			if (isset($data['fields']['file.content_type'])) {
-				$result['content_type'] = $data['fields']['file.content_type'][0];
-			}
-			if (isset($data['fields']['file.content_length'])) {
-				$result['content_length'] = $data['fields']['file.content_length'][0];
-			}
-			if (isset($data['fields']['file.language'])) {
-				$result['language'] = $data['fields']['file.language'][0];
-			}
-		}
-		$this->logger->debug("$path content is:".json_encode($result),
-			['app' => 'search_elastic']
-		);
-
-		$this->tempType->deleteById($file->getId());
-		return $result;
-
+		return $extractContent;
 	}
 
 	// === DELETE =============================================================

@@ -17,7 +17,7 @@ namespace OCA\Search_Elastic\AppInfo;
 use Elastica\Type;
 use OCA\Search_Elastic\Controller\AdminSettingsController;
 use OCA\Search_Elastic\Db\StatusMapper;
-use OCA\Search_Elastic\Client;
+use OCA\Search_Elastic\SearchElasticService;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\AppFramework\App;
 use OCP\AppFramework\IAppContainer;
@@ -42,7 +42,7 @@ class Application extends App {
 		);
 		
 		/**
-		 * Client
+		 * SearchElasticService
 		 */
 		$container->registerService('Elastica',
 			function(IAppContainer $appContainer) {
@@ -57,8 +57,8 @@ class Application extends App {
 		});
 
 
-		$container->registerService('Client', function($c) {
-			return new Client(
+		$container->registerService('SearchElasticService', function($c) {
+			return new SearchElasticService(
 				$c->getServer(),
 				$c->query('Index'),
 				$c->query('StatusMapper'),

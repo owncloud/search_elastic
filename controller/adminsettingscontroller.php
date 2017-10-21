@@ -20,6 +20,7 @@ use Elastica\Request;
 use Elastica\Type;
 use OC\AppFramework\Http;
 use OCA\Search_Elastic\Db\StatusMapper;
+use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IConfig;
 use OCP\IRequest;
@@ -27,10 +28,8 @@ use OCP\AppFramework\ApiController;
 
 class AdminSettingsController extends ApiController {
 
-	const SERVERS = 'servers';
-	const SCAN_EXTERNAL_STORAGE = 'scanExternalStorages';
 	/**
-	 * @var IConfig
+	 * @var SearchElasticConfigService
 	 */
 	var $config;
 	/**
@@ -49,12 +48,19 @@ class AdminSettingsController extends ApiController {
 	/**
 	 * @param string $appName
 	 * @param IRequest $request
-	 * @param IConfig $config
+	 * @param SearchElasticConfigService $config
 	 * @param Index $index
 	 * @param Index $contentExtractionIndex
 	 * @param StatusMapper $mapper
 	 */
-	public function __construct($appName, IRequest $request, IConfig $config, Index $index, Index $contentExtractionIndex, StatusMapper $mapper) {
+	public function __construct(
+		$appName,
+		IRequest $request,
+		SearchElasticConfigService $config,
+		Index $index,
+		Index $contentExtractionIndex,
+		StatusMapper $mapper
+	) {
 		parent::__construct($appName, $request);
 		$this->config = $config;
 		$this->index = $index;
@@ -66,8 +72,9 @@ class AdminSettingsController extends ApiController {
 	 * @return JSONResponse
 	 */
 	public function loadServers() {
-		$servers = $this->config->getAppValue($this->appName, self::SERVERS, 'localhost:9200');
-		return new JSONResponse(array(self::SERVERS => $servers) );
+		return new JSONResponse([
+			SearchElasticConfigService::SERVERS => $this->config->getServers()
+		]);
 	}
 
 	/**
@@ -75,7 +82,7 @@ class AdminSettingsController extends ApiController {
 	 * @return JSONResponse
 	 */
 	public function saveServers($servers) {
-		$this->config->setAppValue($this->appName, self::SERVERS, $servers);
+		$this->config->setServers($servers);
 		return new JSONResponse();
 	}
 
@@ -83,8 +90,9 @@ class AdminSettingsController extends ApiController {
 	 * @return JSONResponse
 	 */
 	public function getScanExternalStorages() {
-		$scanExternalStorages = $this->config->getAppValue($this->appName, self::SCAN_EXTERNAL_STORAGE, true);
-		return new JSONResponse(array(self::SCAN_EXTERNAL_STORAGE => $scanExternalStorages) );
+		return new JSONResponse([
+			SearchElasticConfigService::SCAN_EXTERNAL_STORAGE => $this->config->getScanExternalStorageFlag()
+		]);
 	}
 
 	/**
@@ -92,7 +100,7 @@ class AdminSettingsController extends ApiController {
 	 * @return JSONResponse
 	 */
 	public function setScanExternalStorages($scanExternalStorages) {
-		$this->config->setAppValue($this->appName, self::SCAN_EXTERNAL_STORAGE, $scanExternalStorages);
+		$this->config->setScanExternalStorageFlag($scanExternalStorages);
 		return new JSONResponse();
 	}
 
@@ -114,7 +122,7 @@ class AdminSettingsController extends ApiController {
 				return new JSONResponse(array('message' => 'Content extraction index requires attachment type. Did you install the elasticsearch mapper attachments plugin?'), Http::STATUS_EXPECTATION_FAILED);
 			}
 		} catch (HttpException $ex) {
-			$servers = $this->config->getAppValue($this->appName, self::SERVERS, 'localhost:9200');
+			$servers = $this->config->getServers();
 			return new JSONResponse(array('message' => 'Elasticsearch Server unreachable at '.$servers), Http::STATUS_SERVICE_UNAVAILABLE);
 		}
 		$stats = $this->index->getStats()->getData();

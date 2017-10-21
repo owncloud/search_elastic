@@ -18,9 +18,12 @@ use Elastica\Type;
 use OCA\Search_Elastic\Controller\AdminSettingsController;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\Client;
+use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\AppFramework\App;
 
 class Application extends App {
+
+	const APP_ID = 'search_elastic';
 
 	/**
 	 * @param string $servers
@@ -54,6 +57,15 @@ class Application extends App {
 		parent::__construct('search_elastic', $urlParams);
 
 		$container = $this->getContainer();
+
+
+		// register internal configuration service
+		$container->registerService('SearchElasticConfigService', function($container) {
+			return new SearchElasticConfigService(
+				$container->query('ServerContainer')->getConfig()
+			);
+		}) ;
+
 
 		/**
 		 * Client
@@ -129,7 +141,7 @@ class Application extends App {
 			return new AdminSettingsController(
 				$c->query('AppName'),
 				$c->query('Request'),
-				\OC::$server->getConfig(),
+				$c->query('SearchElasticConfigService'),
 				$c->query('Index'),
 				$c->query('ContentExtractionIndex'),
 				$c->query('StatusMapper')

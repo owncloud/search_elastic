@@ -25,34 +25,6 @@ class Application extends App {
 
 	const APP_ID = 'search_elastic';
 
-	/**
-	 * @param string $servers
-	 * @return array
-	 */
-	public function parseServers($servers) {
-		$serverArr = explode(',', $servers);
-		$results = [];
-		foreach ($serverArr as $serverPart) {
-			$hostAndPort = explode(':', trim($serverPart), 2);
-			$server = [
-				'host' => 'localhost',
-				'port' => 9200
-			];
-			if (!empty($hostAndPort[0])) {
-				$server['host'] = $hostAndPort[0];
-			}
-			if (!empty($hostAndPort[1])) {
-				$server['port'] = (int)$hostAndPort[1];
-			}
-			$results[] = $server;
-		}
-		if (count($results) === 1) {
-			return $results[0];
-		}
-		return array('servers' => $results);
-	}
-
-
 	public function __construct (array $urlParams=array()) {
 		parent::__construct('search_elastic', $urlParams);
 
@@ -65,16 +37,14 @@ class Application extends App {
 				$container->query('ServerContainer')->getConfig()
 			);
 		}) ;
-
-
+		
 		/**
 		 * Client
 		 */
 		$container->registerService('Elastica', function($c) {
-			/** @var \OCP\IConfig $config */
-			$config = $c->query('ServerContainer')->getConfig();
-			$elasticaConfig = $this->parseServers($config->getAppValue('search_elastic', 'servers', 'localhost:9200'));
-			return new \Elastica\Client($elasticaConfig);
+			/** @var SearchElasticConfigService $config */
+			$config = $c->query('SearchElasticConfigService');
+			return new \Elastica\Client($config->getParsedServers());
 		});
 
 		$container->registerService('Index', function($c) {

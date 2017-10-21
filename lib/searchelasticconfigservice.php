@@ -45,8 +45,6 @@ class SearchElasticConfigService {
 	/**
 	 * @return string comma separated list of servers
 	 */
-	public function getServers() {
-		return $this->getValue(self::SERVERS, 'localhost:9200');
 	}
 
 	/**
@@ -54,6 +52,21 @@ class SearchElasticConfigService {
 	 */
 	public function setServers($servers) {
 		$this->setValue('servers', $servers);
+	}
+
+	/**
+	 * @return string comma separated list of servers
+	 */
+	public function getServers() {
+		return $this->getValue(self::SERVERS, 'localhost:9200');
+	}
+
+	/**
+	 * Returns an array of servers
+	 * @return array
+	 */
+	public function getParsedServers() {
+		return $this->parseServers($this->getServers());
 	}
 
 	/**
@@ -68,5 +81,31 @@ class SearchElasticConfigService {
 	 */
 	public function getScanExternalStorageFlag() {
 		return $this->getValue(self::SCAN_EXTERNAL_STORAGE, true);
+	}
+	/**
+	 * @param string $servers
+	 * @return array
+	 */
+	public function parseServers($servers) {
+		$serverArr = explode(',', $servers);
+		$results = [];
+		foreach ($serverArr as $serverPart) {
+			$hostAndPort = explode(':', trim($serverPart), 2);
+			$server = [
+				'host' => 'localhost',
+				'port' => 9200
+			];
+			if (!empty($hostAndPort[0])) {
+				$server['host'] = $hostAndPort[0];
+			}
+			if (!empty($hostAndPort[1])) {
+				$server['port'] = (int)$hostAndPort[1];
+			}
+			$results[] = $server;
+		}
+		if (count($results) === 1) {
+			return $results[0];
+		}
+		return array('servers' => $results);
 	}
 }

@@ -32,7 +32,7 @@ use OCP\ILogger;
 use OCP\IConfig;
 use OCP\IServerContainer;
 
-class Client {
+class SearchElasticService {
 
 	/**
 	 * @var IServerContainer

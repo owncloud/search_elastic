@@ -15,7 +15,7 @@
 namespace OCA\Search_Elastic\Hooks;
 
 use OCA\Search_Elastic\AppInfo\Application;
-use OCA\Search_Elastic\Client;
+use OCA\Search_Elastic\SearchElasticService;
 use OCA\Search_Elastic\Db\Status;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCP\BackgroundJob;
@@ -214,8 +214,8 @@ class Files {
 		$app = new Application();
 		$container = $app->getContainer();
 
-		/** @var Client $client */
-		$client = $container->query('Client');
+		/** @var SearchElasticService $searchElasticService */
+		$searchElasticService = $container->query('SearchElasticService');
 
 		/** @var StatusMapper $mapper */
 		$mapper = $container->query('StatusMapper');
@@ -238,7 +238,7 @@ class Files {
 			['app' => 'search_elastic']
 		);
 
-		$count = $client->deleteFiles($deletedIds);
+		$count = $searchElasticService->deleteFiles($deletedIds);
 		$logger->debug( 'removed '.$count.' files from index',
 			['app' => 'search_elastic']
 		);

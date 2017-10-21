@@ -89,6 +89,113 @@ class SearchElasticService {
 
 	}
 
+	/**
+	 * sets up index, processor and clears mapping
+	 */
+	public function setup() {
+		$this->setUpIndex();
+		$this->setUpProcessor();
+		$this->mapper->clear();
+	}
+
+	private function setUpProcessor() {
+		$processors = [
+			[
+				'attachment' => [
+					'field' 		=> 'data',
+					'target_field' 	=> 'file',
+					'indexed_chars'	=> '-1',
+					'ignore_missing'=> true
+				]
+			],
+			[
+				'remove' => [
+					'field'			=> 'data',
+					'ignore_failure'=> true
+				]
+			],
+			[
+				'rename' => [
+					'field'			=> 'mtime',
+					'target_field'	=> 'file.mtime',
+					'ignore_missing'=> true
+				]
+			],
+			[
+				'rename' => [
+					'field'			=> 'name',
+					'target_field'	=> 'file.name',
+					'ignore_missing'=> true
+				]
+			],
+			[
+				'rename' => [
+					'field'			=> 'users',
+					'target_field'	=> 'file.users',
+					'ignore_missing'=> true
+				]
+			],
+			[
+				'rename' => [
+					'field'			=> 'size',
+					'target_field'	=> 'file.size',
+					'ignore_missing'=> true
+				]
+			],
+			[
+				'rename' => [
+					'field'			=> 'groups',
+					'target_field'	=> 'file.groups',
+					'ignore_missing'=> true
+				]
+			]
+		];
+
+		$payload = [];
+		$payload['description'] = 'Pipeline to process Entries for Owncloud Search';
+		$payload['processors'] = $processors;
+
+
+		$response = $this->index->getClient()->request("_ingest/pipeline/oc_processor", Request::PUT, $payload);
+		//TODO: verify that we setup the processor correctly
+
+	}
+
+	/**
+	 * WARNING: will delete the index if it exists
+	 */
+	private function setUpIndex() {
+		// the number of shards and replicas should be adjusted as necessary outside of owncloud
+		$this->index->create(array('index' => array('number_of_shards' => 1, 'number_of_replicas' => 0),), true);
+
+		$type = new Type($this->index, 'file');
+
+		$mapping = new Type\Mapping($type, array(
+			// indexed for all files and folders
+			'size'           => [ 'type' => 'long',   'store' => true ],
+			'name'           => [ 'type' => 'text', 'store' => true ],
+			'mtime'          => [ 'type' => 'long',   'store' => true ],
+			'users'          => [ 'type' => 'text', 'store' => true ],
+			'groups'         => [ 'type' => 'text', 'store' => true ],
+			// only indexed when content was extracted
+			'content' => [
+				'type' => 'text', 'store' => true,
+				'term_vector' => 'with_positions_offsets',
+			],
+			'title' => [
+				'type' => 'text', 'store' => true,
+				'term_vector' => 'with_positions_offsets',
+			],
+			'date'           => [ 'type' => 'text', 'store' => true ],
+			'author'         => [ 'type' => 'text', 'store' => true ],
+			'keywords'       => [ 'type' => 'text', 'store' => true ],
+			'content_type'   => [ 'type' => 'text', 'store' => true ],
+			'content_length' => [ 'type' => 'long',   'store' => true ],
+			'language'       => [ 'type' => 'text', 'store' => true ],
+		));
+		$type->setMapping($mapping);
+	}
+
 	// === CONTENT CHANGES / FULL INDEXING ====================================
 	/**
 	 * @param string $userId

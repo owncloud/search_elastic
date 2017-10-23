@@ -141,9 +141,8 @@ class ElasticSearchProvider extends PagedProvider {
 		$es_filter = new BoolQuery();
 		$es_filter->addShould(new Match('file.users', $this->user->getUID()));
 
-		$noContent = \OC::$server->getConfig()->getAppValue('search_elastic', 'nocontent', false);
-		$noContentGroupCfg = \OC::$server->getConfig()->getAppValue('search_elastic', 'group.nocontent', '');
-		$noContentGroups = str_getcsv($noContentGroupCfg,',','"',"\\");
+		$noContent = $this->config->getIndexNoContentFlag();
+		$noContentGroups = $this->config->getGroupNoContentArray();
 		if ( $noContent === true || $noContent === 1
 			|| $noContent === 'true' || $noContent === '1' || $noContent === 'on' ) {
 			$searchContent = false;

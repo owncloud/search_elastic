@@ -34,7 +34,7 @@ class DeleteJob extends TimedJob {
 		$app = new Application();
 		$container = $app->getContainer();
 
-		$logger = \OC::$server->getLogger();
+		$logger = $container->query('logger');
 
 		/** @var SearchElasticService $searchElasticService */
 		$searchElasticService = $container->query('SearchElasticService');

@@ -70,8 +70,7 @@ class Files {
 		$app = new Application();
 		$container = $app->getContainer();
 		$userId = $container->query('UserId');
-
-		$logger = \OC::$server->getLogger();
+		$logger = $container->query('Logger');
 
 		if (!empty($userId)) {
 
@@ -126,8 +125,7 @@ class Files {
 		$app = new Application();
 		$container = $app->getContainer();
 		$userId = $container->query('UserId');
-
-		$logger = \OC::$server->getLogger();
+		$logger = $container->query('Logger');
 
 		if (!empty($userId)) {
 
@@ -197,7 +195,7 @@ class Files {
 				$mapper->markSkipped($status);
 			}
 		} else {
-			\OC::$server->getLogger()->debug(
+			$logger->debug(
 				'Hook metadataChanged could not determine user when called with param ' . json_encode($param),
 				['app' => 'search_elastic']
 			);
@@ -219,8 +217,7 @@ class Files {
 
 		/** @var StatusMapper $mapper */
 		$mapper = $container->query('StatusMapper');
-
-		$logger = \OC::$server->getLogger();
+		$logger = $container->query('Logger');
 
 		$deletedIds = $mapper->getDeleted();
 		$logger->debug(

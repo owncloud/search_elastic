@@ -80,46 +80,46 @@ class ElasticSearchProvider extends PagedProvider {
 	 */
 	public function searchPaged($query, $page, $size) {
 
+		if (empty($query) ) {
+			return [];
+		}
 
-		$results = array();
-		if ( ! empty($query) ) {
-			try {
-				$home = \OC::$server->getUserFolder($this->user->getUID());
-
-				do {
-					$resultSet = $this->fetchResults($query, $size, $page);
-					/** @var Result $result */
-					foreach ($resultSet as $result) {
-						$fileId = (int)$result->getId();
-						$nodes = $home->getById($fileId);
-
-						if (empty($nodes[0])) {
-							$this->logger->debug("Could not find file for id $fileId in"
-								. " storage {$home->getStorage()->getId()}'."
-								. " Removing it from results. Maybe it was unshared"
-								. " for {$this->user->getUID()}. A background job will"
-								. " update the index with the new permissions.",
-								['app' => 'search_elastic']);
-						} else if ($nodes[0] instanceof Node) {
-							$results[] = new ElasticSearchResult($result, $nodes[0], $home);
-						} else {
-							$this->logger->error(
-								"Expected a Node for $fileId, received "
-								. json_encode($nodes[0]),
-								['app' => 'search_elastic']);
-						}
 		$this->setup();
+
+		$results = [];
+		try {
+			$home = \OC::$server->getUserFolder($this->user->getUID());
+
+			do {
+				$resultSet = $this->fetchResults($query, $size, $page);
+				/** @var Result $result */
+				foreach ($resultSet as $result) {
+					$fileId = (int)$result->getId();
+					$nodes = $home->getById($fileId);
+
+					if (empty($nodes[0])) {
+						$this->logger->debug("Could not find file for id $fileId in"
+							. " storage {$home->getStorage()->getId()}'."
+							. " Removing it from results. Maybe it was unshared"
+							. " for {$this->user->getUID()}. A background job will"
+							. " update the index with the new permissions.",
+							['app' => 'search_elastic']);
+					} else if ($nodes[0] instanceof Node) {
+						$results[] = new ElasticSearchResult($result, $nodes[0], $home);
+					} else {
+						$this->logger->error(
+							"Expected a Node for $fileId, received "
+							. json_encode($nodes[0]),
+							['app' => 'search_elastic']);
 					}
-					$page++;
-					// TODO We try to compensate for removed entries, but this will confuse page counting of the webui
-					// Maybe add fake entries?
-				} while ($resultSet->getTotalHits() === $size && count($results) < $size);
+				}
+				$page++;
+				// TODO We try to compensate for removed entries, but this will confuse page counting of the webui
+				// Maybe add fake entries?
+			} while ($resultSet->getTotalHits() === $size && count($results) < $size);
 
-			} catch ( \Exception $e ) {
-				/** @var ILogger */
-				$this->logger->logException($e, ['app' => 'search_elastic']);
-			}
-
+		} catch ( \Exception $e ) {
+			$this->logger->logException($e, ['app' => 'search_elastic']);
 		}
 		return $results;
 	}

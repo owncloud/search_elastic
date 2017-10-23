@@ -14,8 +14,6 @@
 
 namespace OCA\Search_Elastic\Search;
 
-use Elastica\Client;
-use Elastica\Index;
 use Elastica\Query;
 use Elastica\Query\BoolQuery;
 use Elastica\Query\Match;
@@ -23,6 +21,8 @@ use Elastica\Result;
 use Elastica\Search;
 use Elastica\Type;
 use OCA\Search_Elastic\AppInfo\Application;
+use OCA\Search_Elastic\SearchElasticConfigService;
+use OCA\Search_Elastic\SearchElasticService;
 use OCP\Files\Node;
 use OCP\IGroup;
 use OCP\ILogger;
@@ -36,21 +36,41 @@ class ElasticSearchProvider extends PagedProvider {
 	 */
 	private $logger;
 	/**
-	 * @var Index
-	 */
-	private $index;
-	/**
-	 * @var Client
-	 */
-	private $client;
+
 	/**
 	 * @var IUser
 	 */
 	private $user;
+
 	/**
 	 * @var IGroup[]
 	 */
 	private $groups;
+
+	/**
+	 * @var SearchElasticConfigService
+	 */
+	private $config;
+
+	/**
+	 * @var SearchElasticService
+	 */
+	private $searchElasticService;
+
+	/**
+	 *
+	 */
+	private function setup() {
+		$app = new Application();
+		$container = $app->getContainer();
+
+		$this->logger = $container->query('Logger');
+		$this->searchElasticService = $container->query('SearchElasticService');
+		$this->user = $container->getServer()->getUserSession()->getUser();
+		$this->groups = $container->getServer()->getGroupManager()->getUserGroups($this->user);
+		$this->config = $container->query('SearchElasticConfigService');
+	}
+
 	/**
 	 * Search for $query
 	 * @param string $query
@@ -60,14 +80,6 @@ class ElasticSearchProvider extends PagedProvider {
 	 */
 	public function searchPaged($query, $page, $size) {
 
-		$app = new Application();
-		$container = $app->getContainer();
-
-		$this->logger = \OC::$server->getLogger();
-		$this->index = $container->query('Index');
-		$this->client = $container->query('Elastica');
-		$this->user = $container->getServer()->getUserSession()->getUser();
-		$this->groups = $container->getServer()->getGroupManager()->getUserGroups($this->user);
 
 		$results = array();
 		if ( ! empty($query) ) {
@@ -96,6 +108,7 @@ class ElasticSearchProvider extends PagedProvider {
 								. json_encode($nodes[0]),
 								['app' => 'search_elastic']);
 						}
+		$this->setup();
 					}
 					$page++;
 					// TODO We try to compensate for removed entries, but this will confuse page counting of the webui

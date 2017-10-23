@@ -31,6 +31,9 @@ class Application extends App {
 
 		$container = $this->getContainer();
 
+		// register Logger as alias for convenience
+		$container->registerAlias('Logger', 'OCP\\ILogger');
+
 		// register internal configuration service
 		$container->registerService(
 			'SearchElasticConfigService',
@@ -62,8 +65,8 @@ class Application extends App {
 				$c->getServer(),
 				$c->query('Index'),
 				$c->query('StatusMapper'),
-				$c->query('OCP\\ILogger'),
 				$c->query('SearchElasticConfigService')
+				$c->query('Logger'),
 			);
 		});
 
@@ -74,7 +77,7 @@ class Application extends App {
 			return new StatusMapper(
 				$c->query('Db'),
 				$c->query('SearchElasticConfigService'),
-				$c->query('OCP\\ILogger')
+				$c->query('Logger')
 			);
 		});
 

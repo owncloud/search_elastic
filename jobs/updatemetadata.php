@@ -80,7 +80,7 @@ class UpdateMetadata extends QueuedJob {
 					['app' => 'search_elastic']
 				);
 
-				$container->query('Client')->indexNodes($userId, $fileIds, false);
+				$container->query('SearchElasticService')->indexNodes($userId, $fileIds, false);
 
 			} else {
 				$logger->debug(

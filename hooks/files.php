@@ -223,23 +223,19 @@ class Files {
 		$logger = \OC::$server->getLogger();
 
 		$deletedIds = $mapper->getDeleted();
-		$count = 0;
-		foreach ($deletedIds as $fileId) {
-			$logger->debug( 'deleting status for ('.$fileId.') ',
-				['app' => 'search_elastic']
-			);
-			//delete status
-			$status = new Status($fileId);
-			$mapper->delete($status);
-			$count++;
-
-		}
-		$logger->debug( 'removed '.$count.' files from status table',
+		$logger->debug(
+			count($deletedIds).' fileids need to be removed:'.
+			'( '.implode(';',$deletedIds).' )',
 			['app' => 'search_elastic']
 		);
 
-		$count = $searchElasticService->deleteFiles($deletedIds);
-		$logger->debug( 'removed '.$count.' files from index',
+		$deletedStatus = $mapper->deleteIds($deletedIds);
+		$logger->debug( 'removed '.$deletedStatus.' files from status table',
+			['app' => 'search_elastic']
+		);
+
+		$deletedIndex = $searchElasticService->deleteFiles($deletedIds);
+		$logger->debug( 'removed '.$deletedIndex.' files from index',
 			['app' => 'search_elastic']
 		);
 

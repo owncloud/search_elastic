@@ -14,11 +14,10 @@
 
 namespace OCA\Search_Elastic\Jobs;
 
-use Elastica\Document;
-use Elastica\Index;
 use OCA\Search_Elastic\AppInfo\Application;
 use OC\BackgroundJob\TimedJob;
 use OCA\Search_Elastic\Db\StatusMapper;
+use OCA\Search_Elastic\SearchElasticService;
 
 class DeleteJob extends TimedJob {
 
@@ -37,6 +36,9 @@ class DeleteJob extends TimedJob {
 
 		$logger = \OC::$server->getLogger();
 
+		/** @var SearchElasticService $searchElasticService */
+		$searchElasticService = $container->query('SearchElasticService');
+
 		$logger->debug('removing deleted files', ['app' => 'search_elastic'] );
 
 		/** @var StatusMapper $mapper */
@@ -46,28 +48,14 @@ class DeleteJob extends TimedJob {
 
 		if (!empty($deletedIds)) {
 			$logger->debug(
-				count($deletedIds).' fileids need to be removed',
+				count($deletedIds).' fileids need to be removed:'.
+				'( '.implode(';',$deletedIds).' )',
 				['app' => 'search_elastic']
 			);
 
 			//delete from status table
 			$deletedInDb = $mapper->deleteIds($deletedIds);
-
-			$deletedDocuments = array();
-			foreach ($deletedIds as $fileId) {
-				$logger->debug(
-					'deleting index document for (' . $fileId . ')',
-					['app' => 'search_elastic']
-				);
-
-				$deletedDocuments[] = new Document($fileId, array(), 'file');
-			}
-			//delete from elasticsearch
-			/** @var Index $index */
-			$index = $container->query('Index');
-			$response = $index->deleteDocuments($deletedDocuments);
-
-			$deletedInIndex = $response->count();
+			$deletedInIndex = $searchElasticService->deleteFiles($deletedIds);
 			$logger->debug(
 				"removed $deletedInDb ids from status table and $deletedInIndex documents from index",
 				['app' => 'search_elastic']

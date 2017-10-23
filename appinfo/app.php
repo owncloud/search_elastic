@@ -12,12 +12,14 @@
  *
  */
 
+use OCA\Search_Elastic\SearchElasticConfigService;
+use OCA\Search_Elastic\AppInfo\Application;
 
 if ((@include_once __DIR__ . '/../vendor/autoload.php') === false) {
 	throw new Exception('Cannot include autoload. Did you run install dependencies using composer?');
 }
 
-$mode = \OC::$server->getConfig()->getAppValue('search_elastic', 'mode', 'active');
+$mode = \OC::$server->getConfig()->getAppValue(Application::APP_ID, SearchElasticConfigService::APP_MODE, 'active');
 if ($mode === 'active') {
 	// --- add js & css -----------------------------------------------
 
@@ -25,7 +27,7 @@ if ($mode === 'active') {
 	OCP\Util::addStyle('search_elastic', 'results');
 
 	// --- add file search provider -----------------------------------------------
-	$group = \OC::$server->getConfig()->getAppValue('search_elastic', 'group', null);
+	$group = \OC::$server->getConfig()->getAppValue(Application::APP_ID, SearchElasticConfigService::ENABLED_GROUPS, null);
 	if (empty($group) || (
 			\OC::$server->getUserSession()->getUser()
 			&& \OC::$server->getGroupManager()->isInGroup(

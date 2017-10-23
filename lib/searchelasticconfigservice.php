@@ -14,6 +14,8 @@ class SearchElasticConfigService {
 	const INDEX_NO_CONTENT = 'nocontent';
 	const SKIPPED_DIRS = 'skipped_dirs';
 	const NO_CONTENT_GROUP = 'group.nocontent';
+	const APP_MODE = 'mode';
+	const ENABLED_GROUPS = 'group';
 
 	/**
 	 * @var IConfig

@@ -35,9 +35,8 @@ class Reset extends Command {
 	public function execute(InputInterface $input, OutputInterface $output) {
 		$app = new Application();
 		$container = $app->getContainer();
-		/** @var AdminSettingsController $asc */
-		$asc = $container->query('AdminSettingsController');
-		$asc->setup();
+		$searchElasticService = $container->query('SearchElasticService');
+		$searchElasticService->setup();
 	}
 
 }

@@ -13,6 +13,7 @@ class SearchElasticConfigService {
 	const INDEX_MAX_FILE_SIZE = 'max_size';
 	const INDEX_NO_CONTENT = 'nocontent';
 	const SKIPPED_DIRS = 'skipped_dirs';
+	const NO_CONTENT_GROUP = 'group.nocontent';
 
 	/**
 	 * @var IConfig
@@ -140,6 +141,18 @@ class SearchElasticConfigService {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getGroupNoContentString() {
+		return $this->getValue(self::NO_CONTENT_GROUP, '');
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getGroupNoContentArray() {
+		return str_getcsv($this->getGroupNoContentString(),',','"',"\\");
+	}
 	 * @param string $servers
 	 * @return array
 	 */

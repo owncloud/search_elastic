@@ -139,13 +139,10 @@ class ElasticSearchProvider extends PagedProvider {
 		$es_filter = new BoolQuery();
 		$es_filter->addShould(new Match('file.users', $this->user->getUID()));
 
-		$noContent = $this->config->getIndexNoContentFlag();
 		$noContentGroups = $this->config->getGroupNoContentArray();
-		if ( $noContent === true || $noContent === 1
-			|| $noContent === 'true' || $noContent === '1' || $noContent === 'on' ) {
+		$searchContent = true;
+		if ( !$this->config->shouldContentBeIncluded()) {
 			$searchContent = false;
-		} else {
-			$searchContent = true;
 		}
 		foreach ($this->groups as $group) {
 			$groupId = $group->getGID();

@@ -395,10 +395,8 @@ class SearchElasticService {
 		$storage = $node->getStorage();
 		$size = $node->getSize();
 		$maxSize = $this->config->getMaxFileSizeForIndex();
-		$noContent = $this->config->getIndexNoContentFlag();
 
-		if ( $noContent === true || $noContent === 1
-			|| $noContent === 'true' || $noContent === '1' || $noContent === 'on' ) {
+		if ( !$this->config->shouldContentBeIncluded() ) {
 			$this->logger->debug("indexNode: folder, skipping content extraction",
 				['app' => 'search_elastic']
 			);

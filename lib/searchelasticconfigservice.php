@@ -155,6 +155,20 @@ class SearchElasticConfigService {
 	public function getGroupNoContentArray() {
 		return str_getcsv($this->getGroupNoContentString(),',','"',"\\");
 	}
+
+	/**
+	 * @return bool
+	 */
+	public function shouldContentBeIncluded() {
+		$noContent = $this->getIndexNoContentFlag();
+		return $noContent === true
+			|| $noContent === 1
+			|| $noContent === 'true'
+			|| $noContent === '1'
+			|| $noContent === 'on';
+	}
+
+	/**
 	 * @param string $servers
 	 * @return array
 	 */

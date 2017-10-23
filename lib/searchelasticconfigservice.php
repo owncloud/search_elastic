@@ -65,7 +65,7 @@ class SearchElasticConfigService {
 	}
 
 	/**
-	 * @param $servers commad seperated list of servers
+	 * @param $servers comma separated list of servers
 	 */
 	public function setServers($servers) {
 		$this->setValue('servers', $servers);

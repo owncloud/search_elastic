@@ -106,7 +106,7 @@ class SearchElasticService {
 	 * sets up index, processor and clears mapping
 	 */
 	public function setup() {
-		$this->setpIndex();
+		$this->setupIndex();
 		$this->setupProcessor();
 		$this->mapper->clear();
 	}

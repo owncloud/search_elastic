@@ -382,7 +382,7 @@ class SearchElasticService {
 	private function canExtractContent(Node $node, $extractContent = true) {
 		$storage = $node->getStorage();
 		$size = $node->getSize();
-
+		$maxSize = $this->config->getMaxFileSizeForIndex();
 		$noContent = $this->config->getIndexNoContentFlag();
 
 		if ( $noContent === true || $noContent === 1
@@ -406,7 +406,7 @@ class SearchElasticService {
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;
-		} else if ($size > $this->config->getMaxFileSizeForIndex()) {
+		} else if ($size > $maxSize) {
 			$this->logger->debug("indexNode: file exceeds $maxSize, skipping content extraction",
 				['app' => 'search_elastic']
 			);

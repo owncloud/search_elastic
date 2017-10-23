@@ -18,6 +18,7 @@ use Elastica\Client;
 use Elastica\Index;
 use Elastica\Request;
 use Elastica\Response;
+use Elastica\Search;
 use Elastica\Type;
 use Elastica\Document;
 use Elastica\Bulk;
@@ -252,6 +253,17 @@ class SearchElasticService {
 			'language'       => [ 'type' => 'text', 'store' => true ],
 		));
 		$type->setMapping($mapping);
+	}
+
+	/**
+	 * @param $es_query
+	 * @return \Elastica\ResultSet
+	 */
+	public function search($es_query) {
+		$search = new Search($this->client);
+		$search->addType($this->type);
+		$search->addIndex($this->index);
+		return $search->search($es_query);
 	}
 
 	// === CONTENT CHANGES / FULL INDEXING ====================================

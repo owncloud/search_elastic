@@ -18,8 +18,6 @@ use Elastica\Query;
 use Elastica\Query\BoolQuery;
 use Elastica\Query\Match;
 use Elastica\Result;
-use Elastica\Search;
-use Elastica\Type;
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\SearchElasticService;
@@ -176,11 +174,7 @@ class ElasticSearchProvider extends PagedProvider {
 
 		$es_query->setSize($size);
 		$es_query->setFrom(($page - 1) * $size);
-
-		$search = new Search($this->client);
-		$search->addType(new Type($this->index, 'file'));
-		$search->addIndex($this->index);
-		return $search->search($es_query);
+		return $this->searchElasticService->search($es_query);
 
 	}
 }

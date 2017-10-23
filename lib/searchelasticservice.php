@@ -34,8 +34,6 @@ use OCP\IServerContainer;
 
 class SearchElasticService {
 
-	const PROCESSOR_NAME = 'oc-processor';
-
 	/**
 	 * @var IServerContainer
 	 */
@@ -71,6 +69,10 @@ class SearchElasticService {
 	 */
 	private $client;
 
+	/**
+	 * @var string
+	 */
+	private $processorName;
 
 	/**
 	 * @param IServerContainer $server
@@ -96,6 +98,7 @@ class SearchElasticService {
 
 		$this->index = new Index($client, 'oc-'.$instanceID);
 		$this->type = new Type($this->index, 'file');
+		$this->processorName = 'oc-processor-'.$instanceID;
 
 	}
 
@@ -127,7 +130,7 @@ class SearchElasticService {
 	 * @return bool
 	 */
 	public function isProcessorSetup() {
-		$result = $this->client->request("_ingest/pipeline/".self::PROCESSOR_NAME, Request::GET);
+		$result = $this->client->request("_ingest/pipeline/".$this->processorName, Request::GET);
 		if ($result->getStatus() === 404) {
 			return false;
 		}
@@ -212,15 +215,14 @@ class SearchElasticService {
 		$payload['processors'] = $processors;
 
 
-		$response = $this->client->request("_ingest/pipeline/".self::PROCESSOR_NAME, Request::PUT, $payload);
-		//TODO: verify that we setup the processor correctly
+		$this->client->request("_ingest/pipeline/".$this->processorName, Request::PUT, $payload);
 
 	}
 
 	/**
 	 * WARNING: will delete the index if it exists
 	 */
-	private function setpIndex() {
+	private function setupIndex() {
 		// the number of shards and replicas should be adjusted as necessary outside of owncloud
 		$this->index->create(array('index' => array('number_of_shards' => 1, 'number_of_replicas' => 0),), true);
 

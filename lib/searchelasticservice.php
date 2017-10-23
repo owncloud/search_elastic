@@ -14,6 +14,7 @@
 
 namespace OCA\Search_Elastic;
 
+use Elastica\Client;
 use Elastica\Index;
 use Elastica\Request;
 use Elastica\Response;
@@ -29,7 +30,6 @@ use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\Node;
 use OCP\ILogger;
-use OCP\IConfig;
 use OCP\IServerContainer;
 
 class SearchElasticService {
@@ -73,28 +73,28 @@ class SearchElasticService {
 
 
 	/**
-	 * SearchElasticService constructor.
-	 *
 	 * @param IServerContainer $server
-	 * @param Index $index
 	 * @param StatusMapper $mapper
 	 * @param ILogger $logger
+	 * @param Client $client
 	 * @param SearchElasticConfigService $config
+	 * @param string $instanceID
 	 */
 	public function __construct(
 		IServerContainer $server,
-		Index $index,
 		StatusMapper $mapper,
 		ILogger $logger,
-		SearchElasticConfigService $config
+		Client $client,
+		SearchElasticConfigService $config,
+		$instanceID
 	) {
 		$this->server = $server;
 		$this->mapper = $mapper;
 		$this->logger = $logger;
 		$this->config = $config;
-		$this->index = $index;
-		$this->client = $this->index->getClient();
+		$this->client = $client;
 
+		$this->index = new Index($client, 'oc-'.$instanceID);
 		$this->type = new Type($this->index, 'file');
 
 	}

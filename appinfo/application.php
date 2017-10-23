@@ -14,7 +14,6 @@
 
 namespace OCA\Search_Elastic\AppInfo;
 
-use Elastica\Type;
 use OCA\Search_Elastic\Controller\AdminSettingsController;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\SearchElasticService;
@@ -54,19 +53,14 @@ class Application extends App {
 			}
 		);
 
-		$container->registerService('Index', function($c) {
-			$instanceId = \OC::$server->getSystemConfig()->getValue('instanceid', '');
-			return $c->query('Elastica')->getIndex('oc-'.$instanceId);
-		});
-
-
 		$container->registerService('SearchElasticService', function($c) {
 			return new SearchElasticService(
 				$c->getServer(),
-				$c->query('Index'),
 				$c->query('StatusMapper'),
-				$c->query('SearchElasticConfigService')
 				$c->query('Logger'),
+				$c->query('Elastica'),
+				$c->query('SearchElasticConfigService'),
+				$c->getServer()->getSystemConfig()->getValue('instanceid', '')
 			);
 		});
 

@@ -161,11 +161,11 @@ class SearchElasticConfigService {
 	 */
 	public function shouldContentBeIncluded() {
 		$noContent = $this->getIndexNoContentFlag();
-		return $noContent === true
+		return !($noContent === true
 			|| $noContent === 1
 			|| $noContent === 'true'
 			|| $noContent === '1'
-			|| $noContent === 'on';
+			|| $noContent === 'on');
 	}
 
 	/**

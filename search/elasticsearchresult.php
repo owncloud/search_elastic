@@ -72,7 +72,7 @@ class ElasticSearchResult extends FileResult {
 			);
 		}
 		$this->permissions = $node->getPermissions();
-		$this->modified = (int)$data['file']['mtime'];
+		$this->modified = (int)$data['mtime'];
 		if (isset($highlights['file.content'])) {
 			$this->highlights = $highlights['file.content'];
 		} else {

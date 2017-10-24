@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  elasticsearch:
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    expose:
+      - "9200"
+      - "9300"
+    ports:
+      - "9200:9200"
+      - "9300:9300"

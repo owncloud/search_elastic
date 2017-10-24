@@ -165,50 +165,13 @@ class SearchElasticService {
 					'field' 		=> 'data',
 					'target_field' 	=> 'file',
 					'indexed_chars'	=> '-1',
-					'ignore_missing'=> true
 				]
 			],
 			[
 				'remove' => [
 					'field'			=> 'data',
-					'ignore_failure'=> true
 				]
 			],
-			[
-				'rename' => [
-					'field'			=> 'mtime',
-					'target_field'	=> 'file.mtime',
-					'ignore_missing'=> true
-				]
-			],
-			[
-				'rename' => [
-					'field'			=> 'name',
-					'target_field'	=> 'file.name',
-					'ignore_missing'=> true
-				]
-			],
-			[
-				'rename' => [
-					'field'			=> 'users',
-					'target_field'	=> 'file.users',
-					'ignore_missing'=> true
-				]
-			],
-			[
-				'rename' => [
-					'field'			=> 'size',
-					'target_field'	=> 'file.size',
-					'ignore_missing'=> true
-				]
-			],
-			[
-				'rename' => [
-					'field'			=> 'groups',
-					'target_field'	=> 'file.groups',
-					'ignore_missing'=> true
-				]
-			]
 		];
 
 		$payload = [];
@@ -237,20 +200,20 @@ class SearchElasticService {
 			'users'          => [ 'type' => 'text', 'store' => true ],
 			'groups'         => [ 'type' => 'text', 'store' => true ],
 			// only indexed when content was extracted
-			'content' => [
+			'file.content' => [
 				'type' => 'text', 'store' => true,
 				'term_vector' => 'with_positions_offsets',
 			],
-			'title' => [
+			'file.title' => [
 				'type' => 'text', 'store' => true,
 				'term_vector' => 'with_positions_offsets',
 			],
-			'date'           => [ 'type' => 'text', 'store' => true ],
-			'author'         => [ 'type' => 'text', 'store' => true ],
-			'keywords'       => [ 'type' => 'text', 'store' => true ],
-			'content_type'   => [ 'type' => 'text', 'store' => true ],
-			'content_length' => [ 'type' => 'long',   'store' => true ],
-			'language'       => [ 'type' => 'text', 'store' => true ],
+			'file.date'           => [ 'type' => 'text', 'store' => true ],
+			'file.author'         => [ 'type' => 'text', 'store' => true ],
+			'file.keywords'       => [ 'type' => 'text', 'store' => true ],
+			'file.content_type'   => [ 'type' => 'text', 'store' => true ],
+			'file.content_length' => [ 'type' => 'long',   'store' => true ],
+			'file.language'       => [ 'type' => 'text', 'store' => true ],
 		));
 		$type->setMapping($mapping);
 	}
@@ -368,20 +331,28 @@ class SearchElasticService {
 
 		if ($this->canExtractContent($node, $extractContent)) {
 
+			$this->logger->debug(
+				"indexNode: inserting document with pipeline processor: ".
+				json_encode($doc->getData()),
+				['app' => 'search_elastic']
+			);
 			$doc->addFileContent('data',$node->getContent());
 
-		$this->logger->debug("indexNode: upserting document to index: ".
-			json_encode($data), ['app' => 'search_elastic']
-		);
-		$doc->setDocAsUpsert(true);
-		// this is a workaround to acutally be able to use parameters when setting a document
-		// see: https://github.com/ruflin/Elastica/issues/1248
-		$bulk = new Bulk($this->index->getClient());
-		$bulk->setType($this->type);
-		$bulk->setRequestParam('pipeline', self::PROCESSOR_NAME);
-		$bulk->addDocuments([$doc]);
-		$bulk->send();
+			// this is a workaround to acutally be able to use parameters when setting a document
+			// see: https://github.com/ruflin/Elastica/issues/1248
+			$bulk = new Bulk($this->index->getClient());
+			$bulk->setType($this->type);
+			$bulk->setRequestParam('pipeline', $this->processorName);
+			$bulk->addDocuments([$doc]);
+			$bulk->send();
+			return true;
+		}
 
+		$this->logger->debug(
+			"indexNode: upserting document to index: ".
+			json_encode($doc->getData()), ['app' => 'search_elastic']
+		);
+		$this->type->updateDocument($doc);
 		return true;
 
 	}

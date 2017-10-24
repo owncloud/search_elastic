@@ -137,8 +137,7 @@ class ElasticSearchProvider extends PagedProvider {
 	public function fetchResults ($query, $size, $page) {
 
 		$es_filter = new BoolQuery();
-		$es_filter->addShould(new Match('file.users', $this->user->getUID()));
-
+		$es_filter->addShould(new Match('users', $this->user->getUID()));
 		$noContentGroups = $this->config->getGroupNoContentArray();
 		$searchContent = true;
 		if ( !$this->config->shouldContentBeIncluded()) {
@@ -146,7 +145,7 @@ class ElasticSearchProvider extends PagedProvider {
 		}
 		foreach ($this->groups as $group) {
 			$groupId = $group->getGID();
-			$es_filter->addShould(new Match('file.groups', $groupId));
+			$es_filter->addShould(new Match('groups', $groupId));
 			if (in_array($groupId, $noContentGroups)) {
 				$searchContent = false;
 			}
@@ -159,7 +158,7 @@ class ElasticSearchProvider extends PagedProvider {
 		if ($searchContent) {
 			$es_bool->addShould(new Query\MatchPhrasePrefix('file.content', $loweredQuery));
 		}
-		$es_bool->addShould(new Query\MatchPhrasePrefix('file.name', $loweredQuery));
+		$es_bool->addShould(new Query\MatchPhrasePrefix('name', $loweredQuery));
 		$es_bool->setMinimumShouldMatch(1);
 
 		$es_query = new Query($es_bool);

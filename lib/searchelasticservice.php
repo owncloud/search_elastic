@@ -349,24 +349,26 @@ class SearchElasticService {
 			['app' => 'search_elastic']
 		);
 
-		$data = ['size' => $size = $node->getSize()];
+		$doc = new Document($node->getId());
 
 		// we do not index the path because it might be different for each user
 		// FIXME what about shared files? the recipient can rename them ...
-		$data['name'] = $node->getName();
+		$doc->set('name', $node->getName());
 
-		$data['mtime'] = $node->getMTime();
+		$doc->set('size', $node->getSize());
+		$doc->set('mtime', $node->getMTime());
 
+		// document permissions
 		$access = $this->getUsersWithReadPermission($node, $userId);
-		$data['users'] = $access['users'];
-		$data['groups'] = $access['groups'];
+		$doc->set('users', $access['users']);
+		$doc->set('groups', $access['groups']);
+
+
+		$doc->setDocAsUpsert(true);
 
 		if ($this->canExtractContent($node, $extractContent)) {
 			$data['data'] = base64_encode($node->getContent());
-		}
 
-		$doc = new Document($node->getId());
-		$doc->setData($data);
 
 		$this->logger->debug("indexNode: upserting document to index: ".
 			json_encode($data), ['app' => 'search_elastic']

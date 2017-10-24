@@ -367,8 +367,8 @@ class SearchElasticService {
 		$doc->setDocAsUpsert(true);
 
 		if ($this->canExtractContent($node, $extractContent)) {
-			$data['data'] = base64_encode($node->getContent());
 
+			$doc->addFileContent('data',$node->getContent());
 
 		$this->logger->debug("indexNode: upserting document to index: ".
 			json_encode($data), ['app' => 'search_elastic']

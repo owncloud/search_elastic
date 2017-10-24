@@ -11,37 +11,30 @@ code is [available on GitHub](https://github.com/owncloud/search_elastic)
 
 ## Installation of elasticsearch
 
-### Elasticsearch 5.x
+### Elasticsearch 6
 
-> Elasticsearch 5 is not yet supported. See Todo section below for what needs to be done
+> Elasticsearch 6 is not yet supported
 
-### Elasticsearch 2.4.4/2.3.5
+### Elasticsearch 5.6.x
 
-1. Download elasticsearch 2.4.4/2.3.5 from https://www.elastic.co/downloads/past-releases/elasticsearch-2-4-4 / https://www.elastic.co/downloads/past-releases/elasticsearch-2-3-5
-2. After installation go into the elasticsearch home and install attachments mapper plugin: `bin/plugin install mapper-attachments`
-3. (Re)start elasticsearch
+`search_elastic` requires [ingest-attachment](https://www.elastic.co/guide/en/elasticsearch/plugins/5.6/ingest-attachment.html) processor to be present
 
 ```
 cd /usr/share/elasticsearch/
-bin/plugin install mapper-attachments
+bin/elasticsearch-plugin install ingest-attachment
 service elasticsearch restart
 ```
 
-### Elasticsearch 2.2.x
+##### testing locally with docker
 
-> Do not use 2.2. The bugfix for indexing docx files (https://github.com/elastic/elasticsearch/pull/17059) has only been merged since 2.3.0
+To have a elastic-search running locally, use `docker-compose  -f tests/docker-compose.yml up `.
+It will build an image with the ingest-attachment plugin available and expose elasticseach locally at port 9200/9300 
 
-### Elasticsearch 2.1.2
 
-1. Download elasticsearch 2.1.2 from https://www.elastic.co/downloads/past-releases/elasticsearch-2-1-2
-2. After installation go into the elasticsearch home and install attachments mapper plugin: `bin/plugin install elasticsearch/elasticsearch-mapper-attachments/3.1.2`
-3. (Re)start elasticsearch
+### Elasticsearch 2.x
 
-```
-cd /usr/share/elasticsearch/
-bin/plugin install elasticsearch/elasticsearch-mapper-attachments/3.1.2
-service elasticsearch restart
-```
+> Elasticsearch 2.x is only supported in app versions up to 0.2.5.
+
 
 ## Installation of search_elastic
 - install & enable the app

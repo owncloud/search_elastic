@@ -115,7 +115,11 @@ class UpdateContent extends QueuedJob implements IUserSession {
 			$passPhrase = $this->config->getSystemValue('secret');
 			$privateKey = \OC::$server->getEncryptionKeyStorage()->getSystemUserKey($masterKeyId . '.privateKey', Encryption::ID);
 
-			$crypt = new Crypt($this->logger, $this, $this->config);
+			$crypt = new Crypt(
+				$this->logger,
+				$this, $this->config,
+				$this->container->query('OCP\\IL10N')
+			);
 
 			$privateKey = $crypt->decryptPrivateKey($privateKey, $passPhrase, $masterKeyId);
 			if ($privateKey) {

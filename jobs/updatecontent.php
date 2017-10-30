@@ -20,6 +20,7 @@ use OCA\Encryption\Crypto\Encryption;
 use OCA\Encryption\Session;
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\Db\StatusMapper;
+use OCP\AppFramework\IAppContainer;
 use OCP\Files\Folder;
 use OCP\IConfig;
 use OCP\ILogger;
@@ -33,6 +34,7 @@ class UpdateContent extends QueuedJob implements IUserSession {
 	 * @var ILogger
 	 */
 	protected $logger;
+
 	/**
 	 * @var IConfig
 	 */
@@ -44,12 +46,17 @@ class UpdateContent extends QueuedJob implements IUserSession {
 	protected $user;
 
 	/**
+	 * @var IAppContainer
+	 */
+	protected $container;
+
+	/**
 	 * updates changed content for files
 	 * @param array $arguments
 	 */
 	public function run($arguments){
 		$app = new Application();
-		$container = $app->getContainer();
+		$this->container = $app->getContainer();
 		$this->logger = \OC::$server->getLogger();
 		$this->config = \OC::$server->getConfig();
 
@@ -70,7 +77,7 @@ class UpdateContent extends QueuedJob implements IUserSession {
 			if ($home instanceof Folder) {
 
 				/** @var StatusMapper $statusMapper */
-				$statusMapper = $container->query('StatusMapper');
+				$statusMapper = $this->container->query('StatusMapper');
 				$fileIds = $statusMapper->findFilesWhereContentChanged($home);
 
 				$this->logger->debug(
@@ -78,7 +85,7 @@ class UpdateContent extends QueuedJob implements IUserSession {
 					['app' => 'search_elastic']
 				);
 
-				$container->query('SearchElasticService')->indexNodes($userId, $fileIds);
+				$this->container->query('SearchElasticService')->indexNodes($userId, $fileIds);
 
 			} else {
 				$this->logger->debug(

@@ -15,9 +15,7 @@
 namespace OCA\Search_Elastic\Jobs;
 
 use OC\BackgroundJob\QueuedJob;
-use OCA\Encryption\Crypto\Crypt;
-use OCA\Encryption\Crypto\Encryption;
-use OCA\Encryption\Session;
+use OCA\Encryption\KeyManager;
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCP\AppFramework\IAppContainer;
@@ -108,26 +106,16 @@ class UpdateContent extends QueuedJob implements IUserSession {
 	 */
 	protected function initMasterKeyIfAvailable() {
 
-		if (\OC::$server->getAppManager()->isEnabledForUser('encryption')
+		if (\OC::$server->getEncryptionManager()->isReady()
+			&& \OC::$server->getAppManager()->isEnabledForUser('encryption')
 			&& $this->config->getAppValue('encryption', 'useMasterKey')) {
 
-			$masterKeyId = $this->config->getAppValue('encryption', 'masterKeyId');
-			$passPhrase = $this->config->getSystemValue('secret');
-			$privateKey = \OC::$server->getEncryptionKeyStorage()->getSystemUserKey($masterKeyId . '.privateKey', Encryption::ID);
+			// we need to initialize a fresh app container to get the current session
+			$encryption = new \OCA\Encryption\AppInfo\Application([], true);
 
-			$crypt = new Crypt(
-				$this->logger,
-				$this, $this->config,
-				$this->container->query('OCP\\IL10N')
-			);
-
-			$privateKey = $crypt->decryptPrivateKey($privateKey, $passPhrase, $masterKeyId);
-			if ($privateKey) {
-				\OC::$server->getUserSession()->getSession()->set('privateKey', $privateKey);
-				\OC::$server->getUserSession()->getSession()->set('encryptionInitialized', Session::INIT_SUCCESSFUL);
-			} else {
-				// TODO log errors
-			}
+			/** @var KeyManager $keyManager */
+			$keyManager = $encryption->getContainer()->query('KeyManager');
+			$keyManager->init('',''); // uid and password are overwritten in master key mode
 		}
 	}
 

@@ -15,6 +15,7 @@
 namespace OCA\Search_Elastic\Jobs;
 
 use OC\BackgroundJob\QueuedJob;
+use OCA\Encryption\Crypto\Encryption;
 use OCA\Encryption\KeyManager;
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\Db\StatusMapper;
@@ -112,6 +113,9 @@ class UpdateContent extends QueuedJob implements IUserSession {
 
 			// we need to initialize a fresh app container to get the current session
 			$encryption = new \OCA\Encryption\AppInfo\Application([], true);
+			$encryption_manager = \OC::$server->getEncryptionManager();
+			$encryption_manager->unregisterEncryptionModule(Encryption::ID);
+			$encryption->registerEncryptionModule();
 
 			/** @var KeyManager $keyManager */
 			$keyManager = $encryption->getContainer()->query('KeyManager');

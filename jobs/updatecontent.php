@@ -15,11 +15,11 @@
 namespace OCA\Search_Elastic\Jobs;
 
 use OC\BackgroundJob\QueuedJob;
-use OCA\Encryption\Crypto\Crypt;
 use OCA\Encryption\Crypto\Encryption;
-use OCA\Encryption\Session;
+use OCA\Encryption\KeyManager;
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\Db\StatusMapper;
+use OCP\AppFramework\IAppContainer;
 use OCP\Files\Folder;
 use OCP\IConfig;
 use OCP\ILogger;
@@ -33,6 +33,7 @@ class UpdateContent extends QueuedJob implements IUserSession {
 	 * @var ILogger
 	 */
 	protected $logger;
+
 	/**
 	 * @var IConfig
 	 */
@@ -44,12 +45,17 @@ class UpdateContent extends QueuedJob implements IUserSession {
 	protected $user;
 
 	/**
+	 * @var IAppContainer
+	 */
+	protected $container;
+
+	/**
 	 * updates changed content for files
 	 * @param array $arguments
 	 */
 	public function run($arguments){
 		$app = new Application();
-		$container = $app->getContainer();
+		$this->container = $app->getContainer();
 		$this->logger = \OC::$server->getLogger();
 		$this->config = \OC::$server->getConfig();
 
@@ -70,7 +76,7 @@ class UpdateContent extends QueuedJob implements IUserSession {
 			if ($home instanceof Folder) {
 
 				/** @var StatusMapper $statusMapper */
-				$statusMapper = $container->query('StatusMapper');
+				$statusMapper = $this->container->query('StatusMapper');
 				$fileIds = $statusMapper->findFilesWhereContentChanged($home);
 
 				$this->logger->debug(
@@ -78,7 +84,7 @@ class UpdateContent extends QueuedJob implements IUserSession {
 					['app' => 'search_elastic']
 				);
 
-				$container->query('SearchElasticService')->indexNodes($userId, $fileIds);
+				$this->container->query('SearchElasticService')->indexNodes($userId, $fileIds);
 
 			} else {
 				$this->logger->debug(
@@ -101,22 +107,19 @@ class UpdateContent extends QueuedJob implements IUserSession {
 	 */
 	protected function initMasterKeyIfAvailable() {
 
-		if (\OC::$server->getAppManager()->isEnabledForUser('encryption')
+		if (\OC::$server->getEncryptionManager()->isReady()
+			&& \OC::$server->getAppManager()->isEnabledForUser('encryption')
 			&& $this->config->getAppValue('encryption', 'useMasterKey')) {
 
-			$masterKeyId = $this->config->getAppValue('encryption', 'masterKeyId');
-			$passPhrase = $this->config->getSystemValue('secret');
-			$privateKey = \OC::$server->getEncryptionKeyStorage()->getSystemUserKey($masterKeyId . '.privateKey', Encryption::ID);
+			// we need to initialize a fresh app container to get the current session
+			$encryption = new \OCA\Encryption\AppInfo\Application([], true);
+			$encryption_manager = \OC::$server->getEncryptionManager();
+			$encryption_manager->unregisterEncryptionModule(Encryption::ID);
+			$encryption->registerEncryptionModule();
 
-			$crypt = new Crypt($this->logger, $this, $this->config);
-
-			$privateKey = $crypt->decryptPrivateKey($privateKey, $passPhrase, $masterKeyId);
-			if ($privateKey) {
-				\OC::$server->getUserSession()->getSession()->set('privateKey', $privateKey);
-				\OC::$server->getUserSession()->getSession()->set('encryptionInitialized', Session::INIT_SUCCESSFUL);
-			} else {
-				// TODO log errors
-			}
+			/** @var KeyManager $keyManager */
+			$keyManager = $encryption->getContainer()->query('KeyManager');
+			$keyManager->init('',''); // uid and password are overwritten in master key mode
 		}
 	}
 

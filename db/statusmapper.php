@@ -14,6 +14,7 @@
 
 namespace OCA\Search_Elastic\Db;
 
+use OCA\Files_Sharing\SharedStorage;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\Entity;
@@ -242,6 +243,13 @@ class StatusMapper extends Mapper {
 
 		foreach ($mounts as $mount) {
 			$storage = $mount->getStorage();
+
+			// skip shared storages, they must be indexed in the context of
+			// their owner to prevent marking files as vanished
+			if ($storage->instanceOfStorage(SharedStorage::class) ) {
+				continue;
+			}
+
 			//only index external files if the admin enabled it
 
 			if ($this->config->getScanExternalStorageFlag() || $storage->isLocal()) {

@@ -1,0 +1,35 @@
+default:
+  autoload:
+     '': %paths.base%/../features/bootstrap
+
+  suites:
+    webUISearchElastic:
+      paths:
+        - %paths.base%/../features/webUISearchElastic
+      contexts:
+        - SearchElasticContext:
+        - FeatureContext: &common_feature_context_params
+            baseUrl:  http://localhost:8080
+            adminUsername: admin
+            adminPassword: admin
+            regularUserPassword: 123456
+            ocPath: apps/testing/api/v1/occ
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUIUsersContext:
+        - WebUIFilesContext:
+        - WebUISearchContext:
+        - WebUIElasticSearchContext:
+
+    apiSearchElastic:
+      paths:
+        - %paths.base%/../features/apiSearchElastic
+      contexts:
+        - SearchElasticContext:
+        - FeatureContext: *common_feature_context_params
+        - SearchContext:
+
+  extensions:
+      jarnaiz\JUnitFormatter\JUnitFormatterExtension:
+          filename: report.xml
+          outputDir: %paths.base%/../output/

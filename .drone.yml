@@ -33,6 +33,12 @@ pipeline:
       - php occ a:e testing
       - php occ a:l
 
+  test-php-lint:
+    image: owncloudci/php:${PHP_VERSION}
+    pull: true
+    commands:
+      - make test-php-lint
+
   phpunit-unit-tests:
     image: owncloudci/php:${PHP_VERSION}
     pull: true

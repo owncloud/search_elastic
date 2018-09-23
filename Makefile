@@ -9,6 +9,8 @@ endif
 # bin file definitions
 PHPUNIT=php -d zend.enable_gc=0  "$(PWD)/../../lib/composer/bin/phpunit"
 PHPDBG=phpdbg -qrr -d memory_limit=4096M -d zend.enable_gc=0 "$(PWD)/../../lib/composer/bin/phpunit"
+PHP_PARALLEL_LINT=php -d zend.enable_gc=0 vendor-bin/php-parallel-lint/vendor/bin/parallel-lint
+
 
 app_name=$(notdir $(CURDIR))
 project_directory=$(CURDIR)/../$(app_name)
@@ -42,29 +44,12 @@ composer_dev_deps=lib/composer/phpunit
 #
 # Catch-all rules
 #
+
 .PHONY: all
 all: $(composer_dev_deps)
 
 .PHONY: clean
 clean: clean-composer-deps clean-dist clean-build
-
-#
-# ownCloud app PHP dependencies
-#
-$(composer_deps): composer.json composer.lock
-	php $(COMPOSER_BIN) install --no-dev
-
-$(composer_dev_deps): composer.json composer.lock
-	php $(COMPOSER_BIN) install --dev
-
-.PHONY: clean-composer-deps
-clean-composer-deps:
-	rm -Rf $(composer_deps)
-
-.PHONY: update-composer
-update-composer:
-	rm -f composer.lock
-	php $(COMPOSER_BIN) install --prefer-dist
 
 #
 # dist
@@ -96,11 +81,41 @@ clean-dist:
 clean-build:
 	rm -Rf $(build_dir)
 
+##
+## Dependency management
+##--------------------------------------
+
+.PHONY: install-php-deps
+install-php-deps:          ## Install PHP dependencies
+install-php-deps: $(composer_deps)
+
+$(composer_deps): composer.json composer.lock
+	$(COMPOSER_BIN) install --no-dev
+
+$(composer_dev_deps): composer.json composer.lock
+	$(COMPOSER_BIN) install --dev
+
+.PHONY: clean-composer-deps
+clean-composer-deps:
+	rm -Rf $(composer_deps)
+
+vendor/bamarni/composer-bin-plugin: $(composer_deps)
+
+vendor-bin/php-parallel-lint/vendor: vendor/bamarni/composer-bin-plugin  vendor-bin/php-parallel-lint/composer.lock
+	$(COMPOSER_BIN) bin php-parallel-lint install --no-progress
+
+vendor-bin/php-parallel-lint/composer.lock: vendor-bin/php-parallel-lint/composer.json
+	@echo php-parallel-lint composer.lock is not up to date.
 
 
 ##
 ## Tests
 ##--------------------------------------
+.PHONY: test-php-lint
+test-php-lint:             ## php linting
+test-php-lint: vendor-bin/php-parallel-lint/vendor
+	$(PHP_PARALLEL_LINT) --exclude vendor --exclude build --exclude vendor-bin .
+
 .PHONY: test-php-unit
 test-php-unit:
 test-php-unit:             ## Run php unit tests

@@ -45,6 +45,13 @@ pipeline:
     commands:
       - make test-php-unit-dbg
 
+  scrutinizer:
+    image: owncloudci/php:${PHP_VERSION}
+    pull: true
+    commands:
+      - wget -q https://scrutinizer-ci.com/ocular.phar
+      - php ocular.phar code-coverage:upload --access-token=c014f674b55be0d0e39f63523623cae5f33cebba1f95846e84bdbedeed3e43c6  --format=php-clover tests/unit/clover.xml
+
   notify:
     image: plugins/slack:1
     pull: true

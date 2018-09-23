@@ -1,5 +1,15 @@
 SHELL := /bin/bash
 
+COMPOSER_BIN := $(shell command -v composer 2> /dev/null)
+ifndef COMPOSER_BIN
+    $(error composer is not available on your system, please install composer)
+endif
+
+
+# bin file definitions
+PHPUNIT=php -d zend.enable_gc=0  "$(PWD)/../../lib/composer/bin/phpunit"
+PHPDBG=phpdbg -qrr -d memory_limit=4096M -d zend.enable_gc=0 "$(PWD)/../../lib/composer/bin/phpunit"
+
 app_name=$(notdir $(CURDIR))
 project_directory=$(CURDIR)/../$(app_name)
 build_tools_directory=$(CURDIR)/build/tools
@@ -24,7 +34,6 @@ app_src_dirs=appinfo command controller css db hooks img jobs js lib search temp
 app_all_src=$(app_src_dirs) $(app_doc_files)
 build_dir=build
 dist_dir=$(build_dir)/dist
-COMPOSER_BIN=$(build_dir)/composer.phar
 
 # internal aliases
 composer_deps=vendor/
@@ -40,28 +49,20 @@ all: $(composer_dev_deps)
 clean: clean-composer-deps clean-dist clean-build
 
 #
-# Basic required tools
-#
-$(COMPOSER_BIN):
-	mkdir $(build_dir)
-	cd $(build_dir) && curl -sS https://getcomposer.org/installer | php
-
-#
 # ownCloud app PHP dependencies
 #
-$(composer_deps): $(COMPOSER_BIN) composer.json composer.lock
+$(composer_deps): composer.json composer.lock
 	php $(COMPOSER_BIN) install --no-dev
 
-$(composer_dev_deps): $(COMPOSER_BIN) composer.json composer.lock
+$(composer_dev_deps): composer.json composer.lock
 	php $(COMPOSER_BIN) install --dev
 
 .PHONY: clean-composer-deps
 clean-composer-deps:
-	rm -f $(COMPOSER_BIN)
 	rm -Rf $(composer_deps)
 
 .PHONY: update-composer
-update-composer: $(COMPOSER_BIN)
+update-composer:
 	rm -f composer.lock
 	php $(COMPOSER_BIN) install --prefer-dist
 
@@ -94,3 +95,18 @@ clean-dist:
 .PHONY: clean-build
 clean-build:
 	rm -Rf $(build_dir)
+
+
+
+##
+## Tests
+##--------------------------------------
+.PHONY: test-php-unit
+test-php-unit:
+test-php-unit:             ## Run php unit tests
+	$(PHPUNIT) --configuration ./tests/unit/phpunit.xml
+
+.PHONY: test-php-unit-dbg
+test-php-unit-dbg:
+test-php-unit-dbg:         ## Run php unit tests with phpdbg
+	$(PHPDBG) --configuration ./tests/unit/phpunit.xml

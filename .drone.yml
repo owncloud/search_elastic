@@ -1,0 +1,24 @@
+workspace:
+  base: /var/www/owncloud
+  path: apps/search_elastic
+
+branches: [ master, release* ]
+
+clone:
+  git:
+    image: plugins/git:next
+
+pipeline:
+  install-server:
+    image: owncloudci/core
+    version: daily-stable10-qa
+    pull: true
+
+  notify:
+    image: plugins/slack:1
+    pull: true
+    secrets: [ slack_webhook ]
+    channel: builds
+    when:
+      status: [ failure, changed ]
+      event: [ push, tag ]

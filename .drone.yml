@@ -1,0 +1,156 @@
+workspace:
+  base: /var/www/owncloud
+  path: apps/search_elastic
+
+branches: [ master, release* ]
+
+clone:
+  git:
+    image: plugins/git:next
+
+pipeline:
+  install-server:
+    image: owncloudci/core
+    pull: true
+    version: daily-stable10-qa
+    db_type: ${DB_TYPE}
+    db_name: ${DB_NAME}
+    db_host: ${DB_HOST}
+    db_username: ${DB_USERNAME}
+    db_password: ${DB_PASSWORD}
+    db_timeout: 120
+
+  install-app:
+    image: owncloudci/php:${PHP_VERSION}
+    pull: true
+    environment:
+      - COMPOSER_HOME=/var/www/owncloud/apps/data_exporter/.cache/composer
+    commands:
+      - make
+      - cd /var/www/owncloud/
+      - php occ a:l
+      - php occ a:e search_elastic
+      - php occ a:e testing
+      - php occ a:l
+
+  test-php-lint:
+    image: owncloudci/php:${PHP_VERSION}
+    pull: true
+    commands:
+      - make test-php-lint
+
+  phpunit-unit-tests:
+    image: owncloudci/php:${PHP_VERSION}
+    pull: true
+    commands:
+      - make test-php-unit-dbg
+
+  scrutinizer:
+    image: owncloudci/php:${PHP_VERSION}
+    pull: true
+    commands:
+      - wget -q https://scrutinizer-ci.com/ocular.phar
+      - php ocular.phar code-coverage:upload --access-token=c014f674b55be0d0e39f63523623cae5f33cebba1f95846e84bdbedeed3e43c6  --format=php-clover tests/unit/clover.xml
+
+  notify:
+    image: plugins/slack:1
+    pull: true
+    secrets: [ slack_webhook ]
+    channel: builds
+    when:
+      status: [ failure, changed ]
+      event: [ push, tag ]
+
+services:
+  oci:
+    image: deepdiver/docker-oracle-xe-11g
+    environment:
+       - ORACLE_USER=autotest
+       - ORACLE_DB=XE
+    when:
+      matrix:
+        DB_TYPE: oci
+
+  mysql:
+    image: mysql:5.5
+    environment:
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=secret
+      - MYSQL_DATABASE=oc_db
+      - MYSQL_ROOT_PASSWORD=secret
+    when:
+      matrix:
+        DB_TYPE: mysql
+        DB_HOST: mysql
+
+  mysqlmb4:
+    image: mysql:5.7
+    environment:
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=secret
+      - MYSQL_DATABASE=oc_db
+      - MYSQL_ROOT_PASSWORD=secret
+    when:
+      matrix:
+        DB_TYPE: mysql
+        DB_HOST: mysqlmb4
+
+  pgsql:
+    image: postgres:9.4
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=oc_db
+    when:
+      matrix:
+        DB_TYPE: pgsql
+
+matrix:
+  include:
+    # unit tests
+     - PHP_VERSION: 5.6
+       OC_VERSION: daily-stable10-qa
+       DB_TYPE: sqlite
+
+     - PHP_VERSION: 7.0
+       OC_VERSION: daily-stable10-qa
+       DB_TYPE: sqlite
+
+     - PHP_VERSION: 7.1
+       OC_VERSION: daily-stable10-qa
+       DB_TYPE: sqlite
+
+     - PHP_VERSION: 7.2
+       OC_VERSION: daily-stable10-qa
+       DB_TYPE: sqlite
+
+     - PHP_VERSION: 7.1
+       OC_VERSION: daily-stable10-qa
+       DB_TYPE: pgsql
+       DB_HOST: pgsql
+       DB_NAME: oc_db
+       DB_USERNAME: admin
+       DB_PASSWORD: secret
+
+     - PHP_VERSION: 7.1
+       OC_VERSION: daily-stable10-qa
+       DB_TYPE: oci
+       DB_HOST: oci
+       DB_NAME: XE
+       DB_USERNAME: autotest
+
+     - PHP_VERSION: 7.1
+       OC_VERSION: daily-stable10-qa
+       DB_TYPE: mysql
+       DB_HOST: mysqlmb4
+       DB_NAME: oc_db
+       DB_USERNAME: admin
+       DB_PASSWORD: secret
+
+     - PHP_VERSION: 7.1
+       OC_VERSION: daily-stable10-qa
+       DB_TYPE: mysql
+       DB_HOST: mysql
+       DB_NAME: oc_db
+       DB_USERNAME: admin
+       DB_PASSWORD: secret

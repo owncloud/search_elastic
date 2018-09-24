@@ -1,0 +1,5 @@
+{
+    "require": {
+        "jakub-onderka/php-parallel-lint": "^1.0"
+    }
+}

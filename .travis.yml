@@ -1,7 +1,5 @@
 language: php
 php:
-  - 5.6
-  - 7.0
   - 7.1
   - 7.2
 
@@ -28,3 +26,8 @@ script:
 
 matrix:
   fast_finish: true
+  include:
+     - php: 5.6
+       env: CORE_BRANCH=stable10
+     - php: 7.0
+       env: CORE_BRANCH=stable10

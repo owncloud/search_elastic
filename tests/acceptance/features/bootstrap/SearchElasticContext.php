@@ -23,6 +23,7 @@
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use TestHelpers\SetupHelper;
+use Behat\Behat\Hook\Scope\AfterScenarioScope;
 
 require_once 'bootstrap.php';
 
@@ -59,6 +60,21 @@ class SearchElasticContext implements Context {
 	}
 
 	/**
+	 * @Given the search index has been reset
+	 * @When the administrator resets the search index
+	 *
+	 * @return void
+	 */
+	public function resetIndex() {
+		SetupHelper::runOcc(["search:reset"]);
+		SetupHelper::resetOpcache(
+			$this->featureContext->getBaseUrl(),
+			$this->featureContext->getAdminUsername(),
+			$this->featureContext->getAdminPassword()
+		);
+	}
+
+	/**
 	 * @BeforeScenario
 	 *
 	 * @param BeforeScenarioScope $scope
@@ -77,5 +93,17 @@ class SearchElasticContext implements Context {
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getOcPath()
 		);
+		$this->resetIndex();
+	}
+
+	/**
+	 * @AfterScenario
+	 *
+	 * @param AfterScenarioScope $scope
+	 *
+	 * @return void
+	 */
+	public function tearDownScenario(AfterScenarioScope $scope) {
+		$this->resetIndex();
 	}
 }

@@ -33,7 +33,6 @@ class ElasticSearchProvider extends PagedProvider {
 	 * @var ILogger
 	 */
 	private $logger;
-	/**
 
 	/**
 	 * @var IUser

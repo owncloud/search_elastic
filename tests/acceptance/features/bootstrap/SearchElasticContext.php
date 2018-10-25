@@ -24,6 +24,7 @@ use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use TestHelpers\SetupHelper;
 use Behat\Behat\Hook\Scope\AfterScenarioScope;
+use TestHelpers\AppConfigHelper;
 
 require_once 'bootstrap.php';
 
@@ -36,6 +37,16 @@ class SearchElasticContext implements Context {
 	 * @var FeatureContext
 	 */
 	private $featureContext;
+
+	/**
+	 * app setting of search_elastic nocontent before the test-run
+	 *
+	 * @var null|string|array
+	 * null means the setting was not changed
+	 * empty array or empty string means the setting was not set
+	 * and need to be deleted
+	 */
+	private $originalNoContentSetting = null;
 
 	/**
 	 * @Given all files have been indexed
@@ -75,6 +86,28 @@ class SearchElasticContext implements Context {
 	}
 
 	/**
+	 * @Given the administrator has configured the search_elastic app to index only metadata
+	 *
+	 * @return void
+	 */
+	public function setAppToIndexOnlyMetadata() {
+		if ($this->originalNoContentSetting === null) {
+			$this->originalNoContentSetting = AppConfigHelper::getAppConfig(
+				$this->featureContext->getBaseUrl(),
+				$this->featureContext->getAdminUsername(),
+				$this->featureContext->getAdminPassword(),
+				"search_elastic", "nocontent"
+			)['value'];
+			AppConfigHelper::modifyAppConfig(
+				$this->featureContext->getBaseUrl(),
+				$this->featureContext->getAdminUsername(),
+				$this->featureContext->getAdminPassword(),
+				"search_elastic", "nocontent", "true"
+			);
+		}
+	}
+
+	/**
 	 * @BeforeScenario
 	 *
 	 * @param BeforeScenarioScope $scope
@@ -104,6 +137,24 @@ class SearchElasticContext implements Context {
 	 * @return void
 	 */
 	public function tearDownScenario(AfterScenarioScope $scope) {
+		if ($this->originalNoContentSetting === ""
+			|| (\is_array($this->originalNoContentSetting)
+			&& \count($this->originalNoContentSetting) === 0)
+		) {
+			AppConfigHelper::deleteAppConfig(
+				$this->featureContext->getBaseUrl(),
+				$this->featureContext->getAdminUsername(),
+				$this->featureContext->getAdminPassword(),
+				"search_elastic", "nocontent"
+			);
+		} elseif ($this->originalNoContentSetting !== null) {
+			AppConfigHelper::modifyAppConfig(
+				$this->featureContext->getBaseUrl(),
+				$this->featureContext->getAdminUsername(),
+				$this->featureContext->getAdminPassword(),
+				"search_elastic", "nocontent", $this->originalNoContentSetting
+			);
+		}
 		$this->resetIndex();
 	}
 }

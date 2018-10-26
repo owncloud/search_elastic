@@ -180,6 +180,24 @@ So that I can find needed files quickly
       | old         |
       | new         |
 
+  Scenario Outline: search for files by pattern - pattern matches filename of one file and content of others
+    Given using <dav_version> DAV path
+    And user "user0" has uploaded file with content "files content" to "/ownCloud.txt"
+    And files of user "user0" have been indexed
+    When user "user0" searches for "ownCloud" using the WebDAV API
+    Then the HTTP status code should be "207"
+    And the search result of "user0" should contain these files:
+      |/ownCloud.txt  |
+      |/textfile0.txt |
+      |/textfile1.txt |
+      |/textfile2.txt |
+      |/textfile3.txt |
+      |/textfile4.txt |
+    Examples:
+      | dav_version |
+      | old         |
+      | new         |
+
   Scenario Outline: search for files by UTF pattern
     Given using <dav_version> DAV path
     And user "user0" has uploaded file with content "मेरो नेपालि content" to "/utf-upload.txt"

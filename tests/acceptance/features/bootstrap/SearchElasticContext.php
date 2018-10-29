@@ -39,7 +39,7 @@ class SearchElasticContext implements Context {
 	private $featureContext;
 
 	/**
-	 * app setting of search_elastic nocontent before the test-run
+	 * original app settings before the test-run
 	 *
 	 * @var null|string|array
 	 * null means the setting was not changed
@@ -47,6 +47,7 @@ class SearchElasticContext implements Context {
 	 * and need to be deleted
 	 */
 	private $originalNoContentSetting = null;
+	private $originalGroupLimitSetting = null;
 
 	/**
 	 * @Given all files have been indexed
@@ -98,13 +99,36 @@ class SearchElasticContext implements Context {
 				$this->featureContext->getAdminPassword(),
 				"search_elastic", "nocontent"
 			)['value'];
-			AppConfigHelper::modifyAppConfig(
+		}
+		AppConfigHelper::modifyAppConfig(
+			$this->featureContext->getBaseUrl(),
+			$this->featureContext->getAdminUsername(),
+			$this->featureContext->getAdminPassword(),
+			"search_elastic", "nocontent", "true"
+		);
+	}
+
+	/**
+	 * @Given the administrator limits the access to search_elastic to :group
+	 *
+	 * @param string $group
+	 * @return void
+	 */
+	public function limitAccessTo($group) {
+		if ($this->originalGroupLimitSetting === null) {
+			$this->originalGroupLimitSetting = AppConfigHelper::getAppConfig(
 				$this->featureContext->getBaseUrl(),
 				$this->featureContext->getAdminUsername(),
 				$this->featureContext->getAdminPassword(),
-				"search_elastic", "nocontent", "true"
-			);
+				"search_elastic", "group"
+			)['value'];
 		}
+		AppConfigHelper::modifyAppConfig(
+			$this->featureContext->getBaseUrl(),
+			$this->featureContext->getAdminUsername(),
+			$this->featureContext->getAdminPassword(),
+			"search_elastic", "group", $group
+		);
 	}
 
 	/**
@@ -137,23 +161,29 @@ class SearchElasticContext implements Context {
 	 * @return void
 	 */
 	public function tearDownScenario(AfterScenarioScope $scope) {
-		if ($this->originalNoContentSetting === ""
-			|| (\is_array($this->originalNoContentSetting)
-			&& \count($this->originalNoContentSetting) === 0)
-		) {
-			AppConfigHelper::deleteAppConfig(
-				$this->featureContext->getBaseUrl(),
-				$this->featureContext->getAdminUsername(),
-				$this->featureContext->getAdminPassword(),
-				"search_elastic", "nocontent"
-			);
-		} elseif ($this->originalNoContentSetting !== null) {
-			AppConfigHelper::modifyAppConfig(
-				$this->featureContext->getBaseUrl(),
-				$this->featureContext->getAdminUsername(),
-				$this->featureContext->getAdminPassword(),
-				"search_elastic", "nocontent", $this->originalNoContentSetting
-			);
+		$settings = [
+			"nocontent" => $this->originalNoContentSetting,
+			"group" => $this->originalGroupLimitSetting
+		];
+		foreach ($settings as $configKey => $originalValue) {
+			if ($originalValue === ""
+				|| (\is_array($originalValue)
+				&& \count($originalValue) === 0)
+			) {
+				AppConfigHelper::deleteAppConfig(
+					$this->featureContext->getBaseUrl(),
+					$this->featureContext->getAdminUsername(),
+					$this->featureContext->getAdminPassword(),
+					"search_elastic", $configKey
+				);
+			} elseif ($originalValue !== null) {
+				AppConfigHelper::modifyAppConfig(
+					$this->featureContext->getBaseUrl(),
+					$this->featureContext->getAdminUsername(),
+					$this->featureContext->getAdminPassword(),
+					"search_elastic", $configKey, $originalValue
+				);
+			}
 		}
 		$this->resetIndex();
 	}

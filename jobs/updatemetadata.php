@@ -17,6 +17,7 @@ namespace OCA\Search_Elastic\Jobs;
 use OCA\Search_Elastic\AppInfo\Application;
 use OC\BackgroundJob\QueuedJob;
 use OCA\Search_Elastic\Db\StatusMapper;
+use OCA\Search_Elastic\SearchElasticService;
 use OCP\Files\Folder;
 
 class UpdateMetadata extends QueuedJob {
@@ -80,7 +81,9 @@ class UpdateMetadata extends QueuedJob {
 					['app' => 'search_elastic']
 				);
 
-				$container->query('SearchElasticService')->indexNodes($userId, $fileIds, false);
+				/** @var SearchElasticService $service */
+				$service = $container->query('SearchElasticService');
+				$service->indexNodes($userId, $fileIds, false);
 
 			} else {
 				$logger->debug(

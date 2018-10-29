@@ -101,13 +101,17 @@ class ElasticSearchProvider extends PagedProvider {
 							. " for {$this->user->getUID()}. A background job will"
 							. " update the index with the new permissions.",
 							['app' => 'search_elastic']);
-					} else if ($nodes[0] instanceof Node) {
-						$results[] = new ElasticSearchResult($result, $nodes[0], $home);
-					} else {
-						$this->logger->error(
-							"Expected a Node for $fileId, received "
-							. json_encode($nodes[0]),
-							['app' => 'search_elastic']);
+					}
+
+					foreach ($nodes as $node) {
+						if ($node instanceof Node) {
+							$results[] = new ElasticSearchResult($result, $node, $home);
+						} else {
+							$this->logger->error(
+								"Expected a Node for $fileId, received "
+								. json_encode($node),
+								['app' => 'search_elastic']);
+						}
 					}
 				}
 				$page++;

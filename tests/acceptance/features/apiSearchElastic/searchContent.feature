@@ -303,67 +303,6 @@ So that I can find needed files quickly
       | old         |
       | new         |
 
-  @skip @issue-36
-  Scenario Outline: users searches for files shared to him as a single user
-    Given using <dav_version> DAV path
-    And user "user1" has been created
-    And user "user0" has shared file "upload.txt" with user "user1"
-    And user "user0" has shared folder "just-a-folder" with user "user1"
-    And all files have been indexed
-    When user "user1" searches for "content" using the WebDAV API
-    Then the HTTP status code should be "207"
-    And the search result of "user1" should contain these files:
-      |/upload.txt                  |
-      |/just-a-folder/upload.txt    |
-      |/just-a-folder/uploadÜठिF.txt|
-    Examples:
-      | dav_version |
-      | old         |
-      | new         |
-
-  @skip @issue-36
-  Scenario Outline:  users searches for files shared to him as a member of a group
-    Given using <dav_version> DAV path
-    And user "user1" has been created
-    And group "grp1" has been created
-    And user "user1" has been added to group "grp1"
-    And user "user0" has shared file "upload.txt" with group "grp1"
-    And user "user0" has shared folder "just-a-folder" with group "grp1"
-    And all files have been indexed
-    When user "user1" searches for "content" using the WebDAV API
-    Then the HTTP status code should be "207"
-    And the search result of "user1" should contain these files:
-      |/upload.txt                  |
-      |/just-a-folder/upload.txt    |
-      |/just-a-folder/uploadÜठिF.txt|
-    Examples:
-      | dav_version |
-      | old         |
-      | new         |
-
-  Scenario Outline: Unshared files should not be searched
-    Given using <dav_version> DAV path
-    And user "user1" has been created
-    And user "user0" has shared file "upload.txt" with user "user1"
-    And user "user0" has shared folder "just-a-folder" with user "user1"
-    And user "user1" has uploaded file with content "files content" to "/user1-upload.txt"
-    And all files have been indexed
-    When user "user1" unshares folder "/just-a-folder" using the WebDAV API
-    And user "user1" unshares file "/upload.txt" using the WebDAV API
-    And the administrator indexes all files
-    And user "user1" searches for "content" using the WebDAV API
-    Then the HTTP status code should be "207"
-    And the search result of "user1" should not contain these files:
-      |/upload.txt                  |
-      |/just-a-folder/upload.txt    |
-      |/just-a-folder/uploadÜठिF.txt|
-    But the search result of "user1" should contain these files:
-      |/user1-upload.txt                  |
-    Examples:
-      | dav_version |
-      | old         |
-      | new         |
-
   @local_storage
   Scenario Outline: search on local storage
     Given using <dav_version> DAV path
@@ -374,13 +313,13 @@ So that I can find needed files quickly
     And user "user0" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result of "user0" should contain these files:
-      |/local_storage/upload.txt       |
-      |/local_storage/just-a-folder/upload.txt    |
-      |/just-a-folder/uploadÜठिF.txt|
-      |/फन्नि näme/upload.txt    |
+      |/local_storage/upload.txt               |
+      |/local_storage/just-a-folder/upload.txt |
+      |/just-a-folder/uploadÜठिF.txt            |
+      |/फन्नि näme/upload.txt                     |
     But the search result of "user0" should not contain these files:
-      |/upload.txt                  |
-      |/just-a-folder/upload.txt|
+      |/upload.txt                             |
+      |/just-a-folder/upload.txt               |
     Examples:
       | dav_version |
       | old         |

@@ -48,6 +48,7 @@ class SearchElasticContext implements Context {
 	 */
 	private $originalNoContentSetting = null;
 	private $originalGroupLimitSetting = null;
+	private $originalGroupNoContentSetting = null;
 
 	/**
 	 * @Given all files have been indexed
@@ -109,7 +110,8 @@ class SearchElasticContext implements Context {
 	}
 
 	/**
-	 * @Given the administrator limits the access to search_elastic to :group
+	 * @When the administrator limits the access to search_elastic to :group
+	 * @Given the administrator has limited the access to search_elastic to :group
 	 *
 	 * @param string $group
 	 * @return void
@@ -128,6 +130,30 @@ class SearchElasticContext implements Context {
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
 			"search_elastic", "group", $group
+		);
+	}
+
+	/**
+	* @When the administrator disables the full text search for :group
+	* @Given the administrator has disabled the full text search for :group
+	*
+	* @param string $group
+	* @return void
+	*/
+	public function disableFullTextSearchFor($group) {
+		if ($this->originalGroupNoContentSetting === null) {
+			$this->originalGroupNoContentSetting = AppConfigHelper::getAppConfig(
+				$this->featureContext->getBaseUrl(),
+				$this->featureContext->getAdminUsername(),
+				$this->featureContext->getAdminPassword(),
+				"search_elastic", "group.nocontent"
+				)['value'];
+		}
+		AppConfigHelper::modifyAppConfig(
+			$this->featureContext->getBaseUrl(),
+			$this->featureContext->getAdminUsername(),
+			$this->featureContext->getAdminPassword(),
+			"search_elastic", "group.nocontent", $group
 		);
 	}
 
@@ -163,7 +189,8 @@ class SearchElasticContext implements Context {
 	public function tearDownScenario(AfterScenarioScope $scope) {
 		$settings = [
 			"nocontent" => $this->originalNoContentSetting,
-			"group" => $this->originalGroupLimitSetting
+			"group" => $this->originalGroupLimitSetting,
+			"group.nocontent" => $this->originalGroupNoContentSetting
 		];
 		foreach ($settings as $configKey => $originalValue) {
 			if ($originalValue === ""

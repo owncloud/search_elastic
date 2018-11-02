@@ -71,15 +71,16 @@ pipeline:
       matrix:
         TEST_SUITE: php
 
-  scrutinizer:
-    image: owncloudci/php:${PHP_VERSION}
+  codecov:
+    image: plugins/codecov:2
+    secrets: [codecov_token]
     pull: true
-    commands:
-      - wget -q https://scrutinizer-ci.com/ocular.phar
-      - php ocular.phar code-coverage:upload --access-token=c014f674b55be0d0e39f63523623cae5f33cebba1f95846e84bdbedeed3e43c6  --format=php-clover tests/unit/clover.xml
+    files:
+    - tests/output/clover.xml
     when:
       matrix:
-        TEST_SUITE: php
+        CODECOVERAGE: true
+
 
   fix-permissions:
     image: owncloudci/php:${PHP_VERSION}
@@ -209,6 +210,7 @@ matrix:
        OC_VERSION: daily-stable10-qa
        DB_TYPE: sqlite
        TEST_SUITE: php
+       CODECOVERAGE: true
 
      - PHP_VERSION: 7.1
        OC_VERSION: daily-stable10-qa
@@ -228,6 +230,7 @@ matrix:
        DB_USERNAME: admin
        DB_PASSWORD: secret
        TEST_SUITE: php
+       CODECOVERAGE: true
 
      - PHP_VERSION: 7.1
        OC_VERSION: daily-stable10-qa
@@ -236,6 +239,7 @@ matrix:
        DB_NAME: XE
        DB_USERNAME: autotest
        TEST_SUITE: php
+       CODECOVERAGE: true
 
      - PHP_VERSION: 7.1
        OC_VERSION: daily-stable10-qa
@@ -245,6 +249,7 @@ matrix:
        DB_USERNAME: admin
        DB_PASSWORD: secret
        TEST_SUITE: php
+       CODECOVERAGE: true
 
      - PHP_VERSION: 7.1
        OC_VERSION: daily-stable10-qa

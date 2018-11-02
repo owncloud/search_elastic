@@ -1,5 +1,6 @@
 /vendor
 /build
+tests/output
 tests/unit/clover.xml
 vendor-bin/**/vendor
 vendor-bin/**/composer.lock

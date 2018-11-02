@@ -1,8 +1,7 @@
 # Elasticsearch
 
 [![Build Status]https://drone.owncloud.com/api/badges/owncloud/search_elastic/status.svg?branch=master)](https://drone.owncloud.com/owncloud/search_elastic)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/owncloud/search_elastic/badges/quality-score.png?b=master&s=a272d1aa48772838b1268688341878c40ebc79cf)](https://scrutinizer-ci.com/g/owncloud/search_elastic/?branch=master)
-[![Code Coverage](https://scrutinizer-ci.com/g/owncloud/search_elastic/badges/coverage.png?b=master&s=1c430bab142b1b18d86bc169f138438a8ffe03ed)](https://scrutinizer-ci.com/g/owncloud/search_elastic/?branch=master)
+
 The search_elastic app adds a full text search for files stored in ownCloud. It requires an
 [elasticsearch](http://www.elasticsearch.org) server and can index all fitles supported by
  apache tika, eg. plain text, .docx, .xlsx, .pptx, .odt, .ods and .pdf files. The source

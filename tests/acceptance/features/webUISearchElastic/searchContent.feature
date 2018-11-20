@@ -15,31 +15,31 @@ So that I can find needed files quickly
 
   Scenario: Simple search
     When the user searches for "lorem" using the webUI
-    Then the file "lorem.txt" should be listed on the webUI
-    And the file "lorem-big.txt" should be listed on the webUI
-    And the file "lorem.txt" with the path "/simple-folder" should be listed in the search results in other folders section on the webUI
-    And the file "lorem-big.txt" with the path "/simple-folder" should be listed in the search results in other folders section on the webUI
-    And the file "lorem.txt" with the path "/0" should be listed in the search results in other folders section on the webUI
-    And the file "lorem.txt" with the path "/strängé नेपाली folder" should be listed in the search results in other folders section on the webUI
-    And the file "lorem-big.txt" with the path "/strängé नेपाली folder" should be listed in the search results in other folders section on the webUI
+    Then file "lorem.txt" should be listed on the webUI
+    And file "lorem-big.txt" should be listed on the webUI
+    And file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI
+    And file "lorem-big.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI
+    And file "lorem.txt" with path "/0" should be listed in the search results in the other folders section on the webUI
+    And file "lorem.txt" with path "/strängé नेपाली folder" should be listed in the search results in the other folders section on the webUI
+    And file "lorem-big.txt" with path "/strängé नेपाली folder" should be listed in the search results in the other folders section on the webUI
 
   Scenario: Search content only
     When the user searches for "ipsum" using the webUI
-    Then the file "lorem.txt" with the path "/simple-folder" should be listed in the search results in other folders section on the webUI with highlights containing:
+    Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
       """
       This is lorem text in the simple-folder.
       """
 
   Scenario: Search content only (not exact case)
     When the user searches for "iPsUM" using the webUI
-    Then the file "lorem.txt" with the path "/simple-folder" should be listed in the search results in other folders section on the webUI with highlights containing:
+    Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
       """
       This is lorem text in the simple-folder.
       """
 
   Scenario: Search content only (not full word - end of word missing)
     When the user searches for "ipsu" using the webUI
-    Then the file "lorem.txt" with the path "/simple-folder" should be listed in the search results in other folders section on the webUI with highlights containing:
+    Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
       """
       This is lorem text in the simple-folder.
       """
@@ -47,7 +47,7 @@ So that I can find needed files quickly
   @skip @issue-38
   Scenario: Search content only (not full word - start of word missing)
     When the user searches for "psum" using the webUI
-    Then the file "lorem.txt" with the path "/simple-folder" should be listed in the search results in other folders section on the webUI with highlights containing:
+    Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
       """
       This is lorem text in the simple-folder.
       """
@@ -55,7 +55,7 @@ So that I can find needed files quickly
   @skip @issue-38
   Scenario: Search content only (not full word - only middle part of word given)
     When the user searches for "psu" using the webUI
-    Then the file "lorem.txt" with the path "/simple-folder" should be listed in the search results in other folders section on the webUI with highlights containing:
+    Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
       """
       This is lorem text in the simple-folder.
       """
@@ -66,12 +66,12 @@ So that I can find needed files quickly
     And files of user "user1" have been indexed
     And the user has reloaded the current page of the webUI
     When the user searches for "search" using the webUI
-    Then the file "file-to-search-for.txt" should be listed on the webUI
-    And the file "new-file.txt" with the path "/" should be listed in the search results in other folders section on the webUI with highlights containing:
+    Then file "file-to-search-for.txt" should be listed on the webUI
+    And file "new-file.txt" with path "/" should be listed in the search results in the other folders section on the webUI with highlights containing:
       """
       content to search for
       """ 
-    But the file "lorem.txt" should not be listed on the webUI
+    But file "lorem.txt" should not be listed on the webUI
 
   Scenario: search for files by UTF pattern
     Given user "user1" has uploaded file with content "मेरो नेपालि content" to "/utf-upload.txt"
@@ -79,31 +79,31 @@ So that I can find needed files quickly
     And files of user "user1" have been indexed
     And the user has reloaded the current page of the webUI
     When the user searches for "नेपालि" using the webUI
-    Then the file "utf-upload.txt" with the path "/" should be listed in the search results in other folders section on the webUI
-    And the file "utf-upload.txt" with the path "/simple-folder" should be listed in the search results in other folders section on the webUI
+    Then file "utf-upload.txt" with path "/" should be listed in the search results in the other folders section on the webUI
+    And file "utf-upload.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI
 
   Scenario: search for deleted or renamed file
-    When the user deletes the file "lorem.txt" using the webUI
-    And the user renames the file "lorem-big.txt" to "aaa-lorem.txt" using the webUI
+    When the user deletes file "lorem.txt" using the webUI
+    And the user renames file "lorem-big.txt" to "aaa-lorem.txt" using the webUI
     And the administrator indexes files of user "user1"
     And the user searches for "ipsum" using the webUI
-    Then the file "lorem.txt" with the path "/" should not be listed in the search results in other folders section on the webUI
-    But the file "lorem.txt" with the path "/simple-folder" should be listed in the search results in other folders section on the webUI
-    And the file "lorem-big.txt" with the path "/" should not be listed in the search results in other folders section on the webUI
-    But the file "aaa-lorem.txt" with the path "/" should be listed in the search results in other folders section on the webUI
+    Then file "lorem.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
+    But file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI
+    And file "lorem-big.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
+    But file "aaa-lorem.txt" with path "/" should be listed in the search results in the other folders section on the webUI
 
   Scenario: search for new content in a overwritten file
-    When the user uploads overwriting the file "lorem-big.txt" using the webUI
+    When the user uploads overwriting file "lorem-big.txt" using the webUI
     And the administrator indexes files of user "user1"
     And the user searches for "file" using the webUI
-    Then the file "lorem-big.txt" with the path "/" should be listed in the search results in other folders section on the webUI
+    Then file "lorem-big.txt" with path "/" should be listed in the search results in the other folders section on the webUI
 
   Scenario: search for overwritten file, search for content that was in the original file, but not in the new file
-    When the user uploads overwriting the file "lorem-big.txt" using the webUI
+    When the user uploads overwriting file "lorem-big.txt" using the webUI
     And the administrator indexes files of user "user1"
     And the user searches for "suspendisse" using the webUI
-    Then the file "block-aligned.txt" with the path "/" should be listed in the search results in other folders section on the webUI
-    But the file "lorem-big.txt" with the path "/" should not be listed in the search results in other folders section on the webUI
+    Then file "block-aligned.txt" with path "/" should be listed in the search results in the other folders section on the webUI
+    But file "lorem-big.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
 
   Scenario: user should not be able to search in files of other users
     Given user "user2" has been created
@@ -111,5 +111,5 @@ So that I can find needed files quickly
     And all files have been indexed
     And the user has reloaded the current page of the webUI
     And the user searches for "secret" using the webUI
-    Then the file "user1-upload.txt" should not be listed on the webUI
-    Then the file "user1-upload.txt" with the path "/" should not be listed in the search results in other folders section on the webUI
+    Then file "user1-upload.txt" should not be listed on the webUI
+    Then file "user1-upload.txt" with path "/" should not be listed in the search results in the other folders section on the webUI

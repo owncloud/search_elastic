@@ -25,8 +25,8 @@ So that I can find needed files quickly
     And all files have been indexed
     And the user has reloaded the current page of the webUI
     When the user searches for "content" using the webUI
-    Then the file "upload.txt" with the path "/" should be listed in the search results in other folders section on the webUI
-    And the file "upload.txt" with the path "/just-a-folder" should be listed in the search results in other folders section on the webUI
+    Then file "upload.txt" with path "/" should be listed in the search results in the other folders section on the webUI
+    And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
 
   Scenario: user searches for files shared to him as a single user (files have been indexed only after sharing)
     Given user "user2" has been created
@@ -38,8 +38,8 @@ So that I can find needed files quickly
     And all files have been indexed
     And the user has reloaded the current page of the webUI
     When the user searches for "content" using the webUI
-    Then the file "upload.txt" with the path "/" should be listed in the search results in other folders section on the webUI
-    And the file "upload.txt" with the path "/just-a-folder" should be listed in the search results in other folders section on the webUI
+    Then file "upload.txt" with path "/" should be listed in the search results in the other folders section on the webUI
+    And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
 
   @skip @issue-36
   Scenario: user searches for files shared to him as a member of a group
@@ -55,8 +55,8 @@ So that I can find needed files quickly
     And all files have been indexed
     And the user has reloaded the current page of the webUI
     When the user searches for "content" using the webUI
-    Then the file "upload.txt" with the path "/" should be listed in the search results in other folders section on the webUI
-    And the file "upload.txt" with the path "/just-a-folder" should be listed in the search results in other folders section on the webUI
+    Then file "upload.txt" with path "/" should be listed in the search results in the other folders section on the webUI
+    And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
 
   Scenario: user searches for files shared to him as a member of a group (files have been indexed only after sharing)
     Given user "user2" has been created
@@ -70,8 +70,8 @@ So that I can find needed files quickly
     And all files have been indexed
     And the user has reloaded the current page of the webUI
     When the user searches for "content" using the webUI
-    Then the file "upload.txt" with the path "/" should be listed in the search results in other folders section on the webUI
-    And the file "upload.txt" with the path "/just-a-folder" should be listed in the search results in other folders section on the webUI
+    Then file "upload.txt" with path "/" should be listed in the search results in the other folders section on the webUI
+    And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
 
   @skip @issue-36
   Scenario: unshared files should not be searched
@@ -86,13 +86,13 @@ So that I can find needed files quickly
     And user "user2" has shared folder "just-a-folder" with user "user1"
     And all files have been indexed
     And the user has reloaded the current page of the webUI
-    When the user unshares the file "upload.txt" using the webUI
-    And the user unshares the folder "just-a-folder" using the webUI
+    When the user unshares file "upload.txt" using the webUI
+    And the user unshares folder "just-a-folder" using the webUI
     And the administrator indexes all files
     And the user searches for "content" using the webUI
-    Then the file "upload-keep.txt" with the path "/" should be listed in the search results in other folders section on the webUI
-    And the file "upload.txt" with the path "/" should not be listed in the search results in other folders section on the webUI
-    But the file "upload.txt" with the path "/just-a-folder" should not be listed in the search results in other folders section on the webUI
+    Then file "upload-keep.txt" with path "/" should be listed in the search results in the other folders section on the webUI
+    And file "upload.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
+    But file "upload.txt" with path "/just-a-folder" should not be listed in the search results in the other folders section on the webUI
 
   Scenario: unshared files should not be searched (files have been indexed only after sharing)
     Given user "user2" has been created
@@ -105,13 +105,13 @@ So that I can find needed files quickly
     And user "user2" has shared folder "just-a-folder" with user "user1"
     And all files have been indexed
     And the user has reloaded the current page of the webUI
-    When the user unshares the file "upload.txt" using the webUI
-    And the user unshares the folder "just-a-folder" using the webUI
+    When the user unshares file "upload.txt" using the webUI
+    And the user unshares folder "just-a-folder" using the webUI
     And the administrator indexes all files
     And the user searches for "content" using the webUI
-    Then the file "upload-keep.txt" with the path "/" should be listed in the search results in other folders section on the webUI
-    And the file "upload.txt" with the path "/" should not be listed in the search results in other folders section on the webUI
-    But the file "upload.txt" with the path "/just-a-folder" should not be listed in the search results in other folders section on the webUI
+    Then file "upload-keep.txt" with path "/" should be listed in the search results in the other folders section on the webUI
+    And file "upload.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
+    But file "upload.txt" with path "/just-a-folder" should not be listed in the search results in the other folders section on the webUI
 
   Scenario: unshared files should not be searched (files have been indexed only after unsharing)
     Given user "user2" has been created
@@ -123,13 +123,13 @@ So that I can find needed files quickly
     And user "user2" has shared file "upload-keep.txt" with user "user1"
     And user "user2" has shared folder "just-a-folder" with user "user1"
     And the user has reloaded the current page of the webUI
-    When the user unshares the file "upload.txt" using the webUI
-    And the user unshares the folder "just-a-folder" using the webUI
+    When the user unshares file "upload.txt" using the webUI
+    And the user unshares folder "just-a-folder" using the webUI
     And the administrator indexes all files
     And the user searches for "content" using the webUI
-    Then the file "upload-keep.txt" with the path "/" should be listed in the search results in other folders section on the webUI
-    And the file "upload.txt" with the path "/" should not be listed in the search results in other folders section on the webUI
-    But the file "upload.txt" with the path "/just-a-folder" should not be listed in the search results in other folders section on the webUI
+    Then file "upload-keep.txt" with path "/" should be listed in the search results in the other folders section on the webUI
+    And file "upload.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
+    But file "upload.txt" with path "/just-a-folder" should not be listed in the search results in the other folders section on the webUI
 
   @skip @issue-36
   Scenario: user searches for files re-shared to him
@@ -146,8 +146,8 @@ So that I can find needed files quickly
     And all files have been indexed
     And the user has reloaded the current page of the webUI
     When the user searches for "content" using the webUI
-    Then the file "upload.txt" with the path "/" should be listed in the search results in other folders section on the webUI
-    And the file "upload.txt" with the path "/just-a-folder" should be listed in the search results in other folders section on the webUI
+    Then file "upload.txt" with path "/" should be listed in the search results in the other folders section on the webUI
+    And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
 
   Scenario: user searches for files re-shared to him (files have been indexed only after second sharing)
     Given user "user2" has been created
@@ -162,5 +162,5 @@ So that I can find needed files quickly
     And all files have been indexed
     And the user has reloaded the current page of the webUI
     When the user searches for "content" using the webUI
-    Then the file "upload.txt" with the path "/" should be listed in the search results in other folders section on the webUI
-    And the file "upload.txt" with the path "/just-a-folder" should be listed in the search results in other folders section on the webUI
+    Then file "upload.txt" with path "/" should be listed in the search results in the other folders section on the webUI
+    And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI

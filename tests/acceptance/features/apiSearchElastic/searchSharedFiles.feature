@@ -5,7 +5,7 @@ I would like to be able to search for the content of files
 So that I can find needed files quickly
 
   Background:
-    Given user "user0" has been created
+    Given user "user0" has been created with default attributes
     And user "user0" has created a folder "/just-a-folder"
     And user "user0" has created a folder "/फन्नि näme"
     And user "user0" has uploaded file with content "files content" to "/upload.txt"
@@ -22,7 +22,7 @@ So that I can find needed files quickly
   @skip @issue-36
   Scenario Outline: user searches for files shared to him as a single user
     Given using <dav_version> DAV path
-    And user "user1" has been created
+    And user "user1" has been created with default attributes
     And user "user0" has shared file "upload.txt" with user "user1"
     And user "user0" has shared folder "just-a-folder" with user "user1"
     And all files have been indexed
@@ -39,7 +39,7 @@ So that I can find needed files quickly
 
   Scenario Outline: user searches for files shared to him as a single user (files have been indexed only after sharing)
     Given using <dav_version> DAV path
-    And user "user1" has been created
+    And user "user1" has been created with default attributes
     And user "user0" has created a folder "/not-indexed-folder"
     And user "user0" has uploaded file with content "files content" to "/not-indexed-upload.txt"
     And user "user0" has uploaded file with content "file with content in subfolder" to "/not-indexed-folder/upload.txt"
@@ -61,7 +61,7 @@ So that I can find needed files quickly
   @skip @issue-36
   Scenario Outline: user searches for files shared to him as a member of a group
     Given using <dav_version> DAV path
-    And user "user1" has been created
+    And user "user1" has been created with default attributes
     And group "grp1" has been created
     And user "user1" has been added to group "grp1"
     And user "user0" has shared file "upload.txt" with group "grp1"
@@ -80,7 +80,7 @@ So that I can find needed files quickly
 
   Scenario Outline: user searches for files shared to him as a member of a group (files have been indexed only after sharing)
     Given using <dav_version> DAV path
-    And user "user1" has been created
+    And user "user1" has been created with default attributes
     And group "grp1" has been created
     And user "user1" has been added to group "grp1"
     And user "user0" has created a folder "/not-indexed-folder"
@@ -104,7 +104,7 @@ So that I can find needed files quickly
   @skip @issue-36
   Scenario Outline: Unshared files should not be searched
     Given using <dav_version> DAV path
-    And user "user1" has been created
+    And user "user1" has been created with default attributes
     And user "user0" has shared file "upload.txt" with user "user1"
     And user "user0" has shared folder "just-a-folder" with user "user1"
     And user "user0" has shared file "/फन्नि näme/upload.txt" with user "user1"
@@ -129,7 +129,7 @@ So that I can find needed files quickly
 
   Scenario Outline: Unshared files should not be searched (files have been indexed only after sharing)
     Given using <dav_version> DAV path
-    And user "user1" has been created
+    And user "user1" has been created with default attributes
     And user "user0" has created a folder "/not-indexed-folder"
     And user "user0" has uploaded file with content "files content" to "/not-indexed-upload.txt"
     And user "user0" has uploaded file with content "files content" to "/not-indexed-upload-keep.txt"
@@ -159,7 +159,7 @@ So that I can find needed files quickly
 
   Scenario Outline: Unshared files should not be searched (files have been indexed only after unsharing)
     Given using <dav_version> DAV path
-    And user "user1" has been created
+    And user "user1" has been created with default attributes
     And user "user0" has created a folder "/not-indexed-folder"
     And user "user0" has uploaded file with content "files content" to "/not-indexed-upload.txt"
     And user "user0" has uploaded file with content "files content" to "/not-indexed-upload-keep.txt"
@@ -189,8 +189,10 @@ So that I can find needed files quickly
   @skip @issue-36
   Scenario Outline: users searches for files re-shared to him
     Given using <dav_version> DAV path
-    And user "user1" has been created
-    And user "user2" has been created
+    And these users have been created with default attributes:
+      | username |
+      | user1    |
+      | user2    |
     And user "user0" has shared file "upload.txt" with user "user1"
     And user "user0" has shared folder "just-a-folder" with user "user1"
     And user "user1" has shared file "upload.txt" with user "user2"
@@ -209,8 +211,10 @@ So that I can find needed files quickly
 
   Scenario Outline: users searches for files re-shared to him (files have been indexed only after second sharing)
     Given using <dav_version> DAV path
-    And user "user1" has been created
-    And user "user2" has been created
+    And these users have been created with default attributes:
+      | username |
+      | user1    |
+      | user2    |
     And user "user0" has created a folder "/not-indexed-folder"
     And user "user0" has uploaded file with content "files content" to "/not-indexed-upload.txt"
     And user "user0" has uploaded file with content "file with content in subfolder" to "/not-indexed-folder/upload.txt"
@@ -233,8 +237,10 @@ So that I can find needed files quickly
 
   Scenario Outline: new files in a shared folder get indexed for all users
     Given using <dav_version> DAV path
-    And user "user1" has been created
-    And user "user2" has been created
+    And these users have been created with default attributes:
+      | username |
+      | user1    |
+      | user2    |
     And user "user0" has shared folder "just-a-folder" with user "user1"
     And user "user1" has shared folder "just-a-folder" with user "user2"
     When user "user0" uploads file with content "new file content" to "/just-a-folder/new-upload-user0.txt" using the WebDAV API
@@ -266,8 +272,10 @@ So that I can find needed files quickly
 
   Scenario Outline: changed files in a shared folder get indexed for all users
     Given using <dav_version> DAV path
-    And user "user1" has been created
-    And user "user2" has been created
+    And these users have been created with default attributes:
+      | username |
+      | user1    |
+      | user2    |
     And user "user0" has shared folder "just-a-folder" with user "user1"
     And user "user1" has shared folder "just-a-folder" with user "user2"
     When user "user2" uploads file with content "files with changed content" to "/just-a-folder/upload.txt" using the WebDAV API

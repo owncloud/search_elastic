@@ -5,7 +5,7 @@ I would like to be able to disable content indexing
 So that I can use search_elastic only as a more scalable search on filenames
 
   Background:
-    Given user "user0" has been created
+    Given user "user0" has been created with default attributes
     And user "user0" has created a folder "/just-a-folder"
     And user "user0" has created a folder "/फन्नि näme"
     And user "user0" has uploaded file with content "files content" to "/upload.txt"
@@ -234,7 +234,7 @@ So that I can use search_elastic only as a more scalable search on filenames
 
   Scenario Outline: user should not be able to search in files of other users
     Given using <dav_version> DAV path
-    And user "user1" has been created
+    And user "user1" has been created with default attributes
     And user "user1" has uploaded file with content "files content" to "/upload-user1.txt"
     And all files have been indexed
     When user "user1" searches for "upload" using the WebDAV API
@@ -254,7 +254,7 @@ So that I can use search_elastic only as a more scalable search on filenames
   @skip @issue-36
    Scenario Outline: user searches for files shared to him as a single user
     Given using <dav_version> DAV path
-    And user "user1" has been created
+    And user "user1" has been created with default attributes
     And user "user0" has shared file "upload.txt" with user "user1"
     And user "user0" has shared folder "just-a-folder" with user "user1"
     And all files have been indexed
@@ -272,7 +272,7 @@ So that I can use search_elastic only as a more scalable search on filenames
   @skip @issue-36
   Scenario Outline:  user searches for files shared to him as a member of a group
     Given using <dav_version> DAV path
-    And user "user1" has been created
+    And user "user1" has been created with default attributes
     And group "grp1" has been created
     And user "user1" has been added to group "grp1"
     And user "user0" has shared file "upload.txt" with group "grp1"
@@ -291,7 +291,7 @@ So that I can use search_elastic only as a more scalable search on filenames
 
   Scenario Outline: Unshared files should not be searched
     Given using <dav_version> DAV path
-    And user "user1" has been created
+    And user "user1" has been created with default attributes
     And user "user0" has shared file "upload.txt" with user "user1"
     And user "user0" has shared folder "just-a-folder" with user "user1"
     And user "user1" has uploaded file with content "files content" to "/upload-user1.txt"

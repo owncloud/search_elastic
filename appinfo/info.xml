@@ -6,7 +6,7 @@
 	<licence>Commercial</licence>
 	<author>ownCloud Inc.</author>
 	<dependencies>
-		<owncloud min-version="10.0.3" max-version="10.0" />
+		<owncloud min-version="10.0.3" max-version="10" />
 	</dependencies>
 	<use-migrations>true</use-migrations>
 	<types>

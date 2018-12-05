@@ -6,8 +6,8 @@ So that I can find needed files quickly
 
   Background:
     Given user "user0" has been created with default attributes
-    And user "user0" has created a folder "/just-a-folder"
-    And user "user0" has created a folder "/फन्नि näme"
+    And user "user0" has created folder "/just-a-folder"
+    And user "user0" has created folder "/फन्नि näme"
     And user "user0" has uploaded file with content "files content" to "/upload.txt"
     And user "user0" has uploaded file with content "does-not-matter" to "/a-image.png"
     And user "user0" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"
@@ -40,7 +40,7 @@ So that I can find needed files quickly
   Scenario Outline: user searches for files shared to him as a single user (files have been indexed only after sharing)
     Given using <dav_version> DAV path
     And user "user1" has been created with default attributes
-    And user "user0" has created a folder "/not-indexed-folder"
+    And user "user0" has created folder "/not-indexed-folder"
     And user "user0" has uploaded file with content "files content" to "/not-indexed-upload.txt"
     And user "user0" has uploaded file with content "file with content in subfolder" to "/not-indexed-folder/upload.txt"
     And user "user0" has uploaded file with content "more content" to "/not-indexed-folder/uploadÜठिF.txt"
@@ -83,7 +83,7 @@ So that I can find needed files quickly
     And user "user1" has been created with default attributes
     And group "grp1" has been created
     And user "user1" has been added to group "grp1"
-    And user "user0" has created a folder "/not-indexed-folder"
+    And user "user0" has created folder "/not-indexed-folder"
     And user "user0" has uploaded file with content "files content" to "/not-indexed-upload.txt"
     And user "user0" has uploaded file with content "file with content in subfolder" to "/not-indexed-folder/upload.txt"
     And user "user0" has uploaded file with content "more content" to "/not-indexed-folder/uploadÜठिF.txt"
@@ -130,7 +130,7 @@ So that I can find needed files quickly
   Scenario Outline: Unshared files should not be searched (files have been indexed only after sharing)
     Given using <dav_version> DAV path
     And user "user1" has been created with default attributes
-    And user "user0" has created a folder "/not-indexed-folder"
+    And user "user0" has created folder "/not-indexed-folder"
     And user "user0" has uploaded file with content "files content" to "/not-indexed-upload.txt"
     And user "user0" has uploaded file with content "files content" to "/not-indexed-upload-keep.txt"
     And user "user0" has uploaded file with content "file with content in subfolder" to "/not-indexed-folder/upload.txt"
@@ -160,7 +160,7 @@ So that I can find needed files quickly
   Scenario Outline: Unshared files should not be searched (files have been indexed only after unsharing)
     Given using <dav_version> DAV path
     And user "user1" has been created with default attributes
-    And user "user0" has created a folder "/not-indexed-folder"
+    And user "user0" has created folder "/not-indexed-folder"
     And user "user0" has uploaded file with content "files content" to "/not-indexed-upload.txt"
     And user "user0" has uploaded file with content "files content" to "/not-indexed-upload-keep.txt"
     And user "user0" has uploaded file with content "file with content in subfolder" to "/not-indexed-folder/upload.txt"
@@ -215,7 +215,7 @@ So that I can find needed files quickly
       | username |
       | user1    |
       | user2    |
-    And user "user0" has created a folder "/not-indexed-folder"
+    And user "user0" has created folder "/not-indexed-folder"
     And user "user0" has uploaded file with content "files content" to "/not-indexed-upload.txt"
     And user "user0" has uploaded file with content "file with content in subfolder" to "/not-indexed-folder/upload.txt"
     And user "user0" has uploaded file with content "more content" to "/not-indexed-folder/uploadÜठिF.txt"

@@ -16,7 +16,7 @@ So that I can find needed files quickly
   @skip @issue-36
   Scenario: user searches for files shared to him as a single user
     Given user "user2" has been created with default attributes
-    And user "user2" has created a folder "/just-a-folder"
+    And user "user2" has created folder "/just-a-folder"
     And user "user2" has uploaded file with content "files content" to "/upload.txt"
     And user "user2" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"
     And all files have been indexed
@@ -30,7 +30,7 @@ So that I can find needed files quickly
 
   Scenario: user searches for files shared to him as a single user (files have been indexed only after sharing)
     Given user "user2" has been created with default attributes
-    And user "user2" has created a folder "/just-a-folder"
+    And user "user2" has created folder "/just-a-folder"
     And user "user2" has uploaded file with content "files content" to "/upload.txt"
     And user "user2" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"
     And user "user2" has shared file "upload.txt" with user "user1"
@@ -46,7 +46,7 @@ So that I can find needed files quickly
     Given user "user2" has been created with default attributes
     And group "grp1" has been created
     And user "user1" has been added to group "grp1"
-    And user "user2" has created a folder "/just-a-folder"
+    And user "user2" has created folder "/just-a-folder"
     And user "user2" has uploaded file with content "files content" to "/upload.txt"
     And user "user2" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"
     And all files have been indexed
@@ -62,7 +62,7 @@ So that I can find needed files quickly
     Given user "user2" has been created with default attributes
     And group "grp1" has been created
     And user "user1" has been added to group "grp1"
-    And user "user2" has created a folder "/just-a-folder"
+    And user "user2" has created folder "/just-a-folder"
     And user "user2" has uploaded file with content "files content" to "/upload.txt"
     And user "user2" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"
     And user "user2" has shared file "upload.txt" with user "user1"
@@ -76,7 +76,7 @@ So that I can find needed files quickly
   @skip @issue-36
   Scenario: unshared files should not be searched
     Given user "user2" has been created with default attributes
-    And user "user2" has created a folder "/just-a-folder"
+    And user "user2" has created folder "/just-a-folder"
     And user "user2" has uploaded file with content "files content" to "/upload.txt"
     And user "user2" has uploaded file with content "files content" to "/upload-keep.txt"
     And user "user2" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"
@@ -96,7 +96,7 @@ So that I can find needed files quickly
 
   Scenario: unshared files should not be searched (files have been indexed only after sharing)
     Given user "user2" has been created with default attributes
-    And user "user2" has created a folder "/just-a-folder"
+    And user "user2" has created folder "/just-a-folder"
     And user "user2" has uploaded file with content "files content" to "/upload.txt"
     And user "user2" has uploaded file with content "files content" to "/upload-keep.txt"
     And user "user2" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"
@@ -115,7 +115,7 @@ So that I can find needed files quickly
 
   Scenario: unshared files should not be searched (files have been indexed only after unsharing)
     Given user "user2" has been created with default attributes
-    And user "user2" has created a folder "/just-a-folder"
+    And user "user2" has created folder "/just-a-folder"
     And user "user2" has uploaded file with content "files content" to "/upload.txt"
     And user "user2" has uploaded file with content "files content" to "/upload-keep.txt"
     And user "user2" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"
@@ -135,7 +135,7 @@ So that I can find needed files quickly
   Scenario: user searches for files re-shared to him
     Given user "user2" has been created with default attributes
     And user "user3" has been created with default attributes
-    And user "user3" has created a folder "/just-a-folder"
+    And user "user3" has created folder "/just-a-folder"
     And user "user3" has uploaded file with content "files content" to "/upload.txt"
     And user "user3" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"
     And all files have been indexed
@@ -152,7 +152,7 @@ So that I can find needed files quickly
   Scenario: user searches for files re-shared to him (files have been indexed only after second sharing)
     Given user "user2" has been created with default attributes
     And user "user3" has been created with default attributes
-    And user "user3" has created a folder "/just-a-folder"
+    And user "user3" has created folder "/just-a-folder"
     And user "user3" has uploaded file with content "files content" to "/upload.txt"
     And user "user3" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"
     And user "user3" has shared file "upload.txt" with user "user2"

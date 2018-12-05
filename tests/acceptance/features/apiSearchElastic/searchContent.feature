@@ -6,8 +6,8 @@ So that I can find needed files quickly
 
   Background:
     Given user "user0" has been created with default attributes
-    And user "user0" has created a folder "/just-a-folder"
-    And user "user0" has created a folder "/फन्नि näme"
+    And user "user0" has created folder "/just-a-folder"
+    And user "user0" has created folder "/फन्नि näme"
     And user "user0" has uploaded file with content "files content" to "/upload.txt"
     And user "user0" has uploaded file with content "does-not-matter" to "/a-image.png"
     And user "user0" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"
@@ -307,7 +307,7 @@ So that I can find needed files quickly
   Scenario Outline: search on local storage
     Given using <dav_version> DAV path
     And user "user0" has moved file "/upload.txt" to "/local_storage/upload.txt"
-    And user "user0" has created a folder "/local_storage/just-a-folder"
+    And user "user0" has created folder "/local_storage/just-a-folder"
     And user "user0" has moved file "/just-a-folder/upload.txt" to "/local_storage/just-a-folder/upload.txt"
     And the administrator indexes files of user "user0"
     And user "user0" searches for "content" using the WebDAV API

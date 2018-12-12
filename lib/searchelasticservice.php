@@ -100,7 +100,6 @@ class SearchElasticService {
 		$this->index = new Index($client, 'oc-'.$instanceID);
 		$this->type = new Type($this->index, 'file');
 		$this->processorName = 'oc-processor-'.$instanceID;
-
 	}
 
 	/**
@@ -178,9 +177,7 @@ class SearchElasticService {
 		$payload['description'] = 'Pipeline to process Entries for Owncloud Search';
 		$payload['processors'] = $processors;
 
-
 		$this->client->request("_ingest/pipeline/".$this->processorName, Request::PUT, $payload);
-
 	}
 
 	/**
@@ -188,11 +185,11 @@ class SearchElasticService {
 	 */
 	private function setupIndex() {
 		// the number of shards and replicas should be adjusted as necessary outside of owncloud
-		$this->index->create(array('index' => array('number_of_shards' => 1, 'number_of_replicas' => 0),), true);
+		$this->index->create(['index' => ['number_of_shards' => 1, 'number_of_replicas' => 0],], true);
 
 		$type = new Type($this->index, 'file');
 
-		$mapping = new Type\Mapping($type, array(
+		$mapping = new Type\Mapping($type, [
 			// indexed for all files and folders
 			'size'           => [ 'type' => 'long',   'store' => true ],
 			'name'           => [ 'type' => 'text', 'store' => true ],
@@ -214,7 +211,7 @@ class SearchElasticService {
 			'file.content_type'   => [ 'type' => 'text', 'store' => true ],
 			'file.content_length' => [ 'type' => 'long',   'store' => true ],
 			'file.language'       => [ 'type' => 'text', 'store' => true ],
-		));
+		]);
 		$type->setMapping($mapping);
 	}
 
@@ -235,10 +232,8 @@ class SearchElasticService {
 	 * @param int[] $fileIds
 	 * @param bool $extractContent
 	 */
-	public function indexNodes ($userId, array $fileIds, $extractContent = true) {
-
+	public function indexNodes($userId, array $fileIds, $extractContent = true) {
 		foreach ($fileIds as $id) {
-
 			$fileStatus = $this->mapper->getOrCreateFromFileId($id);
 			$path = 'unresolved';
 			try {
@@ -254,8 +249,8 @@ class SearchElasticService {
 				$skippedDirs = $this->config->getUserSkippedDirs($userId);
 
 				foreach ($skippedDirs as $skippedDir) {
-					if (strpos($path, '/' . $skippedDir . '/') !== false //contains dir
-						|| strrpos($path, '/' . $skippedDir) === strlen($path) - (strlen($skippedDir) + 1) // ends with dir
+					if (\strpos($path, '/' . $skippedDir . '/') !== false //contains dir
+						|| \strrpos($path, '/' . $skippedDir) === \strlen($path) - (\strlen($skippedDir) + 1) // ends with dir
 					) {
 						throw new SkippedException("dir $path ($id) matches filter '$skippedDir'");
 					}
@@ -264,31 +259,24 @@ class SearchElasticService {
 				if ($this->indexNode($userId, $node, $extractContent)) {
 					$this->mapper->markIndexed($fileStatus);
 				}
-
 			} catch (VanishedException $e) {
-
-				$this->logger->debug( "indexFiles: ($id) Vanished", ['app' => 'search_elastic'] );
+				$this->logger->debug("indexFiles: ($id) Vanished", ['app' => 'search_elastic']);
 				$fileStatus->setMessage('File vanished');
 				$this->mapper->markVanished($fileStatus);
-
 			} catch (NotIndexedException $e) {
-
-				$this->logger->debug( "indexFiles: $path ($id) Not indexed", ['app' => 'search_elastic'] );
+				$this->logger->debug("indexFiles: $path ($id) Not indexed", ['app' => 'search_elastic']);
 				$fileStatus->setMessage('Not indexed');
 				$this->mapper->markUnIndexed($fileStatus);
-
 			} catch (SkippedException $e) {
-
-				$this->logger->debug( "indexFiles: $path ($id) Skipped", ['app' => 'search_elastic'] );
-				$this->logger->debug( $e->getMessage(), ['app' => 'search_elastic']);
+				$this->logger->debug("indexFiles: $path ($id) Skipped", ['app' => 'search_elastic']);
+				$this->logger->debug($e->getMessage(), ['app' => 'search_elastic']);
 				$this->mapper->markSkipped($fileStatus, 'Skipped');
-
 			} catch (\Exception $e) {
 				//sqlite might report database locked errors when stock filescan is in progress
 				//this also catches db locked exception that might come up when using sqlite
 				$this->logger->logException($e, ['app' => 'search_elastic']);
 
-				$this->mapper->markError($fileStatus, substr($e->getMessage(), 0, 255));
+				$this->mapper->markError($fileStatus, \substr($e->getMessage(), 0, 255));
 				// TODO Add UI to trigger rescan of files with status 'E'rror?
 			}
 		}
@@ -307,7 +295,6 @@ class SearchElasticService {
 	 * @throws NotIndexedException when an unsupported file type is encountered
 	 */
 	public function indexNode($userId, Node $node, $extractContent = true) {
-
 		$this->logger->debug("indexNode {$node->getPath()} ({$node->getId()}) for $userId",
 			['app' => 'search_elastic']
 		);
@@ -326,17 +313,15 @@ class SearchElasticService {
 		$doc->set('users', $access['users']);
 		$doc->set('groups', $access['groups']);
 
-
 		$doc->setDocAsUpsert(true);
 
 		if ($this->canExtractContent($node, $extractContent)) {
-
 			$this->logger->debug(
 				"indexNode: inserting document with pipeline processor: ".
-				json_encode($doc->getData()),
+				\json_encode($doc->getData()),
 				['app' => 'search_elastic']
 			);
-			$doc->addFileContent('data',$node->getContent());
+			$doc->addFileContent('data', $node->getContent());
 
 			// this is a workaround to acutally be able to use parameters when setting a document
 			// see: https://github.com/ruflin/Elastica/issues/1248
@@ -350,11 +335,10 @@ class SearchElasticService {
 
 		$this->logger->debug(
 			"indexNode: upserting document to index: ".
-			json_encode($doc->getData()), ['app' => 'search_elastic']
+			\json_encode($doc->getData()), ['app' => 'search_elastic']
 		);
 		$this->type->updateDocument($doc);
 		return true;
-
 	}
 
 	/**
@@ -369,32 +353,32 @@ class SearchElasticService {
 		$size = $node->getSize();
 		$maxSize = $this->config->getMaxFileSizeForIndex();
 
-		if ( !$this->config->shouldContentBeIncluded() ) {
+		if (!$this->config->shouldContentBeIncluded()) {
 			$this->logger->debug("indexNode: folder, skipping content extraction",
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;
-		} else if ( $node instanceof Folder ) {
+		} elseif ($node instanceof Folder) {
 			$this->logger->debug("indexNode: folder, skipping content extraction",
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;
-		} else if ($size < 0) {
+		} elseif ($size < 0) {
 			$this->logger->debug("indexNode: unknown size, skipping content extraction",
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;
-		} else if ($size === 0) {
+		} elseif ($size === 0) {
 			$this->logger->debug("indexNode: file empty, skipping content extraction",
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;
-		} else if ($size > $maxSize) {
+		} elseif ($size > $maxSize) {
 			$this->logger->debug("indexNode: file exceeds $maxSize, skipping content extraction",
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;
-		} else if ($this->config->getScanExternalStorageFlag() === false
+		} elseif ($this->config->getScanExternalStorageFlag() === false
 			&& $storage->isLocal() === false) {
 			$this->logger->debug("indexNode: not indexing on remote storage {$storage->getId()}, skipping content extraction",
 				['app' => 'search_elastic']
@@ -406,8 +390,8 @@ class SearchElasticService {
 
 	// === DELETE =============================================================
 
-	public function deleteFiles (array $fileIds) {
-		if (count($fileIds) > 0) {
+	public function deleteFiles(array $fileIds) {
+		if (\count($fileIds) > 0) {
 			$result = $this->type->deleteIds($fileIds);
 			$count = 0;
 			foreach ($result as $response) {
@@ -429,7 +413,7 @@ class SearchElasticService {
 	 * @throws NotIndexedException
 	 * @throws VanishedException
 	 */
-	function getNodeForId ($userId, $fileId) {
+	public function getNodeForId($userId, $fileId) {
 
 		/* @var Node[] */
 		$nodes = \OC::$server->getUserFolder($userId)->getById($fileId);
@@ -445,12 +429,11 @@ class SearchElasticService {
 			throw new VanishedException($fileId);
 		}
 
-		if ( $node instanceof File || $node instanceof Folder ) {
+		if ($node instanceof File || $node instanceof Folder) {
 			return $node;
 		}
 		throw new NotIndexedException();
 	}
-
 
 	public function getUsersWithReadPermission(Node $node, $owner) {
 		// get path for lookup in sharing
@@ -459,8 +442,8 @@ class SearchElasticService {
 		//if ($file->getStorage()->instanceOfStorage('\OC\Files\Storage\Home') && substr($path, 0, 6) === 'files/') {
 		//	$path = substr($path, 6);
 		//}
-		$path = substr($path, strlen('/' . $owner . '/files'));
-		return $this->getUsersSharingFile( $path, $owner );
+		$path = \substr($path, \strlen('/' . $owner . '/files'));
+		return $this->getUsersSharingFile($path, $owner);
 	}
 
 	/**
@@ -487,10 +470,10 @@ class SearchElasticService {
 		$meta = $view->getFileInfo($path);
 		if ($meta === false) {
 			// if the file doesn't exists yet we start with the parent folder
-			$meta = $view->getFileInfo(dirname($path));
+			$meta = $view->getFileInfo(\dirname($path));
 		}
 
-		if($meta !== false) {
+		if ($meta !== false) {
 			$source = $meta['fileid'];
 			$cache = new Cache($meta['storage']);
 		}
@@ -504,7 +487,7 @@ class SearchElasticService {
 				WHERE
 				`item_source` = ? AND `share_type` = ? AND `item_type` IN (\'file\', \'folder\')'
 			);
-			$result = $query->execute(array($source, Constants::SHARE_TYPE_USER));
+			$result = $query->execute([$source, Constants::SHARE_TYPE_USER]);
 
 			if (\OCP\DB::isError($result)) {
 				$this->logger->error(\OC_DB::getErrorMessage(),
@@ -524,7 +507,7 @@ class SearchElasticService {
 				`item_source` = ? AND `share_type` = ? AND `item_type` IN (\'file\', \'folder\')'
 			);
 
-			$result = $query->execute(array($source, Constants::SHARE_TYPE_GROUP));
+			$result = $query->execute([$source, Constants::SHARE_TYPE_GROUP]);
 
 			if (\OCP\DB::isError($result)) {
 				$this->logger->error(\OC_DB::getErrorMessage(),
@@ -537,7 +520,7 @@ class SearchElasticService {
 
 			// let's get the parent for the next round
 			$meta = $cache->get((int)$source);
-			if($meta !== false) {
+			if ($meta !== false) {
 				$source = (int)$meta['parent'];
 			} else {
 				$source = -1;
@@ -547,10 +530,10 @@ class SearchElasticService {
 		// Include owner in list of users
 		$users[] = $ownerUser;
 
-		$result = array('users' => array_unique($users), 'groups' => array_unique($groups));
-		$this->logger->debug("access to $path:".json_encode($result),
+		$result = ['users' => \array_unique($users), 'groups' => \array_unique($groups)];
+		$this->logger->debug("access to $path:".\json_encode($result),
 			['app' => 'search_elastic']
 		);
 		return $result;
 	}
-} 
+}

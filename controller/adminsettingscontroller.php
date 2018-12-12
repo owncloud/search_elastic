@@ -98,11 +98,11 @@ class AdminSettingsController extends ApiController {
 	public function checkStatus() {
 		try {
 			if (!$this->searchElasticService->isSetup()) {
-				return new JSONResponse(array('message' => 'Index not set up'), Http::STATUS_EXPECTATION_FAILED);
+				return new JSONResponse(['message' => 'Index not set up'], Http::STATUS_EXPECTATION_FAILED);
 			}
 		} catch (HttpException $ex) {
 			$servers = $this->config->getServers();
-			return new JSONResponse(array('message' => 'Elasticsearch Server unreachable at '.$servers), Http::STATUS_SERVICE_UNAVAILABLE);
+			return new JSONResponse(['message' => 'Elasticsearch Server unreachable at '.$servers], Http::STATUS_SERVICE_UNAVAILABLE);
 		}
 
 		$stats = $this->searchElasticService->getStats();
@@ -117,7 +117,7 @@ class AdminSettingsController extends ApiController {
 			$this->searchElasticService->setup();
 		} catch (\Exception $e) {
 			// TODO log exception
-			return new JSONResponse(array('message' => $e->getMessage()), Http::STATUS_INTERNAL_SERVER_ERROR);
+			return new JSONResponse(['message' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
 		}
 		return $this->checkStatus();
 	}

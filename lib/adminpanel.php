@@ -17,7 +17,6 @@ namespace OCA\search_elastic;
 use OCP\Settings\ISettings;
 
 class AdminPanel implements ISettings {
-
 	public function getPanel() {
 		return new \OCP\Template('search_elastic', 'settings/admin');
 	}
@@ -29,7 +28,4 @@ class AdminPanel implements ISettings {
 	public function getPriority() {
 		return 50;
 	}
-
 }
-
-

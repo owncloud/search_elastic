@@ -51,7 +51,7 @@ class ElasticSearchResult extends FileResult {
 		$highlights = $result->getHighlights();
 		$this->id = (int)$result->getId();
 		$this->path = $home->getRelativePath($node->getPath());
-		$this->name = basename($this->path);
+		$this->name = \basename($this->path);
 		$this->size = (int)$node->getSize();
 		$this->score = $result->getScore();
 		$this->mime_type = $node->getMimetype();
@@ -66,7 +66,7 @@ class ElasticSearchResult extends FileResult {
 			$this->link = \OC::$server->getURLGenerator()->linkToRoute(
 				'files.view.index',
 				[
-					'dir' => dirname($this->path),
+					'dir' => \dirname($this->path),
 					'scrollto' => $this->name,
 				]
 			);
@@ -79,5 +79,4 @@ class ElasticSearchResult extends FileResult {
 			$this->highlights = [];
 		}
 	}
-
 }

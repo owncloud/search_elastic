@@ -26,7 +26,7 @@ class UpdateMetadata extends QueuedJob {
 	 * updates changed metadata for file or folder
 	 * @param array $arguments
 	 */
-	public function run($arguments){
+	public function run($arguments) {
 		$app = new Application();
 		$container = $app->getContainer();
 
@@ -56,16 +56,15 @@ class UpdateMetadata extends QueuedJob {
 						$children = $nodes[0]->getDirectoryListing();
 
 						do {
-							$child = array_pop($children);
+							$child = \array_pop($children);
 							if ($child !== null) {
 								$status = $statusMapper->getOrCreateFromFileId($child->getId());
 								$statusMapper->markMetadataChanged($status);
 								if ($child instanceof Folder) {
-									$children = array_merge($children, $child->getDirectoryListing());
+									$children = \array_merge($children, $child->getDirectoryListing());
 								}
 							}
 						} while (!empty($children));
-
 					} else {
 						$logger->error(
 							"Job updateMetadata: could not resolve node for {$arguments['folderId']}",
@@ -77,27 +76,24 @@ class UpdateMetadata extends QueuedJob {
 				$fileIds = $statusMapper->findFilesWhereMetadataChanged($home);
 
 				$logger->debug(
-					count($fileIds)." files of $userId need metadata indexing",
+					\count($fileIds)." files of $userId need metadata indexing",
 					['app' => 'search_elastic']
 				);
 
 				/** @var SearchElasticService $service */
 				$service = $container->query('SearchElasticService');
 				$service->indexNodes($userId, $fileIds, false);
-
 			} else {
 				$logger->debug(
-					'could not resolve user home: '.json_encode($arguments),
+					'could not resolve user home: '.\json_encode($arguments),
 					['app' => 'search_elastic']
 				);
 			}
 		} else {
 			$logger->debug(
-				'did not receive userId in arguments: '.json_encode($arguments),
+				'did not receive userId in arguments: '.\json_encode($arguments),
 				['app' => 'search_elastic']
 			);
 		}
- 	}
-
-
+	}
 }

@@ -25,7 +25,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class Reset extends Command {
-
 	protected function configure() {
 		$this
 			->setName('search:reset')
@@ -38,5 +37,4 @@ class Reset extends Command {
 		$searchElasticService = $container->query('SearchElasticService');
 		$searchElasticService->setup();
 	}
-
 }

@@ -22,10 +22,9 @@ use OCP\AppFramework\App;
 use OCP\AppFramework\IAppContainer;
 
 class Application extends App {
-
 	const APP_ID = 'search_elastic';
 
-	public function __construct (array $urlParams=array()) {
+	public function __construct(array $urlParams=[]) {
 		parent::__construct('search_elastic', $urlParams);
 
 		$container = $this->getContainer();
@@ -36,7 +35,7 @@ class Application extends App {
 		// register internal configuration service
 		$container->registerService(
 			'SearchElasticConfigService',
-			function(IAppContainer $appContainer) {
+			function (IAppContainer $appContainer) {
 				return new SearchElasticConfigService(
 					$appContainer->query('ServerContainer')->getConfig()
 				);
@@ -47,13 +46,13 @@ class Application extends App {
 		 * SearchElasticService
 		 */
 		$container->registerService('Elastica',
-			function(IAppContainer $appContainer) {
+			function (IAppContainer $appContainer) {
 				$config = $appContainer->query('SearchElasticConfigService');
 				return new \Elastica\Client($config->getParsedServers());
 			}
 		);
 
-		$container->registerService('SearchElasticService', function($c) {
+		$container->registerService('SearchElasticService', function ($c) {
 			return new SearchElasticService(
 				$c->getServer(),
 				$c->query('StatusMapper'),
@@ -67,7 +66,7 @@ class Application extends App {
 		/**
 		 * Mappers
 		 */
-		$container->registerService('StatusMapper', function($c) {
+		$container->registerService('StatusMapper', function ($c) {
 			return new StatusMapper(
 				$c->query('Db'),
 				$c->query('SearchElasticConfigService'),
@@ -78,7 +77,7 @@ class Application extends App {
 		/**
 		 * Core
 		 */
-		$container->registerService('UserId', function($c) {
+		$container->registerService('UserId', function ($c) {
 			$user = $c->query('ServerContainer')->getUserSession()->getUser();
 			if ($user) {
 				return $c->query('ServerContainer')->getUserSession()->getUser()->getUID();
@@ -86,14 +85,14 @@ class Application extends App {
 			return false;
 		});
 
-		$container->registerService('Db', function($c) {
+		$container->registerService('Db', function ($c) {
 			return $c->query('ServerContainer')->getDb();
 		});
 
 		/**
 		 * Controllers
 		 */
-		$container->registerService('AdminSettingsController', function($c) {
+		$container->registerService('AdminSettingsController', function ($c) {
 			return new AdminSettingsController(
 				$c->query('AppName'),
 				$c->query('Request'),
@@ -102,6 +101,4 @@ class Application extends App {
 			);
 		});
 	}
-
-
 }

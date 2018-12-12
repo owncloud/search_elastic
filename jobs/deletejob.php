@@ -20,8 +20,7 @@ use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\SearchElasticService;
 
 class DeleteJob extends TimedJob {
-
-	public function  __construct() {
+	public function __construct() {
 		//execute once a minute
 		$this->setInterval(60);
 	}
@@ -29,8 +28,7 @@ class DeleteJob extends TimedJob {
 	/**
 	 * @param array $arguments
 	 */
-	public function run($arguments){
-
+	public function run($arguments) {
 		$app = new Application();
 		$container = $app->getContainer();
 
@@ -39,7 +37,7 @@ class DeleteJob extends TimedJob {
 		/** @var SearchElasticService $searchElasticService */
 		$searchElasticService = $container->query('SearchElasticService');
 
-		$logger->debug('removing deleted files', ['app' => 'search_elastic'] );
+		$logger->debug('removing deleted files', ['app' => 'search_elastic']);
 
 		/** @var StatusMapper $mapper */
 		$mapper = $container->query('StatusMapper');
@@ -48,8 +46,8 @@ class DeleteJob extends TimedJob {
 
 		if (!empty($deletedIds)) {
 			$logger->debug(
-				count($deletedIds).' fileids need to be removed:'.
-				'( '.implode(';',$deletedIds).' )',
+				\count($deletedIds).' fileids need to be removed:'.
+				'( '.\implode(';', $deletedIds).' )',
 				['app' => 'search_elastic']
 			);
 
@@ -61,5 +59,5 @@ class DeleteJob extends TimedJob {
 				['app' => 'search_elastic']
 			);
 		}
- 	}
+	}
 }

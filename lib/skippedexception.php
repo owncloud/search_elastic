@@ -14,4 +14,5 @@
 
 namespace OCA\Search_Elastic;
 
-class SkippedException extends \Exception {}
+class SkippedException extends \Exception {
+}

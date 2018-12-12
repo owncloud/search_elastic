@@ -57,21 +57,21 @@ class StatusMapper extends Mapper {
 	 * @param Entity $status the status that should be deleted
 	 * @return \PDOStatement the database query result
 	 */
-	public function delete(Entity $status){
+	public function delete(Entity $status) {
 		$sql = 'DELETE FROM `' . $this->tableName . '` WHERE `fileid` = ?';
-		return $this->execute($sql, array($status->getFileId()));
+		return $this->execute($sql, [$status->getFileId()]);
 	}
 	/**
 	 * Deletes a status from the table
 	 * @param array $ids the fileids whose status should be deleted
 	 * @return int the number of affected rows
 	 */
-	public function deleteIds(array $ids){
+	public function deleteIds(array $ids) {
 		if (empty($ids)) {
 			return 0;
 		}
 		$values = '?';
-		for($i = 1; $i < count($ids); $i++) {
+		for ($i = 1; $i < \count($ids); $i++) {
 			$values .= ',?';
 		}
 
@@ -93,32 +93,31 @@ class StatusMapper extends Mapper {
 	 * @param Entity $entity the entity that should be created
 	 * @return Entity the saved entity with the set id
 	 */
-	public function insert(Entity $entity){
+	public function insert(Entity $entity) {
 		// get updated fields to save, fields have to be set using a setter to
 		// be saved
 		$properties = $entity->getUpdatedFields();
 		$values = '';
 		$columns = '';
-		$params = array();
+		$params = [];
 
 		// build the fields
 		$i = 0;
-		foreach($properties as $property => $updated) {
+		foreach ($properties as $property => $updated) {
 			$column = $entity->propertyToColumn($property);
-			$getter = 'get' . ucfirst($property);
+			$getter = 'get' . \ucfirst($property);
 
 			$columns .= '`' . $column . '`';
 			$values .= '?';
 
 			// only append colon if there are more entries
-			if($i < count($properties)-1){
+			if ($i < \count($properties)-1) {
 				$columns .= ',';
 				$values .= ',';
 			}
 
-			array_push($params, $entity->$getter());
+			\array_push($params, $entity->$getter());
 			$i++;
-
 		}
 
 		$sql = 'INSERT INTO `' . $this->tableName . '`(' .
@@ -136,16 +135,16 @@ class StatusMapper extends Mapper {
 	 * @return Entity|null
 	 * @throws \InvalidArgumentException if entity has no id
 	 */
-	public function update(Entity $entity){
+	public function update(Entity $entity) {
 		// if entity wasn't changed it makes no sense to run a db query
 		$properties = $entity->getUpdatedFields();
-		if(count($properties) === 0) {
+		if (\count($properties) === 0) {
 			return $entity;
 		}
 
 		// entity needs an id
 		$fileId = $entity->getFileId();
-		if($fileId === null){
+		if ($fileId === null) {
 			throw new \InvalidArgumentException(
 				'Entity which should be updated has no fileId');
 		}
@@ -156,33 +155,31 @@ class StatusMapper extends Mapper {
 		unset($properties['fileId']);
 
 		$columns = '';
-		$params = array();
+		$params = [];
 
 		// build the fields
 		$i = 0;
-		foreach($properties as $property => $updated) {
-
+		foreach ($properties as $property => $updated) {
 			$column = $entity->propertyToColumn($property);
-			$getter = 'get' . ucfirst($property);
+			$getter = 'get' . \ucfirst($property);
 
 			$columns .= '`' . $column . '` = ?';
 
 			// only append colon if there are more entries
-			if($i < count($properties)-1){
+			if ($i < \count($properties)-1) {
 				$columns .= ',';
 			}
 
-			array_push($params, $entity->$getter());
+			\array_push($params, $entity->$getter());
 			$i++;
 		}
 
 		$sql = 'UPDATE `' . $this->tableName . '` SET ' .
 			$columns . ' WHERE `fileid` = ?';
-		array_push($params, $fileId);
+		\array_push($params, $fileId);
 
 		return $this->execute($sql, $params);
 	}
-
 
 	/**
 	 * get the list of all files that need a metadata reindexing
@@ -208,7 +205,6 @@ class StatusMapper extends Mapper {
 	 * @return array
 	 */
 	public function findFilesWhereContentChanged(Folder $home) {
-
 		$sql = "
 			SELECT `*PREFIX*filecache`.`fileid`
 			FROM `*PREFIX*filecache`
@@ -231,8 +227,8 @@ class StatusMapper extends Mapper {
 		$home->getMountPoint();
 		$mounts = \OC::$server->getMountManager()->findIn($home->getPath());
 		$mount = $home->getMountPoint();
-		$files = array();
-		if (!in_array($mount, $mounts)) {
+		$files = [];
+		if (!\in_array($mount, $mounts)) {
 			$mounts[] = $mount;
 		}
 
@@ -246,7 +242,7 @@ class StatusMapper extends Mapper {
 
 			// skip shared storages, they must be indexed in the context of
 			// their owner to prevent marking files as vanished
-			if ($storage->instanceOfStorage(SharedStorage::class) ) {
+			if ($storage->instanceOfStorage(SharedStorage::class)) {
 				continue;
 			}
 
@@ -256,7 +252,7 @@ class StatusMapper extends Mapper {
 				$cache = $storage->getCache();
 				$numericId = $cache->getNumericStorageId();
 
-				$result = $query->execute(array($numericId, $status));
+				$result = $query->execute([$numericId, $status]);
 
 				while ($row = $result->fetchRow()) {
 					$files[] = $row['fileid'];
@@ -271,11 +267,10 @@ class StatusMapper extends Mapper {
 			SELECT count(*) AS `count_indexed` FROM `*PREFIX*search_elastic_status` WHERE `status` = ?
 		";
 		$query = $this->db->prepareQuery($sql);
-		$result = $query->execute(array(Status::STATUS_INDEXED));
+		$result = $query->execute([Status::STATUS_INDEXED]);
 		$row = $result->fetchRow();
 		return (int)$row['count_indexed'];
 	}
-
 
 	/**
 	 * @param $fileId
@@ -288,7 +283,7 @@ class StatusMapper extends Mapper {
 			WHERE `fileid` = ?
 		';
 		try {
-			return $this->findEntity($sql, array($fileId));
+			return $this->findEntity($sql, [$fileId]);
 		} catch (DoesNotExistException $e) {
 			$status = new Status($fileId, Status::STATUS_NEW);
 			return $this->insert($status);
@@ -336,7 +331,7 @@ class StatusMapper extends Mapper {
 	 * @return int[]
 	 */
 	public function getDeleted() {
-		$files = array();
+		$files = [];
 
 		$query = $this->db->prepareQuery('
 			SELECT `' . $this->tableName . '`.`fileid`
@@ -353,7 +348,5 @@ class StatusMapper extends Mapper {
 		}
 
 		return $files;
-
 	}
-
 }

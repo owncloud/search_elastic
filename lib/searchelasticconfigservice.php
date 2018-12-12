@@ -1,13 +1,11 @@
 <?php
 
-
 namespace OCA\Search_Elastic;
 
 use OCA\Search_Elastic\AppInfo\Application;
 use OCP\IConfig;
 
 class SearchElasticConfigService {
-
 	const SERVERS = 'servers';
 	const SCAN_EXTERNAL_STORAGE = 'scanExternalStorages';
 	const INDEX_MAX_FILE_SIZE = 'max_size';
@@ -136,7 +134,7 @@ class SearchElasticConfigService {
 	 * @return array
 	 */
 	public function getUserSkippedDirs($userId) {
-		return explode(
+		return \explode(
 			';',
 			$this->getUserValue($userId, self::SKIPPED_DIRS, '.git;.svn;.CVS;.bzr')
 		);
@@ -153,7 +151,7 @@ class SearchElasticConfigService {
 	 * @return array
 	 */
 	public function getGroupNoContentArray() {
-		return str_getcsv($this->getGroupNoContentString(),',','"',"\\");
+		return \str_getcsv($this->getGroupNoContentString(), ',', '"', "\\");
 	}
 
 	/**
@@ -173,10 +171,10 @@ class SearchElasticConfigService {
 	 * @return array
 	 */
 	public function parseServers($servers) {
-		$serverArr = explode(',', $servers);
+		$serverArr = \explode(',', $servers);
 		$results = [];
 		foreach ($serverArr as $serverPart) {
-			$hostAndPort = explode(':', trim($serverPart), 2);
+			$hostAndPort = \explode(':', \trim($serverPart), 2);
 			$server = [
 				'host' => 'localhost',
 				'port' => 9200
@@ -189,9 +187,9 @@ class SearchElasticConfigService {
 			}
 			$results[] = $server;
 		}
-		if (count($results) === 1) {
+		if (\count($results) === 1) {
 			return $results[0];
 		}
-		return array('servers' => $results);
+		return ['servers' => $results];
 	}
 }

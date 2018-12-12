@@ -21,6 +21,14 @@ default:
         - WebUISearchContext:
         - WebUIElasticSearchContext:
 
+    apiLimitSearches:
+      paths:
+        - %paths.base%/../features/apiLimitSearches
+      contexts:
+        - SearchElasticContext:
+        - FeatureContext: *common_feature_context_params
+        - SearchContext:
+
     apiSearchElastic:
       paths:
         - %paths.base%/../features/apiSearchElastic

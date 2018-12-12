@@ -73,6 +73,15 @@ pipeline:
       matrix:
         NEED_SERVER: true
 
+  owncloud-coding-standard:
+    image: owncloudci/php:${PHP_VERSION}
+    pull: true
+    commands:
+      - make test-php-style
+    when:
+      matrix:
+        TEST_SUITE: owncloud-coding-standard
+
   phpunit-tests:
     image: owncloudci/php:${PHP_VERSION}
     pull: true
@@ -203,6 +212,13 @@ services:
 
 matrix:
   include:
+    # owncloud-coding-standard
+    - PHP_VERSION: 7.2
+      TEST_SUITE: owncloud-coding-standard
+
+    - PHP_VERSION: 5.6
+      TEST_SUITE: owncloud-coding-standard
+
     # Unit Tests
     - PHP_VERSION: 5.6
       OC_VERSION: daily-stable10-qa

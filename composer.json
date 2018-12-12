@@ -1,5 +1,5 @@
 {
-	"name": "owncloud/elasticsearch",
+	"name": "owncloud/search_elastic",
 	"license": "AGPL",
 	"authors": [
 		{
@@ -15,7 +15,7 @@
 		}
 	},
 	"support": {
-		"issues": "https://github.com/owncloud/elasticsearch/issues"
+		"issues": "https://github.com/owncloud/search_elastic/issues"
 	},
 	"require": {
 		"ruflin/Elastica": "^5.3.0"

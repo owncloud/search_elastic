@@ -25,7 +25,6 @@ namespace Page;
 use Behat\Mink\Session;
 use Page\FilesPageElement\FileRow;
 
-
 /**
  * Page that shows the search results from other folders
  * in the case of an elastic search.

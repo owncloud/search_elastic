@@ -76,8 +76,7 @@ class ElasticSearchProvider extends PagedProvider {
 	 * @return ElasticSearchResult[]
 	 */
 	public function searchPaged($query, $page, $size) {
-
-		if (empty($query) ) {
+		if (empty($query)) {
 			return [];
 		}
 
@@ -109,7 +108,7 @@ class ElasticSearchProvider extends PagedProvider {
 						} else {
 							$this->logger->error(
 								"Expected a Node for $fileId, received "
-								. json_encode($node),
+								. \json_encode($node),
 								['app' => 'search_elastic']);
 						}
 					}
@@ -117,9 +116,8 @@ class ElasticSearchProvider extends PagedProvider {
 				$page++;
 				// TODO We try to compensate for removed entries, but this will confuse page counting of the webui
 				// Maybe add fake entries?
-			} while ($resultSet->getTotalHits() === $size && count($results) < $size);
-
-		} catch ( \Exception $e ) {
+			} while ($resultSet->getTotalHits() === $size && \count($results) < $size);
+		} catch (\Exception $e) {
 			$this->logger->logException($e, ['app' => 'search_elastic']);
 		}
 		return $results;
@@ -127,29 +125,28 @@ class ElasticSearchProvider extends PagedProvider {
 
 	/**
 	 * get the base type of an internet media type string
-	 * 
+	 *
 	 * returns 'text' for 'text/plain'
-	 * 
+	 *
 	 * @param string $mimeType internet media type
 	 * @return string top-level type
 	 */
 	public static function baseTypeOf($mimeType) {
-		return substr($mimeType, 0, strpos($mimeType, '/'));
+		return \substr($mimeType, 0, \strpos($mimeType, '/'));
 	}
 
-	public function fetchResults ($query, $size, $page) {
-
+	public function fetchResults($query, $size, $page) {
 		$es_filter = new BoolQuery();
 		$es_filter->addShould(new Match('users', $this->user->getUID()));
 		$noContentGroups = $this->config->getGroupNoContentArray();
 		$searchContent = true;
-		if ( !$this->config->shouldContentBeIncluded()) {
+		if (!$this->config->shouldContentBeIncluded()) {
 			$searchContent = false;
 		}
 		foreach ($this->groups as $group) {
 			$groupId = $group->getGID();
 			$es_filter->addShould(new Match('groups', $groupId));
-			if (in_array($groupId, $noContentGroups)) {
+			if (\in_array($groupId, $noContentGroups)) {
 				$searchContent = false;
 			}
 		}
@@ -157,7 +154,7 @@ class ElasticSearchProvider extends PagedProvider {
 		$es_bool = new BoolQuery();
 		$es_bool->addFilter($es_filter);
 		// wildcard queries are not analyzed, so ignore case. See http://stackoverflow.com/a/17280591
-		$loweredQuery = strtolower($query);
+		$loweredQuery = \strtolower($query);
 		if ($searchContent) {
 			$es_bool->addShould(new Query\MatchPhrasePrefix('file.content', $loweredQuery));
 		}
@@ -165,15 +162,14 @@ class ElasticSearchProvider extends PagedProvider {
 		$es_bool->setMinimumShouldMatch(1);
 
 		$es_query = new Query($es_bool);
-		$es_query->setHighlight(array(
-			'fields' => array(
+		$es_query->setHighlight([
+			'fields' => [
 				'file.content' => new \stdClass,
-			),
-		));
+			],
+		]);
 
 		$es_query->setSize($size);
 		$es_query->setFrom(($page - 1) * $size);
 		return $this->searchElasticService->search($es_query);
-
 	}
 }

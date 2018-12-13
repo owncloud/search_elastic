@@ -14,4 +14,5 @@
 
 namespace OCA\Search_Elastic;
 
-class NotIndexedException extends \Exception {}
+class NotIndexedException extends \Exception {
+}

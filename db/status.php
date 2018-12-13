@@ -24,7 +24,6 @@ use OCP\AppFramework\Db\Entity;
  * @method setMessage(string $status)
  */
 class Status extends Entity {
-
 	const STATUS_NEW = 'N';
 	const STATUS_METADATA_CHANGED = 'M';
 	const STATUS_INDEXED = 'I';
@@ -38,7 +37,7 @@ class Status extends Entity {
 	public $message;
 
 	// we use fileId as the primary key
-	private $_fieldTypes = array('fileId' => 'integer');
+	private $_fieldTypes = ['fileId' => 'integer'];
 
 	/**
 	 * @param string $fileId
@@ -64,25 +63,24 @@ class Status extends Entity {
 	 * @param string $fieldName the name of the attribute
 	 * @param string $type the type which will be used to call setType()
 	 */
-	protected function addType($fieldName, $type){
+	protected function addType($fieldName, $type) {
 		$this->_fieldTypes[$fieldName] = $type;
 	}
 
 	// we need to overwrite the setter because it would otherwise use _fieldTypes of the Entity class
 	protected function setter($name, $args) {
 		// setters should only work for existing attributes
-		if(property_exists($this, $name)){
-			if($this->$name === $args[0]) {
+		if (\property_exists($this, $name)) {
+			if ($args[0] === $this->$name) {
 				return;
 			}
 			$this->markFieldUpdated($name);
 
 			// if type definition exists, cast to correct type
-			if($args[0] !== null && array_key_exists($name, $this->_fieldTypes)) {
-				settype($args[0], $this->_fieldTypes[$name]);
+			if ($args[0] !== null && \array_key_exists($name, $this->_fieldTypes)) {
+				\settype($args[0], $this->_fieldTypes[$name]);
 			}
 			$this->$name = $args[0];
-
 		} else {
 			throw new \BadFunctionCallException($name .
 				' is not a valid attribute');
@@ -109,8 +107,8 @@ class Status extends Entity {
 	 * @param string $property the name of the property
 	 * @return string the column name
 	 */
-	public function propertyToColumn($property){
-		$column = strtolower($property);
+	public function propertyToColumn($property) {
+		$column = \strtolower($property);
 		return $column;
 	}
 }

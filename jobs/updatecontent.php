@@ -53,7 +53,7 @@ class UpdateContent extends QueuedJob implements IUserSession {
 	 * updates changed content for files
 	 * @param array $arguments
 	 */
-	public function run($arguments){
+	public function run($arguments) {
 		$app = new Application();
 		$this->container = $app->getContainer();
 		$this->logger = \OC::$server->getLogger();
@@ -80,25 +80,24 @@ class UpdateContent extends QueuedJob implements IUserSession {
 				$fileIds = $statusMapper->findFilesWhereContentChanged($home);
 
 				$this->logger->debug(
-					count($fileIds)." files of $userId need content indexing",
+					\count($fileIds)." files of $userId need content indexing",
 					['app' => 'search_elastic']
 				);
 
 				$this->container->query('SearchElasticService')->indexNodes($userId, $fileIds);
-
 			} else {
 				$this->logger->debug(
-					'could not resolve user home: '.json_encode($arguments),
+					'could not resolve user home: '.\json_encode($arguments),
 					['app' => 'search_elastic']
 				);
 			}
 		} else {
 			$this->logger->debug(
-				'did not receive userId in arguments: '.json_encode($arguments),
+				'did not receive userId in arguments: '.\json_encode($arguments),
 				['app' => 'search_elastic']
 			);
 		}
- 	}
+	}
 
 	/**
 	 * init master key, parts taken from the encryption app
@@ -106,7 +105,6 @@ class UpdateContent extends QueuedJob implements IUserSession {
 	 * @throws \Exception
 	 */
 	protected function initMasterKeyIfAvailable() {
-
 		if (\OC::$server->getEncryptionManager()->isReady()
 			&& \OC::$server->getAppManager()->isEnabledForUser('encryption')
 			&& $this->config->getAppValue('encryption', 'useMasterKey')) {
@@ -119,10 +117,9 @@ class UpdateContent extends QueuedJob implements IUserSession {
 
 			/** @var KeyManager $keyManager */
 			$keyManager = $encryption->getContainer()->query('KeyManager');
-			$keyManager->init('',''); // uid and password are overwritten in master key mode
+			$keyManager->init('', ''); // uid and password are overwritten in master key mode
 		}
 	}
-
 
 	// ---- needed to implement the IUserSession interface,
 	// ---- we only use it to get an instance of the Crypt class because it

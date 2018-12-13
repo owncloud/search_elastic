@@ -60,13 +60,12 @@ class Files {
 
 	/**
 	 * handle file writes (triggers reindexing)
-	 * 
+	 *
 	 * the file indexing is queued as a background job
-	 * 
+	 *
 	 * @param $param array from postWriteFile-Hook
 	 */
 	public static function contentChanged(array $param) {
-
 		$app = new Application();
 		$container = $app->getContainer();
 		$userId = $container->query('UserId');
@@ -99,7 +98,7 @@ class Files {
 				}
 
 				//Add Background Job:
-				\OC::$server->getJobList()->add( 'OCA\Search_Elastic\Jobs\UpdateContent', ['userId' => $userId] );
+				\OC::$server->getJobList()->add('OCA\Search_Elastic\Jobs\UpdateContent', ['userId' => $userId]);
 			} else {
 				$logger->debug(
 					"Hook contentChanged: marking Skipped {$node->getPath()} ({$node->getId()})",
@@ -110,7 +109,7 @@ class Files {
 		} else {
 			$logger->debug(
 				'Hook contentChanged could not determine user when called with param '
-				.json_encode($param), ['app' => 'search_elastic']
+				.\json_encode($param), ['app' => 'search_elastic']
 			);
 		}
 	}
@@ -121,7 +120,6 @@ class Files {
 	 * @param $param array
 	 */
 	public static function metadataChanged(array $param) {
-
 		$app = new Application();
 		$container = $app->getContainer();
 		$userId = $container->query('UserId');
@@ -133,9 +131,9 @@ class Files {
 			$home = \OC::$server->getUserFolder($userId);
 			if (isset($param['path'])) {
 				$node = $home->get($param['path']);
-			} else if (isset($param['newpath'])) {
+			} elseif (isset($param['newpath'])) {
 				$node = $home->get($param['newpath']);
-			} else if (isset($param['fileSource'])) {
+			} elseif (isset($param['fileSource'])) {
 				$nodes = $home->getById($param['fileSource']);
 				if (isset($nodes[0])) {
 					$node = $nodes[0];
@@ -143,7 +141,7 @@ class Files {
 			}
 			if (empty($node)) {
 				\OC::$server->getLogger()->debug(
-					'Hook metadataChanged could not determine node when called with param ' . json_encode($param),
+					'Hook metadataChanged could not determine node when called with param ' . \json_encode($param),
 					['app' => 'search_elastic']
 				);
 				return;
@@ -158,7 +156,7 @@ class Files {
 					"Hook metadataChanged: file needs content indexing {$node->getPath()} ({$node->getId()})",
 					['app' => 'search_elastic']
 				);
-			} else if ($node instanceof Node) {
+			} elseif ($node instanceof Node) {
 				$logger->debug(
 					"Hook metadataChanged: marking as Metadata Changed {$node->getPath()} ({$node->getId()})",
 					['app' => 'search_elastic']
@@ -186,7 +184,6 @@ class Files {
 						['userId' => $userId]
 					);
 				}
-
 			} else {
 				$logger->debug(
 					"Hook metadataChanged: marking Skipped {$node->getPath()} ({$node->getId()})",
@@ -196,19 +193,18 @@ class Files {
 			}
 		} else {
 			$logger->debug(
-				'Hook metadataChanged could not determine user when called with param ' . json_encode($param),
+				'Hook metadataChanged could not determine user when called with param ' . \json_encode($param),
 				['app' => 'search_elastic']
 			);
 		}
 	}
 
-
-		/**
+	/**
 	 * deleteFile triggers the removal of any deleted files from the index
 	 *
 	 * @param $param array from deleteFile-Hook
 	 */
-	static public function deleteFile(array $param) {
+	public static function deleteFile(array $param) {
 		$app = new Application();
 		$container = $app->getContainer();
 
@@ -221,21 +217,19 @@ class Files {
 
 		$deletedIds = $mapper->getDeleted();
 		$logger->debug(
-			count($deletedIds).' fileids need to be removed:'.
-			'( '.implode(';',$deletedIds).' )',
+			\count($deletedIds).' fileids need to be removed:'.
+			'( '.\implode(';', $deletedIds).' )',
 			['app' => 'search_elastic']
 		);
 
 		$deletedStatus = $mapper->deleteIds($deletedIds);
-		$logger->debug( 'removed '.$deletedStatus.' files from status table',
+		$logger->debug('removed '.$deletedStatus.' files from status table',
 			['app' => 'search_elastic']
 		);
 
 		$deletedIndex = $searchElasticService->deleteFiles($deletedIds);
-		$logger->debug( 'removed '.$deletedIndex.' files from index',
+		$logger->debug('removed '.$deletedIndex.' files from index',
 			['app' => 'search_elastic']
 		);
-
 	}
-
 }

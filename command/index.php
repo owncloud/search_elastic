@@ -57,7 +57,6 @@ class Index extends Command {
 			);
 	}
 
-
 	protected function indexFiles($user, $quiet, OutputInterface $output) {
 		$job = new UpdateContent();
 		if (!$quiet) {
@@ -65,7 +64,6 @@ class Index extends Command {
 		}
 		$job->run(['userId' => $user]);
 	}
-
 
 	public function execute(InputInterface $input, OutputInterface $output) {
 		if ($input->getOption('all')) {
@@ -75,14 +73,13 @@ class Index extends Command {
 		}
 		$quiet = $input->getOption('quiet');
 
-
-		if (count($users) === 0) {
+		if (\count($users) === 0) {
 			$output->writeln('<error>Please specify the user id to index, "--all" to index for all users</error>');
 			return;
 		}
 
 		foreach ($users as $user) {
-			if (is_object($user)) {
+			if (\is_object($user)) {
 				$user = $user->getUID();
 			}
 			if ($this->userManager->userExists($user)) {
@@ -92,5 +89,4 @@ class Index extends Command {
 			}
 		}
 	}
-
 }

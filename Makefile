@@ -5,19 +5,24 @@ ifndef COMPOSER_BIN
     $(error composer is not available on your system, please install composer)
 endif
 
-
-# bin file definitions
-PHPUNIT=php -d zend.enable_gc=0  "$(PWD)/../../lib/composer/bin/phpunit"
-PHPDBG=phpdbg -qrr -d memory_limit=4096M -d zend.enable_gc=0 "$(PWD)/../../lib/composer/bin/phpunit"
-PHP_PARALLEL_LINT=php -d zend.enable_gc=0 vendor-bin/php-parallel-lint/vendor/bin/parallel-lint
-
-
 app_name=$(notdir $(CURDIR))
 project_directory=$(CURDIR)/../$(app_name)
 build_tools_directory=$(CURDIR)/build/tools
 appstore_package_name=$(CURDIR)/build/dist/$(app_name)
-composer=$(shell which composer 2> /dev/null)
 
+app_doc_files=README.md CHANGELOG.md
+app_src_dirs=appinfo command controller css db hooks img jobs js lib search templates vendor
+app_all_src=$(app_src_dirs) $(app_doc_files)
+build_dir=build
+dist_dir=$(build_dir)/dist
+
+# dependency folders (leave empty if not required)
+composer_deps=vendor
+composer_dev_deps=
+nodejs_deps=
+bower_deps=
+
+# signing
 occ=$(CURDIR)/../../occ
 private_key=$(HOME)/.owncloud/certificates/$(app_name).key
 certificate=$(HOME)/.owncloud/certificates/$(app_name).crt
@@ -31,22 +36,20 @@ endif
 endif
 endif
 
-app_doc_files=README.md CHANGELOG.md
-app_src_dirs=appinfo command controller css db hooks img jobs js lib search templates vendor
-app_all_src=$(app_src_dirs) $(app_doc_files)
-build_dir=build
-dist_dir=$(build_dir)/dist
-
-# internal aliases
-composer_deps=vendor/
-composer_dev_deps=lib/composer/phpunit
+# bin file definitions
+PHPUNIT=php -d zend.enable_gc=0  "$(PWD)/../../lib/composer/bin/phpunit"
+PHPUNITDBG=phpdbg -qrr -d memory_limit=4096M -d zend.enable_gc=0 "$(PWD)/../../lib/composer/bin/phpunit"
+PHP_CS_FIXER=php -d zend.enable_gc=0 vendor-bin/owncloud-codestyle/vendor/bin/php-cs-fixer
+PHAN=php -d zend.enable_gc=0 vendor-bin/phan/vendor/bin/phan
+PHPSTAN=php -d zend.enable_gc=0 vendor-bin/phpstan/vendor/bin/phpstan
 
 #
 # Catch-all rules
 #
 
 .PHONY: all
-all: $(composer_dev_deps)
+all:
+	composer install
 
 .PHONY: clean
 clean: clean-composer-deps clean-dist clean-build
@@ -81,6 +84,55 @@ clean-dist:
 clean-build:
 	rm -Rf $(build_dir)
 
+##---------------------
+## Tests
+##---------------------
+
+.PHONY: test-php-unit
+test-php-unit: ## Run php unit tests
+test-php-unit:
+	$(PHPUNIT) --configuration ./phpunit.xml --testsuite unit
+
+.PHONY: test-php-unit-dbg
+test-php-unit-dbg: ## Run php unit tests using phpdbg
+test-php-unit-dbg:
+	$(PHPUNITDBG) --configuration ./phpunit.xml --testsuite unit
+
+.PHONY: test-php-style
+test-php-style: ## Run php-cs-fixer and check owncloud code-style
+test-php-style: vendor-bin/owncloud-codestyle/vendor
+	$(PHP_CS_FIXER) fix -v --diff --diff-format udiff --allow-risky yes --dry-run
+
+.PHONY: test-php-style-fix
+test-php-style-fix: ## Run php-cs-fixer and fix code style issues
+test-php-style-fix: vendor-bin/owncloud-codestyle/vendor
+	$(PHP_CS_FIXER) fix -v --diff --diff-format udiff --allow-risky yes
+
+.PHONY: test-php-phan
+test-php-phan: ## Run phan
+test-php-phan: vendor-bin/phan/vendor
+	$(PHAN) --config-file .phan/config.php --require-config-exists
+
+.PHONY: test-php-phpstan
+test-php-phpstan: ## Run phpstan
+test-php-phpstan: vendor-bin/phpstan/vendor
+	$(PHPSTAN) analyse --memory-limit=4G --configuration=./phpstan.neon --no-progress --level=5 appinfo lib
+
+.PHONY: test-acceptance-api
+test-acceptance-api: ## Run API acceptance tests
+test-acceptance-api:
+	../../tests/acceptance/run.sh --remote --type api
+
+.PHONY: test-acceptance-cli
+test-acceptance-cli: ## Run CLI acceptance tests
+test-acceptance-cli:
+	../../tests/acceptance/run.sh --remote --type cli
+
+.PHONY: test-acceptance-webui
+test-acceptance-webui: ## Run webUI acceptance tests
+test-acceptance-webui:
+	../../tests/acceptance/run.sh --remote --type webUI
+
 ##
 ## Dependency management
 ##--------------------------------------
@@ -89,39 +141,33 @@ clean-build:
 install-php-deps:          ## Install PHP dependencies
 install-php-deps: $(composer_deps)
 
-$(composer_deps): composer.json composer.lock
-	$(COMPOSER_BIN) install --no-dev
-
-$(composer_dev_deps): composer.json composer.lock
-	$(COMPOSER_BIN) install --dev
-
 .PHONY: clean-composer-deps
 clean-composer-deps:
 	rm -Rf $(composer_deps)
 
-vendor/bamarni/composer-bin-plugin: $(composer_deps)
+composer.lock: composer.json
+	@echo composer.lock is not up to date.
 
-vendor-bin/php-parallel-lint/vendor: vendor/bamarni/composer-bin-plugin  vendor-bin/php-parallel-lint/composer.lock
-	$(COMPOSER_BIN) bin php-parallel-lint install --no-progress
+vendor: composer.lock
+	composer install --no-dev
 
-vendor-bin/php-parallel-lint/composer.lock: vendor-bin/php-parallel-lint/composer.json
-	@echo php-parallel-lint composer.lock is not up to date.
+vendor/bamarni/composer-bin-plugin: composer.lock
+	composer install
 
+vendor-bin/owncloud-codestyle/vendor: vendor/bamarni/composer-bin-plugin vendor-bin/owncloud-codestyle/composer.lock
+	composer bin owncloud-codestyle install --no-progress
 
-##
-## Tests
-##--------------------------------------
-.PHONY: test-php-lint
-test-php-lint:             ## php linting
-test-php-lint: vendor-bin/php-parallel-lint/vendor
-	$(PHP_PARALLEL_LINT) --exclude vendor --exclude build --exclude vendor-bin .
+vendor-bin/owncloud-codestyle/composer.lock: vendor-bin/owncloud-codestyle/composer.json
+	@echo owncloud-codestyle composer.lock is not up to date.
 
-.PHONY: test-php-unit
-test-php-unit:
-test-php-unit:             ## Run php unit tests
-	$(PHPUNIT) --configuration ./tests/unit/phpunit.xml
+vendor-bin/phan/vendor: vendor/bamarni/composer-bin-plugin vendor-bin/phan/composer.lock
+	composer bin phan install --no-progress
 
-.PHONY: test-php-unit-dbg
-test-php-unit-dbg:
-test-php-unit-dbg:         ## Run php unit tests with phpdbg
-	$(PHPDBG) --configuration ./tests/unit/phpunit.xml
+vendor-bin/phan/composer.lock: vendor-bin/phan/composer.json
+	@echo phan composer.lock is not up to date.
+
+vendor-bin/phpstan/vendor: vendor/bamarni/composer-bin-plugin vendor-bin/phpstan/composer.lock
+	composer bin phpstan install --no-progress
+
+vendor-bin/phpstan/composer.lock: vendor-bin/phpstan/composer.json
+	@echo phpstan composer.lock is not up to date.

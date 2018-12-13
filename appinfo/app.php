@@ -36,7 +36,7 @@ if ($mode === 'active') {
 		)
 	) {
 		\OC::$server->getSearch()->removeProvider('OC\Search\Provider\File');
-		\OC::$server->getSearch()->registerProvider('OCA\Search_Elastic\Search\ElasticSearchProvider', array('apps' => array('files')));
+		\OC::$server->getSearch()->registerProvider('OCA\Search_Elastic\Search\ElasticSearchProvider', ['apps' => ['files']]);
 	}
 	// add background job for deletion
 	\OC::$server->getJobList()->add(new \OCA\Search_Elastic\Jobs\DeleteJob());
@@ -79,5 +79,4 @@ if ($mode === 'active') {
 		OC\Files\Filesystem::signal_delete,
 		'OCA\Search_Elastic\Hooks\Files',
 		OCA\Search_Elastic\Hooks\Files::handle_delete);
-
 }

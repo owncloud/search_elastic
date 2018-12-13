@@ -98,7 +98,6 @@ class WebUIElasticSearchContext extends RawMinkContext implements Context {
 		);
 	}
 
-
 	/**
 	 * This will run before EVERY scenario.
 	 * It will set the properties for this object.

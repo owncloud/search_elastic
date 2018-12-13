@@ -14,4 +14,5 @@
 
 namespace OCA\Search_Elastic;
 
-class VanishedException extends \Exception {}
+class VanishedException extends \Exception {
+}

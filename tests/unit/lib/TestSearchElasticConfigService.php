@@ -6,7 +6,6 @@ use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\IConfig;
 
 class TestSearchElasticConfigService extends \Test\TestCase {
-
 	private $owncloudConfigService;
 
 	/**

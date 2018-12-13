@@ -1,6 +1,6 @@
 # Elasticsearch
 
-[![Build Status]https://drone.owncloud.com/api/badges/owncloud/search_elastic/status.svg?branch=master)](https://drone.owncloud.com/owncloud/search_elastic)
+[![Build Status](https://drone.owncloud.com/api/badges/owncloud/search_elastic/status.svg?branch=master)](https://drone.owncloud.com/owncloud/search_elastic)
 
 The search_elastic app adds a full text search for files stored in ownCloud. It requires an
 [elasticsearch](http://www.elasticsearch.org) server and can index all fitles supported by

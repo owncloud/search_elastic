@@ -17,10 +17,17 @@ code is [available on GitHub](https://github.com/owncloud/search_elastic)
 
 `search_elastic` requires [ingest-attachment](https://www.elastic.co/guide/en/elasticsearch/plugins/5.6/ingest-attachment.html) processor to be present
 
+```console
+$ cd /usr/share/elasticsearch/
+$ bin/elasticsearch-plugin install ingest-attachment
+$ service elasticsearch restart
 ```
-cd /usr/share/elasticsearch/
-bin/elasticsearch-plugin install ingest-attachment
-service elasticsearch restart
+
+Or, if you used the tarball:
+```console
+$ cd /path/to/unzipped/tar
+$ bin/elasticsearch-plugin install ingest-attachment
+$ bin/elasticsearch
 ```
 
 ##### testing locally with docker

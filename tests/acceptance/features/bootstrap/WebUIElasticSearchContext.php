@@ -73,6 +73,7 @@ class WebUIElasticSearchContext extends RawMinkContext implements Context {
 
 	/**
 	 * @Then /^(?:file|folder) ((?:'[^']*')|(?:"[^"]*")) with path ((?:'[^']*')|(?:"[^"]*")) should be listed in the search results in the other folders section on the webUI with highlights containing:$/
+	 *
 	 * @param string $fileName
 	 * @param string $path
 	 * @param PyStringNode $highlightsExpectations

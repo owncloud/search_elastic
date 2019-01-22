@@ -114,6 +114,7 @@ class SearchElasticContext implements Context {
 	 * @Given the administrator has limited the access to search_elastic to :group
 	 *
 	 * @param string $group
+	 *
 	 * @return void
 	 */
 	public function limitAccessTo($group) {
@@ -134,12 +135,13 @@ class SearchElasticContext implements Context {
 	}
 
 	/**
-	* @When the administrator disables the full text search for :group
-	* @Given the administrator has disabled the full text search for :group
-	*
-	* @param string $group
-	* @return void
-	*/
+	 * @When the administrator disables the full text search for :group
+	 * @Given the administrator has disabled the full text search for :group
+	 *
+	 * @param string $group
+	 *
+	 * @return void
+	 */
 	public function disableFullTextSearchFor($group) {
 		if ($this->originalGroupNoContentSetting === null) {
 			$this->originalGroupNoContentSetting = AppConfigHelper::getAppConfig(
@@ -147,7 +149,7 @@ class SearchElasticContext implements Context {
 				$this->featureContext->getAdminUsername(),
 				$this->featureContext->getAdminPassword(),
 				"search_elastic", "group.nocontent"
-				)['value'];
+			)['value'];
 		}
 		AppConfigHelper::modifyAppConfig(
 			$this->featureContext->getBaseUrl(),

@@ -1,11 +1,11 @@
 default:
   autoload:
-     '': %paths.base%/../features/bootstrap
+     '': '%paths.base%/../features/bootstrap'
 
   suites:
     webUISearchElastic:
       paths:
-        - %paths.base%/../features/webUISearchElastic
+        - '%paths.base%/../features/webUISearchElastic'
       contexts:
         - SearchElasticContext:
         - FeatureContext: &common_feature_context_params
@@ -23,7 +23,7 @@ default:
 
     apiLimitSearches:
       paths:
-        - %paths.base%/../features/apiLimitSearches
+        - '%paths.base%/../features/apiLimitSearches'
       contexts:
         - SearchElasticContext:
         - FeatureContext: *common_feature_context_params
@@ -31,7 +31,7 @@ default:
 
     apiSearchElastic:
       paths:
-        - %paths.base%/../features/apiSearchElastic
+        - '%paths.base%/../features/apiSearchElastic'
       contexts:
         - SearchElasticContext:
         - FeatureContext: *common_feature_context_params
@@ -40,4 +40,4 @@ default:
   extensions:
       jarnaiz\JUnitFormatter\JUnitFormatterExtension:
           filename: report.xml
-          outputDir: %paths.base%/../output/
+          outputDir: '%paths.base%/../output/'

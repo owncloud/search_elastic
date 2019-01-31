@@ -28,7 +28,7 @@ So that I can find needed files quickly
     And all files have been indexed
     When user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user1" should contain these files:
+    And the search result should contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -49,7 +49,7 @@ So that I can find needed files quickly
     And all files have been indexed
     When user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user1" should contain these files:
+    And the search result should contain these files:
       |/not-indexed-upload.txt           |
       |/not-indexed-folder/upload.txt    |
       |/not-indexed-folder/uploadÜठिF.txt |
@@ -69,7 +69,7 @@ So that I can find needed files quickly
     And all files have been indexed
     When user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user1" should contain these files:
+    And the search result should contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -92,7 +92,7 @@ So that I can find needed files quickly
     And all files have been indexed
     When user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user1" should contain these files:
+    And the search result should contain these files:
       |/not-indexed-upload.txt           |
       |/not-indexed-folder/upload.txt    |
       |/not-indexed-folder/uploadÜठिF.txt |
@@ -115,11 +115,11 @@ So that I can find needed files quickly
     And the administrator indexes all files
     And user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user1" should not contain these files:
+    And the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt |
-    But the search result of "user1" should contain these files:
+    But the search result should contain these files:
       |/user1-upload.txt            |
       |/फन्नि näme/upload.txt          |
     Examples:
@@ -145,11 +145,11 @@ So that I can find needed files quickly
     And the administrator indexes all files
     And user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user1" should not contain these files:
+    And the search result should not contain these files:
       |/not-indexed-upload.txt           |
       |/not-indexed-folder/upload.txt    |
       |/not-indexed-folder/uploadÜठिF.txt |
-    But the search result of "user1" should contain these files:
+    But the search result should contain these files:
       |/user1-upload.txt                 |
       |/not-indexed-upload-keep.txt      |
     Examples:
@@ -174,11 +174,11 @@ So that I can find needed files quickly
     And the administrator indexes all files
     And user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user1" should not contain these files:
+    And the search result should not contain these files:
       |/not-indexed-upload.txt           |
       |/not-indexed-folder/upload.txt    |
       |/not-indexed-folder/uploadÜठिF.txt |
-    But the search result of "user1" should contain these files:
+    But the search result should contain these files:
       |/user1-upload.txt                 |
       |/not-indexed-upload-keep.txt      |
     Examples:
@@ -200,7 +200,7 @@ So that I can find needed files quickly
     And all files have been indexed
     When user "user2" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user2" should contain these files:
+    And the search result should contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -226,7 +226,7 @@ So that I can find needed files quickly
     And all files have been indexed
     When user "user2" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user2" should contain these files:
+    And the search result should contain these files:
       |/not-indexed-upload.txt           |
       |/not-indexed-folder/upload.txt    |
       |/not-indexed-folder/uploadÜठिF.txt |
@@ -249,19 +249,19 @@ So that I can find needed files quickly
     And the administrator indexes all files
     And user "user0" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |/just-a-folder/new-upload-user0.txt |
       |/just-a-folder/new-upload-user1.txt |
       |/just-a-folder/new-upload-user2.txt |
     When user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user1" should contain these files:
+    And the search result should contain these files:
       |/just-a-folder/new-upload-user0.txt |
       |/just-a-folder/new-upload-user1.txt |
       |/just-a-folder/new-upload-user2.txt |
     When user "user2" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user2" should contain these files:
+    And the search result should contain these files:
       |/just-a-folder/new-upload-user0.txt |
       |/just-a-folder/new-upload-user1.txt |
       |/just-a-folder/new-upload-user2.txt |
@@ -282,15 +282,15 @@ So that I can find needed files quickly
     And the administrator indexes all files
     And user "user0" searches for "change" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |/just-a-folder/upload.txt |
     When user "user1" searches for "change" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user1" should contain these files:
+    And the search result should contain these files:
       |/just-a-folder/upload.txt |
     When user "user2" searches for "change" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user2" should contain these files:
+    And the search result should contain these files:
       |/just-a-folder/upload.txt |
     Examples:
       | dav_version |

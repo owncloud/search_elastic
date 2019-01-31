@@ -24,7 +24,7 @@ So that I can use search_elastic only as a more scalable search on filenames
     Given using <dav_version> DAV path
     When user "user0" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should not contain these files:
+    And the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -40,7 +40,7 @@ So that I can use search_elastic only as a more scalable search on filenames
     Given using <dav_version> DAV path
     When user "user0" searches for "a-image.png" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |/a-image.png                 |
       |/just-a-folder/a-image.png   |
       |/फन्नि näme/a-image.png         |
@@ -53,7 +53,7 @@ So that I can use search_elastic only as a more scalable search on filenames
     Given using <dav_version> DAV path
     When user "user0" searches for "A-iMagE.png" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |/a-image.png                 |
       |/just-a-folder/a-image.png   |
       |/फन्नि näme/a-image.png         |
@@ -66,7 +66,7 @@ So that I can use search_elastic only as a more scalable search on filenames
     Given using <dav_version> DAV path
     When user "user0" searches for "uplo" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt |
@@ -81,11 +81,11 @@ So that I can use search_elastic only as a more scalable search on filenames
     Given using <dav_version> DAV path
     When user "user0" searches for "ad.txt" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/फन्नि näme/upload.txt          |
-     But the search result of "user0" should contain these files:
+    But the search result should contain these files:
       |/just-a-folder/uploadÜठिF.txt |
     Examples:
       | dav_version |
@@ -99,11 +99,11 @@ So that I can use search_elastic only as a more scalable search on filenames
     And files of user "user0" have been indexed
     When user "user0" searches for ".png" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |/a-image.png                 |
       |/just-a-folder/a-image.png   |
       |/फन्नि näme/a-image.png         |
-    But the search result of "user0" should not contain these files:
+    But the search result should not contain these files:
       |/a-png-file.txt              |
     Examples:
       | dav_version |
@@ -115,7 +115,7 @@ So that I can use search_elastic only as a more scalable search on filenames
     Given using <dav_version> DAV path
     When user "user0" searches for "oad" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt |
@@ -131,7 +131,7 @@ So that I can use search_elastic only as a more scalable search on filenames
     And files of user "user0" have been indexed
     When user "user0" searches for <search> using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |<filename> |
     Examples:
       | dav_version | filename    | search |
@@ -152,9 +152,9 @@ So that I can use search_elastic only as a more scalable search on filenames
     And files of user "user0" have been indexed
     When user "user0" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |/content-is-secret.txt       |
-    But the search result of "user0" should not contain these files:
+    But the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt |
@@ -172,10 +172,10 @@ So that I can use search_elastic only as a more scalable search on filenames
     And files of user "user0" have been indexed
     When user "user0" searches for "uploadÜठिF" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |/just-a-folder/uploadÜठिF.txt|
       |/uploadÜठिF.txt              |
-    But the search result of "user0" should not contain these files:
+    But the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/फन्नि näme/upload.txt          |
@@ -189,11 +189,11 @@ So that I can use search_elastic only as a more scalable search on filenames
     When user "user0" deletes file "/upload.txt" using the WebDAV API
     And user "user0" searches for "upload" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt |
       |/फन्नि näme/upload.txt          |
-    But the search result of "user0" should not contain these files:
+    But the search result should not contain these files:
       |/upload.txt                  |
     Examples:
       | dav_version |
@@ -207,7 +207,7 @@ So that I can use search_elastic only as a more scalable search on filenames
     And the administrator indexes files of user "user0"
     And user "user0" searches for "renamed" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |/renamed_textfile0.txt       |
     Examples:
       | dav_version |
@@ -221,11 +221,11 @@ So that I can use search_elastic only as a more scalable search on filenames
     And the administrator indexes files of user "user0"
     And user "user0" searches for "upload" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt |
       |/फन्नि näme/upload.txt          |
-    And the search result of "user0" should not contain these files:
+    And the search result should not contain these files:
       |/renamed_textfile0.txt|
     Examples:
       | dav_version |
@@ -239,9 +239,9 @@ So that I can use search_elastic only as a more scalable search on filenames
     And all files have been indexed
     When user "user1" searches for "upload" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user1" should contain these files:
+    And the search result should contain these files:
       |/upload-user1.txt                  |
-    But the search result of "user1" should not contain these files:
+    But the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -260,7 +260,7 @@ So that I can use search_elastic only as a more scalable search on filenames
     And all files have been indexed
     When user "user1" searches for "upload" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user1" should contain these files:
+    And the search result should contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -280,7 +280,7 @@ So that I can use search_elastic only as a more scalable search on filenames
     And all files have been indexed
     When user "user1" searches for "upload" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user1" should contain these files:
+    And the search result should contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -301,10 +301,10 @@ So that I can use search_elastic only as a more scalable search on filenames
     And the administrator indexes all files
     And user "user1" searches for "upload" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user1" should not contain these files:
+    And the search result should not contain these files:
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt |
-    But the search result of "user1" should contain these files:
+    But the search result should contain these files:
       |/upload-user1.txt            |
     Examples:
       | dav_version |
@@ -320,7 +320,7 @@ So that I can use search_elastic only as a more scalable search on filenames
     And the administrator indexes files of user "user0"
     And user "user0" searches for "upload" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of "user0" should contain these files:
+    And the search result should contain these files:
       |/local_storage/upload.txt       |
       |/local_storage/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|

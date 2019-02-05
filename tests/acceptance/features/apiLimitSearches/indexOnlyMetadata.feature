@@ -76,46 +76,50 @@ So that I can use search_elastic only as a more scalable search on filenames
       | old         |
       | new         |
 
-  @skip @issue-40
+  @issue-40
   Scenario Outline: search for filename (not full word - start of filename missing)
     Given using <dav_version> DAV path
     When user "user0" searches for "ad.txt" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/फन्नि näme/upload.txt          |
-    But the search result should contain these files:
+    But the search result should not contain these files:
       |/just-a-folder/uploadÜठिF.txt |
     Examples:
       | dav_version |
       | old         |
       | new         |
 
-  @skip @issue-40
+  @issue-40
   Scenario Outline: search for filename (just file extension)
     Given using <dav_version> DAV path
     And user "user0" has uploaded file with content "does-not-matter" to "/a-png-file.txt"
     And files of user "user0" have been indexed
     When user "user0" searches for ".png" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/a-image.png                 |
       |/just-a-folder/a-image.png   |
       |/फन्नि näme/a-image.png         |
-    But the search result should not contain these files:
+    #But the search result should not contain these files:
+    But the search result should contain these files:
       |/a-png-file.txt              |
     Examples:
       | dav_version |
       | old         |
       | new         |
 
-  @skip @issue-40
+  @issue-40
   Scenario Outline: search for filename (not full word - only middle part of filename given)
     Given using <dav_version> DAV path
     When user "user0" searches for "oad" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt |

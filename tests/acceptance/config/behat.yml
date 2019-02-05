@@ -14,12 +14,11 @@ default:
             adminPassword: admin
             regularUserPassword: 123456
             ocPath: apps/testing/api/v1/occ
+        - WebUIElasticSearchContext:
+        - WebUIFilesContext:
         - WebUIGeneralContext:
         - WebUILoginContext:
-        - WebUIUsersContext:
-        - WebUIFilesContext:
         - WebUISearchContext:
-        - WebUIElasticSearchContext:
 
     apiLimitSearches:
       paths:

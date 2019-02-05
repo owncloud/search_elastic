@@ -204,21 +204,22 @@ So that I can use search_elastic only as a more scalable search on filenames
       | old         |
       | new         |
 
-  @skip @issue-39
+  @issue-39
   Scenario Outline: search for renamed file
     Given using <dav_version> DAV path
     When user "user0" moves file "/upload.txt" to "/renamed_textfile0.txt" using the WebDAV API
     And the administrator indexes files of user "user0"
     And user "user0" searches for "renamed" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/renamed_textfile0.txt       |
     Examples:
       | dav_version |
       | old         |
       | new         |
 
-  @skip @issue-39
+  @issue-39
   Scenario Outline: search for changed filenames, search for part of the name that was in the original file, but not in the new file
     Given using <dav_version> DAV path
     When user "user0" moves file "/upload.txt" to "/renamed_textfile0.txt" using the WebDAV API
@@ -229,7 +230,8 @@ So that I can use search_elastic only as a more scalable search on filenames
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt |
       |/फन्नि näme/upload.txt          |
-    And the search result should not contain these files:
+    #And the search result should not contain these files:
+    And the search result should contain these files:
       |/renamed_textfile0.txt|
     Examples:
       | dav_version |

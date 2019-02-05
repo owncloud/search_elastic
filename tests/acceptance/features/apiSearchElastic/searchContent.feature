@@ -89,12 +89,13 @@ So that I can find needed files quickly
       | old         |
       | new         |
 
-  @skip @issue-38
+  @issue-38
   Scenario Outline: search for files by pattern (not full word - start of word missing)
     Given using <dav_version> DAV path
     When user "user0" searches for "Cloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/textfile0.txt         |
       |/textfile1.txt         |
       |/textfile2.txt         |
@@ -116,12 +117,13 @@ So that I can find needed files quickly
       | old         |
       | new         |
 
-  @skip @issue-38
+  @issue-38
   Scenario Outline: search for files by pattern (not full word - only middle part of word given)
     Given using <dav_version> DAV path
     When user "user0" searches for "wnClo" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/textfile0.txt         |
       |/textfile1.txt         |
       |/textfile2.txt         |

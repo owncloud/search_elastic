@@ -44,21 +44,23 @@ So that I can find needed files quickly
       This is lorem text in the simple-folder.
       """
 
-  @skip @issue-38
+  @issue-38
   Scenario: Search content only (not full word - start of word missing)
     When the user searches for "psum" using the webUI
-    Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
-      """
-      This is lorem text in the simple-folder.
-      """
+    Then file "lorem.txt" with path "/simple-folder" should not be listed in the search results in the other folders section on the webUI
+    #Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
+    #  """
+    #  This is lorem text in the simple-folder.
+    #  """
 
-  @skip @issue-38
+  @issue-38
   Scenario: Search content only (not full word - only middle part of word given)
     When the user searches for "psu" using the webUI
-    Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
-      """
-      This is lorem text in the simple-folder.
-      """
+    Then file "lorem.txt" with path "/simple-folder" should not be listed in the search results in the other folders section on the webUI
+    #Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
+    #  """
+    #  This is lorem text in the simple-folder.
+    #  """
 
   Scenario: Search pattern matches filename of one file and content of others
     Given user "user1" has uploaded file with content "content to search for" to "/new-file.txt"

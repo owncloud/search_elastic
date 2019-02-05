@@ -76,46 +76,50 @@ So that I can use search_elastic only as a more scalable search on filenames
       | old         |
       | new         |
 
-  @skip @issue-40
+  @issue-40
   Scenario Outline: search for filename (not full word - start of filename missing)
     Given using <dav_version> DAV path
     When user "user0" searches for "ad.txt" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/फन्नि näme/upload.txt          |
-    But the search result should contain these files:
+    But the search result should not contain these files:
       |/just-a-folder/uploadÜठिF.txt |
     Examples:
       | dav_version |
       | old         |
       | new         |
 
-  @skip @issue-40
+  @issue-40
   Scenario Outline: search for filename (just file extension)
     Given using <dav_version> DAV path
     And user "user0" has uploaded file with content "does-not-matter" to "/a-png-file.txt"
     And files of user "user0" have been indexed
     When user "user0" searches for ".png" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/a-image.png                 |
       |/just-a-folder/a-image.png   |
       |/फन्नि näme/a-image.png         |
-    But the search result should not contain these files:
+    #But the search result should not contain these files:
+    But the search result should contain these files:
       |/a-png-file.txt              |
     Examples:
       | dav_version |
       | old         |
       | new         |
 
-  @skip @issue-40
+  @issue-40
   Scenario Outline: search for filename (not full word - only middle part of filename given)
     Given using <dav_version> DAV path
     When user "user0" searches for "oad" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt |
@@ -200,21 +204,22 @@ So that I can use search_elastic only as a more scalable search on filenames
       | old         |
       | new         |
 
-  @skip @issue-39
+  @issue-39
   Scenario Outline: search for renamed file
     Given using <dav_version> DAV path
     When user "user0" moves file "/upload.txt" to "/renamed_textfile0.txt" using the WebDAV API
     And the administrator indexes files of user "user0"
     And user "user0" searches for "renamed" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/renamed_textfile0.txt       |
     Examples:
       | dav_version |
       | old         |
       | new         |
 
-  @skip @issue-39
+  @issue-39
   Scenario Outline: search for changed filenames, search for part of the name that was in the original file, but not in the new file
     Given using <dav_version> DAV path
     When user "user0" moves file "/upload.txt" to "/renamed_textfile0.txt" using the WebDAV API
@@ -225,7 +230,8 @@ So that I can use search_elastic only as a more scalable search on filenames
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt |
       |/फन्नि näme/upload.txt          |
-    And the search result should not contain these files:
+    #And the search result should not contain these files:
+    And the search result should contain these files:
       |/renamed_textfile0.txt|
     Examples:
       | dav_version |
@@ -251,7 +257,7 @@ So that I can use search_elastic only as a more scalable search on filenames
       | old         |
       | new         |
 
-  @skip @issue-36
+  @issue-36
    Scenario Outline: user searches for files shared to him as a single user
     Given using <dav_version> DAV path
     And user "user1" has been created with default attributes
@@ -260,7 +266,8 @@ So that I can use search_elastic only as a more scalable search on filenames
     And all files have been indexed
     When user "user1" searches for "upload" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -269,7 +276,7 @@ So that I can use search_elastic only as a more scalable search on filenames
       | old         |
       | new         |
 
-  @skip @issue-36
+  @issue-36
   Scenario Outline:  user searches for files shared to him as a member of a group
     Given using <dav_version> DAV path
     And user "user1" has been created with default attributes
@@ -280,7 +287,8 @@ So that I can use search_elastic only as a more scalable search on filenames
     And all files have been indexed
     When user "user1" searches for "upload" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|

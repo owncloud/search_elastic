@@ -19,7 +19,7 @@ So that I can find needed files quickly
     And user "user0" has uploaded file "filesForUpload/simple.pdf" to "/simple.pdf"
     And files of user "user0" have been indexed
 
-  @skip @issue-36
+  @issue-36
   Scenario Outline: user searches for files shared to him as a single user
     Given using <dav_version> DAV path
     And user "user1" has been created with default attributes
@@ -28,7 +28,8 @@ So that I can find needed files quickly
     And all files have been indexed
     When user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -58,7 +59,7 @@ So that I can find needed files quickly
       | old         |
       | new         |
 
-  @skip @issue-36
+  @issue-36
   Scenario Outline: user searches for files shared to him as a member of a group
     Given using <dav_version> DAV path
     And user "user1" has been created with default attributes
@@ -69,7 +70,8 @@ So that I can find needed files quickly
     And all files have been indexed
     When user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -101,7 +103,7 @@ So that I can find needed files quickly
       | old         |
       | new         |
 
-  @skip @issue-36
+  @issue-36
   Scenario Outline: Unshared files should not be searched
     Given using <dav_version> DAV path
     And user "user1" has been created with default attributes
@@ -121,6 +123,8 @@ So that I can find needed files quickly
       |/just-a-folder/uploadÜठिF.txt |
     But the search result should contain these files:
       |/user1-upload.txt            |
+      #|/फन्नि näme/upload.txt          |
+    But the search result should not contain these files:
       |/फन्नि näme/upload.txt          |
     Examples:
       | dav_version |
@@ -186,7 +190,7 @@ So that I can find needed files quickly
       | old         |
       | new         |
 
-  @skip @issue-36
+  @issue-36
   Scenario Outline: users searches for files re-shared to him
     Given using <dav_version> DAV path
     And these users have been created with default attributes:
@@ -200,7 +204,8 @@ So that I can find needed files quickly
     And all files have been indexed
     When user "user2" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|

@@ -15,22 +15,25 @@ So that the server is not overloaded
     And user "user0" has been added to group "grp1"
     And all files have been indexed
 
-  @skip @issue-43
+  @issue-43
   Scenario Outline: limit search_elastic access to a group
     Given using <dav_version> DAV path
     When the administrator limits the access to search_elastic to "grp1"
     And all files have been indexed
     And user "user0" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/textfile0.txt |
       |/textfile1.txt |
       |/textfile2.txt |
       |/textfile3.txt |
       |/textfile4.txt |
+    And the search result should contain these files:
       |/ownCloud.txt  |
     When user "user1" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
+    #And the search result should not contain these files:
     And the search result should contain these files:
       |/ownCloud.txt  |
     But the search result should not contain these files:

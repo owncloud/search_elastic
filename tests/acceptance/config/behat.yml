@@ -16,7 +16,6 @@ default:
             ocPath: apps/testing/api/v1/occ
         - WebUIGeneralContext:
         - WebUILoginContext:
-        - WebUIUsersContext:
         - WebUIFilesContext:
         - WebUISearchContext:
         - WebUIElasticSearchContext:

@@ -257,7 +257,7 @@ So that I can use search_elastic only as a more scalable search on filenames
       | old         |
       | new         |
 
-  @skip @issue-36
+  @issue-36
    Scenario Outline: user searches for files shared to him as a single user
     Given using <dav_version> DAV path
     And user "user1" has been created with default attributes
@@ -266,7 +266,8 @@ So that I can use search_elastic only as a more scalable search on filenames
     And all files have been indexed
     When user "user1" searches for "upload" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -275,7 +276,7 @@ So that I can use search_elastic only as a more scalable search on filenames
       | old         |
       | new         |
 
-  @skip @issue-36
+  @issue-36
   Scenario Outline:  user searches for files shared to him as a member of a group
     Given using <dav_version> DAV path
     And user "user1" has been created with default attributes
@@ -286,7 +287,8 @@ So that I can use search_elastic only as a more scalable search on filenames
     And all files have been indexed
     When user "user1" searches for "upload" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    #And the search result should contain these files:
+    And the search result should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|

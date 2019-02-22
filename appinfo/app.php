@@ -42,15 +42,10 @@ if ($mode === 'active') {
 	\OC::$server->getJobList()->add(new \OCA\Search_Elastic\Jobs\DeleteJob());
 
 	// --- add hooks -----------------------------------------------
-
-	//post_create is ignored, as write will be triggered afterwards anyway
-
-	//connect to the filesystem for auto updating
-	OCP\Util::connectHook(
-			OC\Files\Filesystem::CLASSNAME,
-			OC\Files\Filesystem::signal_post_write,
-			'OCA\Search_Elastic\Hooks\Files',
-			OCA\Search_Elastic\Hooks\Files::handle_post_write);
+	$eventDispatcher = \OC::$server->getEventDispatcher();
+	$fileHook = new \OCA\Search_Elastic\Hooks\Files();
+	$eventDispatcher->addListener('file.aftercreate', [$fileHook, 'contentChanged']);
+	$eventDispatcher->addListener('file.afterupdate', [$fileHook, 'contentChanged']);
 
 	//connect to the filesystem for rename
 	OCP\Util::connectHook(

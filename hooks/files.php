@@ -21,7 +21,10 @@ use OCA\Search_Elastic\Db\StatusMapper;
 use OCP\BackgroundJob;
 use OCP\Files\File;
 use OCP\Files\Folder;
+use OCP\Files\InvalidPathException;
 use OCP\Files\Node;
+use OCP\Files\NotFoundException;
+use OCP\Files\StorageNotAvailableException;
 
 /**
  * Class Files
@@ -29,14 +32,6 @@ use OCP\Files\Node;
  * @package OCA\Search_Elastic\Hooks
  */
 class Files {
-
-	/**
-	 * handle for indexing file
-	 *
-	 * @param string $path
-	 */
-	const handle_post_write = 'contentChanged';
-
 	/**
 	 * handle for renaming file
 	 *
@@ -59,28 +54,73 @@ class Files {
 	const handle_delete = 'deleteFile';
 
 	/**
-	 * handle file writes (triggers reindexing)
+	 * Check if the path is outside users home folder
 	 *
-	 * the file indexing is queued as a background job
+	 * @param string $path
 	 *
-	 * @param $param array from postWriteFile-Hook
+	 * @return bool
 	 */
-	public static function contentChanged(array $param) {
+	public function excludeIndex($path) {
+		$path = \ltrim($path, '/');
+		/**
+		 * Making assumption that path has to be $uid/files/
+		 * So if the path when exploded doesn't make up to this
+		 * pattern, then this method will return true. Else return
+		 * false.
+		 */
+		$splitPath = \explode('/', $path);
+
+		if (\count($splitPath) < 2) {
+			//For example if the path has /avatars
+			return true;
+		}
+
+		//For example if the path has /avatars/12
+		if ($splitPath[1] !== 'files') {
+			return true;
+		}
+
+		$uid = $splitPath[0];
+		$userPathStarts = $uid . '/files/';
+
+		/**
+		 * Final check if the path has $uid/files/ in it
+		 * if so then get the data indexed. Else exclude
+		 * them from indexing
+		 */
+		return !(\strpos($path, $userPathStarts) !== false);
+	}
+
+	/**
+	 * Handle file writes (triggers reindexing)
+	 *
+	 * The file indexing is queued as a background job
+	 *
+	 * @param mixed $params from event
+	 *
+	 * @throws NotFoundException
+	 * @throws InvalidPathException
+	 * @throws StorageNotAvailableException
+	 */
+	public static function contentChanged($params) {
+		$result = self::excludeIndex($params['path']);
+		if ($result === true) {
+			return;
+		}
+
 		$app = new Application();
 		$container = $app->getContainer();
-		$userId = $container->query('UserId');
+		$node = \OC::$server->getRootFolder()->get($params['path']);
+		$userId = $node->getOwner()->getUID();
 		$logger = $container->query('Logger');
 
 		if (!empty($userId)) {
-
-			// mark written file as new
-			$home = \OC::$server->getUserFolder($userId);
-			$node = $home->get($param['path']);
 
 			/** @var StatusMapper $mapper */
 			$mapper = $container->query('StatusMapper');
 			$status = $mapper->getOrCreateFromFileId($node->getId());
 
+			// mark written file as new
 			if ($node instanceof File || $node instanceof Folder) {
 				$logger->debug(
 					"Hook contentChanged: marking as New {$node->getPath()} ({$node->getId()})",
@@ -109,7 +149,7 @@ class Files {
 		} else {
 			$logger->debug(
 				'Hook contentChanged could not determine user when called with param '
-				.\json_encode($param), ['app' => 'search_elastic']
+				.\json_encode($params), ['app' => 'search_elastic']
 			);
 		}
 	}

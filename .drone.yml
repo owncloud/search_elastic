@@ -222,17 +222,7 @@ matrix:
     - PHP_VERSION: 7.0
       TEST_SUITE: owncloud-coding-standard
 
-    - PHP_VERSION: 5.6
-      TEST_SUITE: owncloud-coding-standard
-
     # Unit Tests
-    - PHP_VERSION: 5.6
-      OC_VERSION: daily-stable10-qa
-      DB_TYPE: sqlite
-      TEST_SUITE: phpunit
-      NEED_CORE: true
-      NEED_INSTALL_APP: true
-
     - PHP_VERSION: 7.0
       OC_VERSION: daily-stable10-qa
       DB_TYPE: sqlite

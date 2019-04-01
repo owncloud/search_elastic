@@ -107,20 +107,20 @@ class Application extends App {
 	}
 
 	public function init() {
-		$server = $this->getContainer()->getServer();
-		$config = $server->getConfig();
-		$mode = $config->getAppValue(self::APP_ID, SearchElasticConfigService::APP_MODE, 'active');
-		if ($mode === 'active') {
+		if ($this->isActive() === true) {
 			$this->initFrontEnd();
 			$this->registerSearchProvider();
 			$this->registerHooks();
 			// add background job for deletion
+			$server = $this->getContainer()->getServer();
 			$server->getJobList()->add(new \OCA\Search_Elastic\Jobs\DeleteJob());
 		}
 	}
 
 	public function registerSearchProvider() {
-		if ($this->isSearchProviderRegistered === true) {
+		if ($this->isSearchProviderRegistered === true
+			|| $this->isActive() !== true
+		) {
 			return;
 		}
 
@@ -139,6 +139,15 @@ class Application extends App {
 			$server->getSearch()->registerProvider('OCA\Search_Elastic\Search\ElasticSearchProvider', ['apps' => ['files']]);
 		}
 	}
+
+	/**
+	 * @return bool
+	 */
+	private function isActive() {
+		$config = $this->getContainer()->getServer()->getConfig();
+		$mode = $config->getAppValue(self::APP_ID, SearchElasticConfigService::APP_MODE, 'active');
+		return $mode === 'active';
+	}
 	
 	private function initFrontEnd() {
 		\OCP\Util::addScript(self::APP_ID, 'search');
@@ -148,6 +157,8 @@ class Application extends App {
 	private function registerHooks() {
 		$server = $this->getContainer()->getServer();
 		$eventDispatcher = $server->getEventDispatcher();
+		$eventDispatcher->addListener('user.afterlogin', [$this, 'registerSearchProvider']);
+		
 		$fileHook = new Files();
 		$eventDispatcher->addListener('file.aftercreate', [$fileHook, 'contentChanged']);
 		$eventDispatcher->addListener('file.afterupdate', [$fileHook, 'contentChanged']);

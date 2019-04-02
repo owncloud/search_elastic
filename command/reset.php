@@ -14,14 +14,9 @@
 
 namespace OCA\Search_Elastic\Command;
 
-use \OC\User\Manager;
 use OCA\Search_Elastic\AppInfo\Application;
-use OCA\Search_Elastic\Controller\AdminSettingsController;
-use OCA\Search_Elastic\Jobs\UpdateContent;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class Reset extends Command {

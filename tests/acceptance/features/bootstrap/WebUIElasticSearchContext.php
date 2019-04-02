@@ -27,6 +27,7 @@ use Page\ElasticSearchResultInOtherFoldersPage;
 use Page\SearchResultInOtherFoldersPage;
 use Page\OwncloudPage;
 use Behat\Gherkin\Node\PyStringNode;
+use PHPUnit\Framework\Assert;
 
 require_once 'bootstrap.php';
 
@@ -94,7 +95,7 @@ class WebUIElasticSearchContext extends RawMinkContext implements Context {
 		$highlights = $this->searchResultInOtherFoldersPage->getHighlightsText(
 			$this->getSession(), $fileName, $path
 		);
-		PHPUnit_Framework_Assert::assertContains(
+		Assert::assertContains(
 			$highlightsExpectations->getRaw(), $highlights
 		);
 	}

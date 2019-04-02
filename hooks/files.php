@@ -18,7 +18,6 @@ use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\SearchElasticService;
 use OCA\Search_Elastic\Db\Status;
 use OCA\Search_Elastic\Db\StatusMapper;
-use OCP\BackgroundJob;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\InvalidPathException;

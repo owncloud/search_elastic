@@ -19,11 +19,9 @@ use Elastica\Index;
 use Elastica\Request;
 use Elastica\Type;
 use OC\AppFramework\Http;
-use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\SearchElasticService;
 use OCP\AppFramework\Http\JSONResponse;
-use OCP\IConfig;
 use OCP\IRequest;
 use OCP\AppFramework\ApiController;
 

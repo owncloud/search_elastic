@@ -13,12 +13,12 @@ So that the server is not overloaded
     And user "user1" has uploaded file with content "files content" to "/ownCloud.txt"
     And group "grp1" has been created
     And user "user0" has been added to group "grp1"
-    And all files have been indexed
+    And the search index has been built
 
   Scenario Outline: limit search_elastic access to a group
     Given using <dav_version> DAV path
     When the administrator limits the access to search_elastic to "grp1"
-    And all files have been indexed
+    And the search index has been updated
     And user "user0" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:
@@ -73,7 +73,7 @@ So that the server is not overloaded
   Scenario Outline: limit a group to only search in metadata (reindex after limitation is set)
     Given using <dav_version> DAV path
     When the administrator disables the full text search for "grp1"
-    And the administrator indexes all files
+    And the search index has been updated
     And user "user0" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:
@@ -105,7 +105,7 @@ So that the server is not overloaded
     And group "grp2" has been created
     And user "user2" has been added to group "grp2"
     When the administrator disables the full text search for "grp1,grp2"
-    And the administrator indexes all files
+    And the search index has been updated
     And user "user0" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:

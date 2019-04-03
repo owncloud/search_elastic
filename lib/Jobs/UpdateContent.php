@@ -51,7 +51,10 @@ class UpdateContent extends QueuedJob implements IUserSession {
 
 	/**
 	 * updates changed content for files
+	 *
 	 * @param array $arguments
+	 *
+	 * @throws \Exception
 	 */
 	public function run($arguments) {
 		$app = new Application();
@@ -80,20 +83,20 @@ class UpdateContent extends QueuedJob implements IUserSession {
 				$fileIds = $statusMapper->findFilesWhereContentChanged($home);
 
 				$this->logger->debug(
-					\count($fileIds)." files of $userId need content indexing",
+					\count($fileIds) . " files of $userId need content indexing",
 					['app' => 'search_elastic']
 				);
 
 				$this->container->query('SearchElasticService')->indexNodes($userId, $fileIds);
 			} else {
 				$this->logger->debug(
-					'could not resolve user home: '.\json_encode($arguments),
+					'could not resolve user home: ' . \json_encode($arguments),
 					['app' => 'search_elastic']
 				);
 			}
 		} else {
 			$this->logger->debug(
-				'did not receive userId in arguments: '.\json_encode($arguments),
+				'did not receive userId in arguments: ' . \json_encode($arguments),
 				['app' => 'search_elastic']
 			);
 		}
@@ -103,11 +106,14 @@ class UpdateContent extends QueuedJob implements IUserSession {
 	 * init master key, parts taken from the encryption app
 	 *
 	 * @throws \Exception
+	 *
+	 * @return void
 	 */
 	protected function initMasterKeyIfAvailable() {
 		if (\OC::$server->getEncryptionManager()->isReady()
 			&& \OC::$server->getAppManager()->isEnabledForUser('encryption')
-			&& $this->config->getAppValue('encryption', 'useMasterKey')) {
+			&& $this->config->getAppValue('encryption', 'useMasterKey')
+		) {
 
 			// we need to initialize a fresh app container to get the current session
 			$encryption = new \OCA\Encryption\AppInfo\Application([], true);

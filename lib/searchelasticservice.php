@@ -30,16 +30,10 @@ use OC\Share\Constants;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\Node;
+use OCP\IConfig;
 use OCP\ILogger;
-use OCP\IServerContainer;
 
 class SearchElasticService {
-
-	/**
-	 * @var IServerContainer
-	 */
-	private $server;
-
 	/**
 	 * @var Index
 	 */
@@ -76,30 +70,30 @@ class SearchElasticService {
 	private $processorName;
 
 	/**
-	 * @param IServerContainer $server
+	 * searchelasticservice Constructor
+	 *
+	 * @param IConfig $serverConfig
 	 * @param StatusMapper $mapper
 	 * @param ILogger $logger
 	 * @param Client $client
 	 * @param SearchElasticConfigService $config
-	 * @param string $instanceID
 	 */
 	public function __construct(
-		IServerContainer $server,
+		IConfig $serverConfig,
 		StatusMapper $mapper,
 		ILogger $logger,
 		Client $client,
-		SearchElasticConfigService $config,
-		$instanceID
+		SearchElasticConfigService $config
 	) {
-		$this->server = $server;
 		$this->mapper = $mapper;
 		$this->logger = $logger;
 		$this->config = $config;
 		$this->client = $client;
 
-		$this->index = new Index($client, 'oc-'.$instanceID);
+		$instanceID = $serverConfig->getSystemValue('instanceid', '');
+		$this->index = new Index($client, 'oc-' . $instanceID);
 		$this->type = new Type($this->index, 'file');
-		$this->processorName = 'oc-processor-'.$instanceID;
+		$this->processorName = 'oc-processor-' . $instanceID;
 	}
 
 	/**
@@ -531,9 +525,47 @@ class SearchElasticService {
 		$users[] = $ownerUser;
 
 		$result = ['users' => \array_unique($users), 'groups' => \array_unique($groups)];
-		$this->logger->debug("access to $path:".\json_encode($result),
+		$this->logger->debug(
+			"access to $path:" . \json_encode($result),
 			['app' => 'search_elastic']
 		);
 		return $result;
+	}
+
+	/**
+	 * Reset all Files to status NEW in a given users home folder
+	 *
+	 * @param Node $home
+	 *
+	 * @throws \OCP\Files\InvalidPathException
+	 * @throws \OCP\Files\NotFoundException
+	 *
+	 * @return void
+	 */
+	public function resetUserIndex($home) {
+		if (isset($home) && $home instanceof Folder) {
+			$this->logger->debug(
+				"Command Rebuild Search Index: marking all Files for User {$home->getOwner()->getUID()} as New.",
+				['app' => 'search_elastic']
+			);
+
+			$children = $home->getDirectoryListing();
+
+			do {
+				$child = \array_pop($children);
+				if ($child !== null) {
+					$status = $this->mapper->getOrCreateFromFileId($child->getId());
+					$this->mapper->markNew($status);
+					if ($child instanceof Folder) {
+						$children = \array_merge($children, $child->getDirectoryListing());
+					}
+				}
+			} while (!empty($children));
+		} else {
+			$this->logger->error(
+				"Command Rebuild Search Index: could not resolve node for {$home->getPath()}",
+				['app' => 'search_elastic']
+			);
+		}
 	}
 }

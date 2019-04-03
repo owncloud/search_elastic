@@ -17,19 +17,17 @@ So that I can find needed files quickly
     And user "user0" has uploaded file with content "does-not-matter" to "/फन्नि näme/a-image.png"
     And user "user0" has uploaded file "filesForUpload/simple.odt" to "/simple.odt"
     And user "user0" has uploaded file "filesForUpload/simple.pdf" to "/simple.pdf"
-    And files of user "user0" have been indexed
+    And the search index has been built
 
-  @issue-36
   Scenario Outline: user searches for files shared to him as a single user
     Given using <dav_version> DAV path
     And user "user1" has been created with default attributes
     And user "user0" has shared file "upload.txt" with user "user1"
     And user "user0" has shared folder "just-a-folder" with user "user1"
-    And all files have been indexed
+    And the search index has been updated
     When user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    #And the search result should contain these files:
-    And the search result should not contain these files:
+    And the search result should contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -47,7 +45,7 @@ So that I can find needed files quickly
     And user "user0" has uploaded file with content "more content" to "/not-indexed-folder/uploadÜठिF.txt"
     And user "user0" has shared file "not-indexed-upload.txt" with user "user1"
     And user "user0" has shared folder "not-indexed-folder" with user "user1"
-    And all files have been indexed
+    And the search index has been updated
     When user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:
@@ -59,7 +57,6 @@ So that I can find needed files quickly
       | old         |
       | new         |
 
-  @issue-36
   Scenario Outline: user searches for files shared to him as a member of a group
     Given using <dav_version> DAV path
     And user "user1" has been created with default attributes
@@ -67,11 +64,10 @@ So that I can find needed files quickly
     And user "user1" has been added to group "grp1"
     And user "user0" has shared file "upload.txt" with group "grp1"
     And user "user0" has shared folder "just-a-folder" with group "grp1"
-    And all files have been indexed
+    And the search index has been updated
     When user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    #And the search result should contain these files:
-    And the search result should not contain these files:
+    And the search result should contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -91,7 +87,7 @@ So that I can find needed files quickly
     And user "user0" has uploaded file with content "more content" to "/not-indexed-folder/uploadÜठिF.txt"
     And user "user0" has shared file "not-indexed-upload.txt" with group "grp1"
     And user "user0" has shared folder "not-indexed-folder" with group "grp1"
-    And all files have been indexed
+    And the search index has been updated
     When user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:
@@ -103,7 +99,6 @@ So that I can find needed files quickly
       | old         |
       | new         |
 
-  @issue-36
   Scenario Outline: Unshared files should not be searched
     Given using <dav_version> DAV path
     And user "user1" has been created with default attributes
@@ -111,10 +106,10 @@ So that I can find needed files quickly
     And user "user0" has shared folder "just-a-folder" with user "user1"
     And user "user0" has shared file "/फन्नि näme/upload.txt" with user "user1"
     And user "user1" has uploaded file with content "files content" to "/user1-upload.txt"
-    And all files have been indexed
+    And the search index has been updated
     When user "user1" unshares folder "/just-a-folder" using the WebDAV API
     And user "user1" unshares file "/upload.txt" using the WebDAV API
-    And the administrator indexes all files
+    And the search index has been updated
     And user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should not contain these files:
@@ -123,9 +118,7 @@ So that I can find needed files quickly
       |/just-a-folder/uploadÜठिF.txt |
     But the search result should contain these files:
       |/user1-upload.txt            |
-      #|/फन्नि näme/upload.txt          |
-    But the search result should not contain these files:
-      |/फन्नि näme/upload.txt          |
+      |/upload (2).txt              |
     Examples:
       | dav_version |
       | old         |
@@ -143,10 +136,10 @@ So that I can find needed files quickly
     And user "user0" has shared file "not-indexed-upload-keep.txt" with user "user1"
     And user "user0" has shared folder "not-indexed-folder" with user "user1"
     And user "user1" has uploaded file with content "files content" to "/user1-upload.txt"
-    And all files have been indexed
+    And the search index has been updated
     When user "user1" unshares folder "/not-indexed-folder" using the WebDAV API
     And user "user1" unshares file "/not-indexed-upload.txt" using the WebDAV API
-    And the administrator indexes all files
+    And the search index has been updated
     And user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should not contain these files:
@@ -175,7 +168,7 @@ So that I can find needed files quickly
     And user "user1" has uploaded file with content "files content" to "/user1-upload.txt"
     When user "user1" unshares folder "/not-indexed-folder" using the WebDAV API
     And user "user1" unshares file "/not-indexed-upload.txt" using the WebDAV API
-    And the administrator indexes all files
+    And the search index has been updated
     And user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should not contain these files:
@@ -190,7 +183,6 @@ So that I can find needed files quickly
       | old         |
       | new         |
 
-  @issue-36
   Scenario Outline: users searches for files re-shared to him
     Given using <dav_version> DAV path
     And these users have been created with default attributes:
@@ -201,11 +193,10 @@ So that I can find needed files quickly
     And user "user0" has shared folder "just-a-folder" with user "user1"
     And user "user1" has shared file "upload.txt" with user "user2"
     And user "user1" has shared folder "just-a-folder" with user "user2"
-    And all files have been indexed
+    And the search index has been updated
     When user "user2" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    #And the search result should contain these files:
-    And the search result should not contain these files:
+    And the search result should contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -228,7 +219,7 @@ So that I can find needed files quickly
     And user "user0" has shared folder "not-indexed-folder" with user "user1"
     And user "user1" has shared file "not-indexed-upload.txt" with user "user2"
     And user "user1" has shared folder "not-indexed-folder" with user "user2"
-    And all files have been indexed
+    And the search index has been updated
     When user "user2" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:
@@ -251,7 +242,7 @@ So that I can find needed files quickly
     When user "user0" uploads file with content "new file content" to "/just-a-folder/new-upload-user0.txt" using the WebDAV API
     And user "user1" uploads file with content "new file content" to "/just-a-folder/new-upload-user1.txt" using the WebDAV API
     And user "user2" uploads file with content "new file content" to "/just-a-folder/new-upload-user2.txt" using the WebDAV API
-    And the administrator indexes all files
+    And the search index has been updated
     And user "user0" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:
@@ -284,7 +275,7 @@ So that I can find needed files quickly
     And user "user0" has shared folder "just-a-folder" with user "user1"
     And user "user1" has shared folder "just-a-folder" with user "user2"
     When user "user2" uploads file with content "files with changed content" to "/just-a-folder/upload.txt" using the WebDAV API
-    And the administrator indexes all files
+    And the search index has been updated
     And user "user0" searches for "change" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:

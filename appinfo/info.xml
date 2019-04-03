@@ -9,6 +9,7 @@
 		<owncloud min-version="10.2" max-version="10" />
 	</dependencies>
 	<use-migrations>true</use-migrations>
+	<namespace>Search_Elastic</namespace>
 	<types>
 		<filesystem/>
 	</types>
@@ -18,5 +19,11 @@
 	<settings>
 		<admin>OCA\search_elastic\AdminPanel</admin>
 	</settings>
+	<commands>
+		<command>OCA\Search_Elastic\Command\Build</command>
+		<command>OCA\Search_Elastic\Command\Reset</command>
+		<command>OCA\Search_Elastic\Command\Update</command>
+		<command>OCA\Search_Elastic\Command\Rebuild</command>
+	</commands>
 </info>
 

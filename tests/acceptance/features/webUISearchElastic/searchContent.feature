@@ -9,7 +9,7 @@ So that I can find needed files quickly
     Given these users have been created:
     |username|password|displayname|email       |
     |user1   |1234    |User One   |u1@oc.com.np|
-    And files of user "user1" have been indexed
+    And the search index has been built
     And the user has browsed to the login page
     And the user has logged in with username "user1" and password "1234" using the webUI
 
@@ -65,7 +65,7 @@ So that I can find needed files quickly
   Scenario: Search pattern matches filename of one file and content of others
     Given user "user1" has uploaded file with content "content to search for" to "/new-file.txt"
     And user "user1" has uploaded file with content "does-not-matter" to "/file-to-search-for.txt"
-    And files of user "user1" have been indexed
+    And the search index has been updated
     And the user has reloaded the current page of the webUI
     When the user searches for "search" using the webUI
     Then file "file-to-search-for.txt" should be listed on the webUI
@@ -78,7 +78,7 @@ So that I can find needed files quickly
   Scenario: search for files by UTF pattern
     Given user "user1" has uploaded file with content "मेरो नेपालि content" to "/utf-upload.txt"
     And user "user1" has uploaded file with content "मेरो दोस्रो नेपालि content" to "/simple-folder/utf-upload.txt"
-    And files of user "user1" have been indexed
+    And the search index has been updated
     And the user has reloaded the current page of the webUI
     When the user searches for "नेपालि" using the webUI
     Then file "utf-upload.txt" with path "/" should be listed in the search results in the other folders section on the webUI
@@ -87,7 +87,7 @@ So that I can find needed files quickly
   Scenario: search for deleted or renamed file
     When the user deletes file "lorem.txt" using the webUI
     And the user renames file "lorem-big.txt" to "aaa-lorem.txt" using the webUI
-    And the administrator indexes files of user "user1"
+    And the search index has been updated
     And the user searches for "ipsum" using the webUI
     Then file "lorem.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
     But file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI
@@ -96,13 +96,13 @@ So that I can find needed files quickly
 
   Scenario: search for new content in a overwritten file
     When the user uploads overwriting file "lorem-big.txt" using the webUI
-    And the administrator indexes files of user "user1"
+    And the search index has been updated
     And the user searches for "file" using the webUI
     Then file "lorem-big.txt" with path "/" should be listed in the search results in the other folders section on the webUI
 
   Scenario: search for overwritten file, search for content that was in the original file, but not in the new file
     When the user uploads overwriting file "lorem-big.txt" using the webUI
-    And the administrator indexes files of user "user1"
+    And the search index has been updated
     And the user searches for "suspendisse" using the webUI
     Then file "block-aligned.txt" with path "/" should be listed in the search results in the other folders section on the webUI
     But file "lorem-big.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
@@ -110,7 +110,7 @@ So that I can find needed files quickly
   Scenario: user should not be able to search in files of other users
     Given user "user2" has been created with default attributes
     And user "user2" has uploaded file with content "my secret content" to "/user1-upload.txt"
-    And all files have been indexed
+    And the search index has been updated
     And the user has reloaded the current page of the webUI
     And the user searches for "secret" using the webUI
     Then file "user1-upload.txt" should not be listed on the webUI

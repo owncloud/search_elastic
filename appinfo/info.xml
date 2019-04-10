@@ -12,7 +12,6 @@
 	<types>
 		<filesystem/>
 	</types>
-	<shipped>true</shipped>
 	<description>This app uses a separate elasticsearch cluster to enable
 		searching in content and meta data of files.
 	</description>

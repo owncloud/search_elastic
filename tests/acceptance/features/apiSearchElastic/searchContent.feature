@@ -17,7 +17,7 @@ So that I can find needed files quickly
     And user "user0" has uploaded file with content "does-not-matter" to "/फन्नि näme/a-image.png"
     And user "user0" has uploaded file "filesForUpload/simple.odt" to "/simple.odt"
     And user "user0" has uploaded file "filesForUpload/simple.pdf" to "/simple.pdf"
-    And files of user "user0" have been indexed
+    And the search index has been built
 
   Scenario Outline: search for files by pattern
     Given using <dav_version> DAV path
@@ -148,7 +148,7 @@ So that I can find needed files quickly
   Scenario Outline: search for files by pattern (edge case)
     Given using <dav_version> DAV path
     And user "user0" has uploaded file with content <file-content> to "/upload-edge-case.txt"
-    And files of user "user0" have been indexed
+    And the search index has been updated
     When user "user0" searches for <search> using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:
@@ -169,7 +169,7 @@ So that I can find needed files quickly
   Scenario Outline: search for files by pattern - pattern matches filename and content
     Given using <dav_version> DAV path
     And user "user0" has uploaded file with content "this file is uploaded to oC" to "/upload.txt"
-    And files of user "user0" have been indexed
+    And the search index has been updated
     When user "user0" searches for "upload" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:
@@ -185,7 +185,7 @@ So that I can find needed files quickly
   Scenario Outline: search for files by pattern - pattern matches filename of one file and content of others
     Given using <dav_version> DAV path
     And user "user0" has uploaded file with content "files content" to "/ownCloud.txt"
-    And files of user "user0" have been indexed
+    And the search index has been updated
     When user "user0" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:
@@ -204,7 +204,7 @@ So that I can find needed files quickly
     Given using <dav_version> DAV path
     And user "user0" has uploaded file with content "मेरो नेपालि content" to "/utf-upload.txt"
     And user "user0" has uploaded file with content "मेरो दोस्रो नेपालि content" to "/just-a-folder/utf-upload.txt"
-    And files of user "user0" have been indexed
+    And the search index has been updated
     When user "user0" searches for "नेपालि" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:
@@ -239,7 +239,7 @@ So that I can find needed files quickly
   Scenario Outline: search for renamed file
     Given using <dav_version> DAV path
     When user "user0" moves file "/upload.txt" to "/renamed_textfile0.txt" using the WebDAV API
-    And the administrator indexes files of user "user0"
+    And the search index has been updated
     And user "user0" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:
@@ -257,7 +257,7 @@ So that I can find needed files quickly
   Scenario Outline: search for changed files
     Given using <dav_version> DAV path
     When user "user0" uploads file with content "files with changed content" to "/upload.txt" using the WebDAV API
-    And the administrator indexes all files
+    And the search index has been updated
     And user "user0" searches for "change" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:
@@ -274,7 +274,7 @@ So that I can find needed files quickly
   Scenario Outline: search for changed files, search for content that was in the original file, but not in the new file
     Given using <dav_version> DAV path
     When user "user0" uploads file with content "files with changed content" to "/just-a-folder/uploadÜठिF.txt" using the WebDAV API
-    And the administrator indexes all files
+    And the search index has been updated
     And user "user0" searches for "more" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:
@@ -290,7 +290,7 @@ So that I can find needed files quickly
     Given using <dav_version> DAV path
     And user "user1" has been created with default attributes
     And user "user1" has uploaded file with content "files content" to "/user1-upload.txt"
-    And all files have been indexed
+    And the search index has been updated
     When user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:
@@ -311,7 +311,7 @@ So that I can find needed files quickly
     And user "user0" has moved file "/upload.txt" to "/local_storage/upload.txt"
     And user "user0" has created folder "/local_storage/just-a-folder"
     And user "user0" has moved file "/just-a-folder/upload.txt" to "/local_storage/just-a-folder/upload.txt"
-    And the administrator indexes files of user "user0"
+    And the search index has been updated
     And user "user0" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result should contain these files:

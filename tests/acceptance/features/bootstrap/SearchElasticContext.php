@@ -25,6 +25,7 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use TestHelpers\SetupHelper;
 use Behat\Behat\Hook\Scope\AfterScenarioScope;
 use TestHelpers\AppConfigHelper;
+use TestHelpers\HttpRequestHelper;
 
 require_once 'bootstrap.php';
 
@@ -51,20 +52,18 @@ class SearchElasticContext implements Context {
 	private $originalGroupNoContentSetting = null;
 
 	/**
-	 * @Given all files have been indexed
-	 * @Given files of user :user have been indexed
-	 * @When the administrator indexes all files
-	 * @When the administrator indexes files of user :user
+	 * @Given the search index has been built
+	 * @Given the search index of user :user has been built
 	 *
 	 * @param string $user
 	 *
 	 * @return void
 	 */
-	public function indexFiles($user = null) {
+	public function buildIndex($user = null) {
 		if ($user === null) {
 			$user = '--all';
 		}
-		SetupHelper::runOcc(["search:index", $user]);
+		SetupHelper::runOcc(["search:index:build", $user]);
 		SetupHelper::resetOpcache(
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getAdminUsername(),
@@ -74,12 +73,25 @@ class SearchElasticContext implements Context {
 
 	/**
 	 * @Given the search index has been reset
-	 * @When the administrator resets the search index
 	 *
 	 * @return void
 	 */
 	public function resetIndex() {
-		SetupHelper::runOcc(["search:reset"]);
+		SetupHelper::runOcc(["search:index:reset"]);
+		SetupHelper::resetOpcache(
+			$this->featureContext->getBaseUrl(),
+			$this->featureContext->getAdminUsername(),
+			$this->featureContext->getAdminPassword()
+		);
+	}
+
+	/**
+	 * @Given the search index has been updated
+	 *
+	 * @return void
+	 */
+	public function updateIndex() {
+		SetupHelper::runOcc(["search:index:update"]);
 		SetupHelper::resetOpcache(
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getAdminUsername(),

@@ -14,34 +14,54 @@
 
 namespace OCA\Search_Elastic\Command;
 
-use \OC\User\Manager;
 use OCA\Search_Elastic\Jobs\UpdateContent;
+use OCP\IUserManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class Index extends Command {
+class Build extends Command {
 
 	/**
-	 * @var \OC\User\Manager $userManager
+	 * @var IUserManager $userManager
 	 */
 	private $userManager;
 
-	public function __construct(Manager $userManager) {
-		$this->userManager = $userManager;
+	/**
+	 * @var UpdateContent
+	 */
+	private $job;
+
+	/**
+	 * Index constructor.
+	 *
+	 * @param IUserManager $userManager
+	 * @param UpdateContent $job
+	 */
+	public function __construct(
+		IUserManager $userManager,
+		UpdateContent $job
+	) {
 		parent::__construct();
+		$this->userManager = $userManager;
+		$this->job = $job;
 	}
 
+	/**
+	 * Command config, options and arguments
+	 *
+	 * @return void
+	 */
 	protected function configure() {
 		$this
-			->setName('search:index')
-			->setDescription('Index one or all users')
+			->setName('search:index:build')
+			->setDescription('Create initial Search Index for one or all users. This command could not update the search index correctly after the initial indexing.')
 			->addArgument(
 				'user_id',
 				InputArgument::OPTIONAL | InputArgument::IS_ARRAY,
-				'Will index all files of the given user(s)'
+				'Will create index for all files of the given user(s)'
 			)
 			->addOption(
 				'quiet',
@@ -53,18 +73,34 @@ class Index extends Command {
 				'all',
 				null,
 				InputOption::VALUE_NONE,
-				'Will index all files of all known users'
+				'Will create index for all files of all known users'
 			);
 	}
 
+	/**
+	 * Update Content for a given user
+	 *
+	 * @param string $user
+	 * @param bool $quiet
+	 * @param OutputInterface $output
+	 *
+	 * @return void
+	 */
 	protected function indexFiles($user, $quiet, OutputInterface $output) {
-		$job = new UpdateContent();
 		if (!$quiet) {
 			$output->writeln("Indexing user <info>$user</info>");
 		}
-		$job->run(['userId' => $user]);
+		$this->job->run(['userId' => $user]);
 	}
 
+	/**
+	 * Execute the command
+	 *
+	 * @param InputInterface $input
+	 * @param OutputInterface $output
+	 *
+	 * @return int|null|void
+	 */
 	public function execute(InputInterface $input, OutputInterface $output) {
 		if ($input->getOption('all')) {
 			$users = $this->userManager->search('');

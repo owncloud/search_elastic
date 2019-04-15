@@ -21,13 +21,26 @@ use OCA\Search_Elastic\SearchElasticService;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\AppFramework\App;
 use OCP\AppFramework\IAppContainer;
+use OCP\IConfig;
 
+/**
+ * Class Application
+ *
+ * @package OCA\Search_Elastic\AppInfo
+ */
 class Application extends App {
 	const APP_ID = 'search_elastic';
 
-	/** @var bool */
+	/**
+	 * @var bool
+	 */
 	private $isSearchProviderRegistered = false;
 
+	/**
+	 * Application constructor.
+	 *
+	 * @param array $urlParams
+	 */
 	public function __construct(array $urlParams=[]) {
 		parent::__construct(self::APP_ID, $urlParams);
 
@@ -56,21 +69,20 @@ class Application extends App {
 			}
 		);
 
-		$container->registerService('SearchElasticService', function ($c) {
+		$container->registerService('SearchElasticService', function (IAppContainer $c) {
 			return new SearchElasticService(
-				$c->getServer(),
+				$c->query(IConfig::class),
 				$c->query('StatusMapper'),
 				$c->query('Logger'),
 				$c->query('Elastica'),
-				$c->query('SearchElasticConfigService'),
-				$c->getServer()->getSystemConfig()->getValue('instanceid', '')
+				$c->query('SearchElasticConfigService')
 			);
 		});
 
 		/**
 		 * Mappers
 		 */
-		$container->registerService('StatusMapper', function ($c) {
+		$container->registerService('StatusMapper', function (IAppContainer $c) {
 			return new StatusMapper(
 				$c->query('Db'),
 				$c->query('SearchElasticConfigService'),
@@ -81,7 +93,7 @@ class Application extends App {
 		/**
 		 * Core
 		 */
-		$container->registerService('UserId', function ($c) {
+		$container->registerService('UserId', function (IAppContainer $c) {
 			$user = $c->query('ServerContainer')->getUserSession()->getUser();
 			if ($user) {
 				return $c->query('ServerContainer')->getUserSession()->getUser()->getUID();
@@ -89,14 +101,17 @@ class Application extends App {
 			return false;
 		});
 
-		$container->registerService('Db', function ($c) {
+		/**
+		 * DB
+		 */
+		$container->registerService('Db', function (IAppContainer $c) {
 			return $c->query('ServerContainer')->getDb();
 		});
 
 		/**
 		 * Controllers
 		 */
-		$container->registerService('AdminSettingsController', function ($c) {
+		$container->registerService('AdminSettingsController', function (IAppContainer $c) {
 			return new AdminSettingsController(
 				$c->query('AppName'),
 				$c->query('Request'),
@@ -117,6 +132,11 @@ class Application extends App {
 		}
 	}
 
+	/**
+	 * Register Search Provider
+	 *
+	 * @return void
+	 */
 	public function registerSearchProvider() {
 		if ($this->isSearchProviderRegistered === true
 			|| $this->isActive() !== true
@@ -141,6 +161,8 @@ class Application extends App {
 	}
 
 	/**
+	 * Check if active App Mode enabled
+	 *
 	 * @return bool
 	 */
 	private function isActive() {
@@ -148,17 +170,27 @@ class Application extends App {
 		$mode = $config->getAppValue(self::APP_ID, SearchElasticConfigService::APP_MODE, 'active');
 		return $mode === 'active';
 	}
-	
+
+	/**
+	 * Add Frontend assets
+	 *
+	 * @return void
+	 */
 	private function initFrontEnd() {
 		\OCP\Util::addScript(self::APP_ID, 'search');
 		\OCP\Util::addStyle(self::APP_ID, 'results');
 	}
-	
+
+	/**
+	 * Register the Hooks to trigger re-indexing
+	 *
+	 * @return void
+	 */
 	private function registerHooks() {
 		$server = $this->getContainer()->getServer();
 		$eventDispatcher = $server->getEventDispatcher();
 		$eventDispatcher->addListener('user.afterlogin', [$this, 'registerSearchProvider']);
-		
+
 		$fileHook = new Files();
 		$eventDispatcher->addListener('file.aftercreate', [$fileHook, 'contentChanged']);
 		$eventDispatcher->addListener('file.afterupdate', [$fileHook, 'contentChanged']);
@@ -168,27 +200,31 @@ class Application extends App {
 			\OC\Files\Filesystem::CLASSNAME,
 			\OC\Files\Filesystem::signal_post_rename,
 			'OCA\Search_Elastic\Hooks\Files',
-			Files::handle_post_rename);
+			Files::handle_post_rename
+		);
 
 		//listen for file shares to update read permission in index
 		\OCP\Util::connectHook(
 			'OCP\Share',
 			'post_shared',
 			'OCA\Search_Elastic\Hooks\Files',
-			Files::handle_share);
+			Files::handle_share
+		);
 
 		//listen for file un shares to update read permission in index
 		\OCP\Util::connectHook(
 			'OCP\Share',
 			'post_unshare',
 			'OCA\Search_Elastic\Hooks\Files',
-			Files::handle_share);
+			Files::handle_share
+		);
 
 		//connect to the filesystem for delete
 		\OCP\Util::connectHook(
 			\OC\Files\Filesystem::CLASSNAME,
 			\OC\Files\Filesystem::signal_delete,
 			'OCA\Search_Elastic\Hooks\Files',
-			Files::handle_delete);
+			Files::handle_delete
+		);
 	}
 }

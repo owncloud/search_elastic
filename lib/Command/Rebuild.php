@@ -28,6 +28,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 
 /**
  * Class Rebuild
@@ -95,6 +96,12 @@ class Rebuild extends Command {
 				'q',
 				InputOption::VALUE_NONE,
 				'Suppress output'
+			)
+			->addOption(
+				'force',
+				'f',
+				InputOption::VALUE_NONE,
+				'Use this option to rebuild the search index without further questions.'
 			);
 	}
 
@@ -111,7 +118,24 @@ class Rebuild extends Command {
 	 */
 	public function execute(InputInterface $input, OutputInterface $output) {
 		$users = $input->getArgument('user_id');
+		$usersString = \implode(', ', $users);
 		$quiet = $input->getOption('quiet');
+
+		if ($input->getOption('force')) {
+			$continue = true;
+		} else {
+			$helper = $this->getHelper('question');
+			$question = new ChoiceQuestion(
+				"This will delete all search index data for {$usersString}! Do you want to proceed?",
+				['no', 'yes'],
+				'no'
+			);
+			$continue = $helper->ask($input, $output, $question) === 'yes';
+		}
+		if (!$continue) {
+			$output->writeln('Aborting.');
+			return 0;
+		}
 
 		foreach ($users as $user) {
 			if ($this->userManager->userExists($user)) {

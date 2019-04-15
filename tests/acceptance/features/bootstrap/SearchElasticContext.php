@@ -77,7 +77,7 @@ class SearchElasticContext implements Context {
 	 * @return void
 	 */
 	public function resetIndex() {
-		SetupHelper::runOcc(["search:index:reset"]);
+		SetupHelper::runOcc(["search:index:reset --force"]);
 		SetupHelper::resetOpcache(
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getAdminUsername(),

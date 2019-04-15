@@ -47,7 +47,7 @@ pipeline:
     commands:
       - cd /var/www/owncloud/
       - php occ config:app:set search_elastic servers --value elasticsearch
-      - php occ search:index:reset
+      - php occ search:index:reset --force
     when:
       matrix:
         NEED_ELASTICSEARCH_SERVER: true

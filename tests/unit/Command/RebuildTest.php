@@ -18,9 +18,9 @@ namespace OCA\Search_Elastic\Tests\Unit\Command;
 
 use OC\Files\Node\Folder;
 use OCA\Search_Elastic\Command\Rebuild;
+use OCA\Search_Elastic\Jobs\UpdateContent;
 use OCA\Search_Elastic\SearchElasticService;
 use OCP\Files\IRootFolder;
-use OCA\Search_Elastic\Jobs\UpdateContent;
 use OCP\IUser;
 use OCP\IUserManager;
 use Symfony\Component\Console\Exception\RuntimeException;
@@ -75,6 +75,7 @@ class RebuildTest extends TestCase {
 		$this->rootFolder = $this->createMock(IRootFolder::class);
 		$this->user = $this->createMock(IUser::class);
 		$this->job = $this->createMock(UpdateContent::class);
+
 		$command = new Rebuild($this->searchElasticService, $this->userManager, $this->rootFolder, $this->job);
 		$this->commandTester = new CommandTester($command);
 	}
@@ -109,7 +110,12 @@ class RebuildTest extends TestCase {
 		$this->searchElasticService
 			->expects($this->never())
 			->method('resetUserIndex');
-		$this->commandTester->execute(['user_id' => ['testuser']]);
+		$this->commandTester->execute(
+			[
+				'user_id' => ['testuser'],
+				'--force' => true
+			]
+		);
 		$output = $this->commandTester->getDisplay();
 
 		self::assertContains('Unknown user testuser', $output);
@@ -146,7 +152,12 @@ class RebuildTest extends TestCase {
 			->expects($this->once())
 			->method('run')
 			->willReturn(true);
-		$this->commandTester->execute(['user_id' => [$uid]]);
+		$this->commandTester->execute(
+			[
+				'user_id' => [$uid],
+				'--force' => true
+			]
+		);
 		$output = $this->commandTester->getDisplay();
 
 		self::assertContains('Rebuilding Search Index for', $output);

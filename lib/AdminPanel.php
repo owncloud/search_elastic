@@ -12,7 +12,7 @@
  *
  */
 
-namespace OCA\search_elastic;
+namespace OCA\Search_Elastic;
 
 use OCP\Settings\ISettings;
 

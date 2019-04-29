@@ -17,7 +17,7 @@
 		searching in content and meta data of files.
 	</description>
 	<settings>
-		<admin>OCA\search_elastic\AdminPanel</admin>
+		<admin>OCA\Search_Elastic\AdminPanel</admin>
 	</settings>
 	<commands>
 		<command>OCA\Search_Elastic\Command\Build</command>

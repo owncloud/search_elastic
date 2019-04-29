@@ -73,6 +73,66 @@ pipeline:
       matrix:
         NEED_SERVER: true
 
+  phpstan:
+    # phpstan requires php7.1
+    image: owncloudci/php:7.1
+    pull: true
+    environment:
+      - COMPOSER_HOME=/var/www/owncloud/apps/search_elastic/.cache/composer
+    commands:
+      - make test-php-phpstan
+    when:
+      matrix:
+        TEST_SUITE: phpstan
+
+  phan-70:
+    # phan requires a recent php-ast extension
+    image: owncloudci/php:7.0
+    pull: true
+    environment:
+      - COMPOSER_HOME=/var/www/owncloud/apps/search_elastic/.cache/composer
+    commands:
+      - make test-php-phan
+    when:
+      matrix:
+        TEST_SUITE: phan-70
+
+  phan-71:
+    # phan requires a recent php-ast extension
+    image: owncloudci/php:7.1
+    pull: true
+    environment:
+      - COMPOSER_HOME=/var/www/owncloud/apps/search_elastic/.cache/composer
+    commands:
+      - make test-php-phan
+    when:
+      matrix:
+        TEST_SUITE: phan
+
+  phan-72:
+    # phan requires a recent php-ast extension
+    image: owncloudci/php:7.2
+    pull: true
+    environment:
+      - COMPOSER_HOME=/var/www/owncloud/apps/search_elastic/.cache/composer
+    commands:
+      - make test-php-phan
+    when:
+      matrix:
+        TEST_SUITE: phan
+
+  phan-73:
+    # phan requires a recent php-ast extension
+    image: owncloudci/php:7.3
+    pull: true
+    environment:
+      - COMPOSER_HOME=/var/www/owncloud/apps/search_elastic/.cache/composer
+    commands:
+      - make test-php-phan
+    when:
+      matrix:
+        TEST_SUITE: phan
+
   owncloud-coding-standard:
     image: owncloudci/php:${PHP_VERSION}
     pull: true
@@ -221,6 +281,24 @@ matrix:
 
     - PHP_VERSION: 7.0
       TEST_SUITE: owncloud-coding-standard
+
+    # phpstan
+    - PHP_VERSION: 7.2
+      OC_VERSION: daily-master-qa
+      TEST_SUITE: phpstan
+      NEED_CORE: true
+      NEED_INSTALL_APP: true
+
+    # phan
+    - PHP_VERSION: 7.0
+      OC_VERSION: daily-stable10-qa
+      TEST_SUITE: phan-70
+      NEED_CORE: true
+
+    - PHP_VERSION: 7.2
+      OC_VERSION: daily-master-qa
+      TEST_SUITE: phan
+      NEED_CORE: true
 
     # Unit Tests
     - PHP_VERSION: 7.0

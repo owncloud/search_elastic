@@ -15,9 +15,6 @@
 namespace OCA\Search_Elastic\Controller;
 
 use Elastica\Exception\Connection\HttpException;
-use Elastica\Index;
-use Elastica\Request;
-use Elastica\Type;
 use OC\AppFramework\Http;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\SearchElasticService;

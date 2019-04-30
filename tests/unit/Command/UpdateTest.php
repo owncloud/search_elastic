@@ -16,11 +16,7 @@
 
 namespace OCA\Search_Elastic\Tests\Unit\Command;
 
-use OC\Command\CommandJob;
-use OCA\Files_Trashbin\BackgroundJob\ExpireTrash;
-use OCA\Search_Elastic\Jobs\DeleteJob;
 use OCA\Search_Elastic\Jobs\SearchJobList;
-use OCP\BackgroundJob\IJobList;
 use OCP\ILogger;
 use OCA\Search_Elastic\Command\Update;
 use OCA\Search_Elastic\Jobs\UpdateContent;

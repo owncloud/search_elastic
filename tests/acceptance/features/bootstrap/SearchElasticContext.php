@@ -25,7 +25,6 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use TestHelpers\SetupHelper;
 use Behat\Behat\Hook\Scope\AfterScenarioScope;
 use TestHelpers\AppConfigHelper;
-use TestHelpers\HttpRequestHelper;
 
 require_once 'bootstrap.php';
 

@@ -59,7 +59,7 @@ class Files {
 	 *
 	 * @return bool
 	 */
-	public function excludeIndex($path) {
+	public static function excludeIndex($path) {
 		$path = \ltrim($path, '/');
 		/**
 		 * Making assumption that path has to be $uid/files/
@@ -156,7 +156,7 @@ class Files {
 	/**
 	 * handle file shares
 	 *
-	 * @param $param array
+	 * @param array $param
 	 */
 	public static function metadataChanged(array $param) {
 		$app = new Application();
@@ -241,7 +241,7 @@ class Files {
 	/**
 	 * deleteFile triggers the removal of any deleted files from the index
 	 *
-	 * @param $param array from deleteFile-Hook
+	 * @param array $param from deleteFile-Hook
 	 */
 	public static function deleteFile(array $param) {
 		$app = new Application();

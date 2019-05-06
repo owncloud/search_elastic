@@ -272,7 +272,7 @@ class StatusMapper extends Mapper {
 	}
 
 	/**
-	 * @param $fileId
+	 * @param int $fileId
 	 * @return Status
 	 */
 	public function getOrCreateFromFileId($fileId) {

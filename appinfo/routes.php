@@ -24,6 +24,7 @@ namespace OCA\Search_Elastic\AppInfo;
  */
 $application = new Application();
 
+// @phan-suppress-next-line PhanUndeclaredVariable
 $application->registerRoutes($this, ['routes' => [
 	['name' => 'admin_settings#loadServers', 'url' => '/settings/servers', 'verb' => 'GET'],
 	['name' => 'admin_settings#saveServers', 'url' => '/settings/servers', 'verb' => 'POST'],

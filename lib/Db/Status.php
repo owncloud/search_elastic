@@ -40,7 +40,7 @@ class Status extends Entity {
 	private $_fieldTypes = ['fileId' => 'integer'];
 
 	/**
-	 * @param string $fileId
+	 * @param int $fileId
 	 * @param string $status
 	 * @param string $message
 	 */

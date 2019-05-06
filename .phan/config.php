@@ -106,4 +106,15 @@ return [
 	'parent_constructor_required' => [
 	],
 
+	'suppress_issue_types' => [
+		'PhanTypeArraySuspicious',
+		'PhanDeprecatedFunction',
+		'PhanParamSignatureMismatch',
+		'PhanUnreferencedUseNormal',
+		'PhanTypeMismatchReturn',
+		'PhanTypeMismatchProperty',
+		'PhanUndeclaredClassMethod',
+		'PhanUndeclaredClassConstant',
+	]
+
 ];

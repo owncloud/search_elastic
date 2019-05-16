@@ -118,6 +118,7 @@ class AdminSettingsController extends ApiController {
 	}
 
 	/**
+	 * @suppress PhanTypeMissingReturn FIXME
 	 * @return JSONResponse
 	 */
 	public function rescan() {

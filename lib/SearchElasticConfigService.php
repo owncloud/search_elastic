@@ -30,34 +30,34 @@ class SearchElasticConfigService {
 	}
 
 	/**
-	 * @param $key
-	 * @param $value
+	 * @param string $key
+	 * @param mixed $value
 	 */
 	public function setValue($key, $value) {
 		$this->owncloudConfig->setAppValue(Application::APP_ID, $key, $value);
 	}
 
 	/**
-	 * @param $key
-	 * @param string $default
-	 * @return string
+	 * @param string $key
+	 * @param mixed $default
+	 * @return mixed
 	 */
 	public function getValue($key, $default = '') {
 		return $this->owncloudConfig->getAppValue(Application::APP_ID, $key, $default);
 	}
 
 	/**
-	 * @param $userId
-	 * @param $key
-	 * @param $value
+	 * @param string $userId
+	 * @param string $key
+	 * @param string $value
 	 */
 	public function setUserValue($userId, $key, $value) {
 		$this->owncloudConfig->setUserValue($userId, Application::APP_ID, $key, $value);
 	}
 
 	/**
-	 * @param $userId
-	 * @param $key
+	 * @param string $userId
+	 * @param string $key
 	 * @param string $default
 	 * @return string
 	 */
@@ -66,7 +66,7 @@ class SearchElasticConfigService {
 	}
 
 	/**
-	 * @param $servers comma separated list of servers
+	 * @param string $servers comma separated list of servers
 	 */
 	public function setServers($servers) {
 		$this->setValue('servers', $servers);
@@ -88,7 +88,7 @@ class SearchElasticConfigService {
 	}
 
 	/**
-	 * @param $flag
+	 * @param bool $flag
 	 */
 	public function setScanExternalStorageFlag($flag) {
 		$this->setValue(self::SCAN_EXTERNAL_STORAGE, $flag);
@@ -102,7 +102,7 @@ class SearchElasticConfigService {
 	}
 
 	/**
-	 * @param $maxFileSize
+	 * @param string $maxFileSize
 	 */
 	public function setMaxFileSizeForIndex($maxFileSize) {
 		$this->setValue(self::INDEX_MAX_FILE_SIZE, $maxFileSize);
@@ -116,21 +116,21 @@ class SearchElasticConfigService {
 	}
 
 	/**
-	 * @param $noContentFlag
+	 * @param string $noContentFlag
 	 */
 	public function setIndexNoContentFlag($noContentFlag) {
 		$this->setValue(self::INDEX_NO_CONTENT, $noContentFlag);
 	}
 
 	/**
-	 * @return string
+	 * @return mixed
 	 */
 	public function getIndexNoContentFlag() {
 		return $this->getValue(self::INDEX_NO_CONTENT, false);
 	}
 
 	/**
-	 * @param $userId
+	 * @param string $userId
 	 * @return array
 	 */
 	public function getUserSkippedDirs($userId) {

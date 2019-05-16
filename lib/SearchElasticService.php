@@ -210,7 +210,7 @@ class SearchElasticService {
 	}
 
 	/**
-	 * @param $es_query
+	 * @param \Elastica\Query $es_query
 	 * @return \Elastica\ResultSet
 	 */
 	public function search($es_query) {
@@ -315,6 +315,8 @@ class SearchElasticService {
 				\json_encode($doc->getData()),
 				['app' => 'search_elastic']
 			);
+
+			// @phan-suppress-next-line PhanUndeclaredMethod
 			$doc->addFileContent('data', $node->getContent());
 
 			// this is a workaround to acutally be able to use parameters when setting a document
@@ -388,6 +390,8 @@ class SearchElasticService {
 		if (\count($fileIds) > 0) {
 			$result = $this->type->deleteIds($fileIds);
 			$count = 0;
+
+			// @phan-suppress-next-line PhanTypeNoAccessiblePropertiesForeach
 			foreach ($result as $response) {
 				/** @var Response $response */
 				if ($response->isOk()) {
@@ -420,7 +424,7 @@ class SearchElasticService {
 			);
 			$node = $nodes[0];
 		} else {
-			throw new VanishedException($fileId);
+			throw new VanishedException((string)$fileId);
 		}
 
 		if ($node instanceof File || $node instanceof Folder) {
@@ -543,7 +547,7 @@ class SearchElasticService {
 	 * @return void
 	 */
 	public function resetUserIndex($home) {
-		if (isset($home) && $home instanceof Folder) {
+		if ($home instanceof Folder) {
 			$this->logger->debug(
 				"Command Rebuild Search Index: marking all Files for User {$home->getOwner()->getUID()} as New.",
 				['app' => 'search_elastic']

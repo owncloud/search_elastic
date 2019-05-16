@@ -27,7 +27,7 @@ pipeline:
     image: owncloudci/php:${PHP_VERSION}
     pull: true
     environment:
-      - COMPOSER_HOME=/var/www/owncloud/apps/data_exporter/.cache/composer
+      - COMPOSER_HOME=/var/www/owncloud/apps/search_elastic/.cache/composer
     commands:
       - make
       - cd /var/www/owncloud/

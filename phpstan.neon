@@ -11,8 +11,6 @@ parameters:
     - '#Call to an undefined method [a-zA-Z0-9\\_]+#'
     - '#Else branch is unreachable#'
     - '#Argument of an invalid type [a-zA-Z0-9\\_]+ supplied for foreach, only iterables are supported#'
-    - message: '#Method .* should return .* but returns.*#'
-      path: %currentWorkingDirectory%/lib/Db/StatusMapper.php
     - message: '#OCA\\Encryption#'
       path: %currentWorkingDirectory%/lib/Jobs/UpdateContent.php
     - message: '#OCA\\Search_Elastic\\Search\\ElasticSearchResult.* does not call parent#'

@@ -111,8 +111,6 @@ return [
 		'PhanDeprecatedFunction',
 		'PhanUnreferencedUseNormal',
 		'PhanUndeclaredClassMethod',
-		'PhanTypeMismatchReturn',
 		'PhanUndeclaredClassConstant',
-	]
-
+	],
 ];

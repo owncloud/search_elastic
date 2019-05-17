@@ -55,11 +55,13 @@ class StatusMapper extends Mapper {
 	/**
 	 * Deletes a status from the table
 	 * @param Entity $status the status that should be deleted
-	 * @return \PDOStatement the database query result
+	 * @return Entity the deleted entity
 	 */
 	public function delete(Entity $status) {
 		$sql = 'DELETE FROM `' . $this->tableName . '` WHERE `fileid` = ?';
-		return $this->execute($sql, [$status->getFileId()]);
+		$stmt = $this->execute($sql, [$status->getFileId()]);
+		$stmt->closeCursor();
+		return $status;
 	}
 	/**
 	 * Deletes a status from the table

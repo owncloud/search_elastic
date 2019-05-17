@@ -109,11 +109,10 @@ return [
 	'suppress_issue_types' => [
 		'PhanTypeArraySuspicious',
 		'PhanDeprecatedFunction',
-		'PhanParamSignatureMismatch',
 		'PhanUnreferencedUseNormal',
-		'PhanTypeMismatchReturn',
 		'PhanTypeMismatchProperty',
 		'PhanUndeclaredClassMethod',
+		'PhanTypeMismatchReturn',
 		'PhanUndeclaredClassConstant',
 	]
 

@@ -110,7 +110,6 @@ return [
 		'PhanTypeArraySuspicious',
 		'PhanDeprecatedFunction',
 		'PhanUnreferencedUseNormal',
-		'PhanTypeMismatchProperty',
 		'PhanUndeclaredClassMethod',
 		'PhanTypeMismatchReturn',
 		'PhanUndeclaredClassConstant',

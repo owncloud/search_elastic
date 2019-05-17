@@ -15,8 +15,6 @@ parameters:
       path: %currentWorkingDirectory%/lib/Db/StatusMapper.php
     - message: '#OCA\\Encryption#'
       path: %currentWorkingDirectory%/lib/Jobs/UpdateContent.php
-    - message: '#does not accept int#'
-      path: %currentWorkingDirectory%/lib/Search/ElasticSearchResult.php
     - message: '#OCA\\Search_Elastic\\Search\\ElasticSearchResult.* does not call parent#'
       path: %currentWorkingDirectory%/lib/Search/ElasticSearchResult.php
     - message: '#Strict comparison#'

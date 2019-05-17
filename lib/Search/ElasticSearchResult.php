@@ -49,7 +49,7 @@ class ElasticSearchResult extends FileResult {
 	public function __construct(Result $result, Node $node, Folder $home) {
 		$data = $result->getData();
 		$highlights = $result->getHighlights();
-		$this->id = (int)$result->getId();
+		$this->id = $result->getId();
 		$this->path = $home->getRelativePath($node->getPath());
 		$this->name = \basename($this->path);
 		$this->size = (int)$node->getSize();
@@ -71,8 +71,8 @@ class ElasticSearchResult extends FileResult {
 				]
 			);
 		}
-		$this->permissions = $node->getPermissions();
-		$this->modified = (int)$data['mtime'];
+		$this->permissions = (string) $node->getPermissions();
+		$this->modified = $data['mtime'];
 		if (isset($highlights['file.content'])) {
 			$this->highlights = $highlights['file.content'];
 		} else {

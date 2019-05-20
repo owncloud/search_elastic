@@ -179,7 +179,10 @@ class StatusMapper extends Mapper {
 			$columns . ' WHERE `fileid` = ?';
 		\array_push($params, $fileId);
 
-		return $this->execute($sql, $params);
+		$stmt = $this->execute($sql, $params);
+		$stmt->closeCursor();
+
+		return $entity;
 	}
 
 	/**
@@ -284,10 +287,12 @@ class StatusMapper extends Mapper {
 			WHERE `fileid` = ?
 		';
 		try {
-			return $this->findEntity($sql, [$fileId]);
+			$entity = $this->findEntity($sql, [$fileId]);
+			return new Status($fileId, $entity->getStatus());
 		} catch (DoesNotExistException $e) {
 			$status = new Status($fileId, Status::STATUS_NEW);
-			return $this->insert($status);
+			$this->insert($status);
+			return $status;
 		}
 	}
 

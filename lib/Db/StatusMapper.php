@@ -179,7 +179,10 @@ class StatusMapper extends Mapper {
 			$columns . ' WHERE `fileid` = ?';
 		\array_push($params, $fileId);
 
-		return $this->execute($sql, $params);
+		$stmt = $this->execute($sql, $params);
+		$stmt->closeCursor();
+
+		return $entity;
 	}
 
 	/**
@@ -275,7 +278,7 @@ class StatusMapper extends Mapper {
 
 	/**
 	 * @param int $fileId
-	 * @return Status
+	 * @return Entity
 	 */
 	public function getOrCreateFromFileId($fileId) {
 		$sql = '
@@ -291,38 +294,38 @@ class StatusMapper extends Mapper {
 		}
 	}
 
-	public function markNew(Status $status) {
+	public function markNew(Entity $status) {
 		$status->setStatus(Status::STATUS_NEW);
 		return $this->update($status);
 	}
 
-	public function markMetadataChanged(Status $status) {
+	public function markMetadataChanged(Entity $status) {
 		$status->setStatus(Status::STATUS_METADATA_CHANGED);
 		return $this->update($status);
 	}
 
-	public function markIndexed(Status $status) {
+	public function markIndexed(Entity $status) {
 		$status->setStatus(Status::STATUS_INDEXED);
 		return $this->update($status);
 	}
 
-	public function markSkipped(Status $status, $message = null) {
+	public function markSkipped(Entity $status, $message = null) {
 		$status->setStatus(Status::STATUS_SKIPPED);
 		$status->setMessage($message);
 		return $this->update($status);
 	}
 
-	public function markUnIndexed(Status $status) {
+	public function markUnIndexed(Entity $status) {
 		$status->setStatus(Status::STATUS_UNINDEXED);
 		return $this->update($status);
 	}
 
-	public function markVanished(Status $status) {
+	public function markVanished(Entity $status) {
 		$status->setStatus(Status::STATUS_VANISHED);
 		return $this->update($status);
 	}
 
-	public function markError(Status $status, $message = null) {
+	public function markError(Entity $status, $message = null) {
 		$status->setStatus(Status::STATUS_ERROR);
 		$status->setMessage($message);
 		return $this->update($status);

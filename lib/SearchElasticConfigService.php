@@ -95,7 +95,7 @@ class SearchElasticConfigService {
 	}
 
 	/**
-	 * @return string
+	 * @return bool
 	 */
 	public function getScanExternalStorageFlag() {
 		return $this->getValue(self::SCAN_EXTERNAL_STORAGE, true);

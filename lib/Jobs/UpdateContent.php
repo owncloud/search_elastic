@@ -108,6 +108,8 @@ class UpdateContent extends QueuedJob implements IUserSession {
 	 * @throws \Exception
 	 *
 	 * @return void
+	 * @suppress PhanUndeclaredClassConstant Encryption app not available in ci
+	 * @suppress PhanUndeclaredClassMethod Encryption app not available in ci
 	 */
 	protected function initMasterKeyIfAvailable() {
 		if (\OC::$server->getEncryptionManager()->isReady()

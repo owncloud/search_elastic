@@ -9,13 +9,13 @@ parameters:
     - message: '#Cannot access offset.*#'
       path: %currentWorkingDirectory%/lib/SearchElasticService.php
     - '#Call to an undefined method [a-zA-Z0-9\\_]+#'
-    - '#Else branch is unreachable#'
-    - '#Argument of an invalid type [a-zA-Z0-9\\_]+ supplied for foreach, only iterables are supported#'
+    - message: '#Else branch is unreachable#'
+      path: %currentWorkingDirectory%/lib/Hooks/Files.php
+    - message: '#Else branch is unreachable#'
+      path: %currentWorkingDirectory%/lib/Search/ElasticSearchProvider.php
+    - message: '#Argument of an invalid type [a-zA-Z0-9\\_]+ supplied for foreach, only iterables are supported#'
+      path: %currentWorkingDirectory%/lib/SearchElasticService.php
     - message: '#OCA\\Encryption#'
       path: %currentWorkingDirectory%/lib/Jobs/UpdateContent.php
     - message: '#OCA\\Search_Elastic\\Search\\ElasticSearchResult.* does not call parent#'
       path: %currentWorkingDirectory%/lib/Search/ElasticSearchResult.php
-    - message: '#Strict comparison#'
-      path: %currentWorkingDirectory%/lib/SearchElasticService.php
-    - message: '#Result of && is always false#'
-      path: %currentWorkingDirectory%/lib/SearchElasticService.php

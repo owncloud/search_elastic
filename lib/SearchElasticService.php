@@ -487,7 +487,7 @@ class SearchElasticService {
 			);
 			$result = $query->execute([$source, Constants::SHARE_TYPE_USER]);
 
-			if (\OCP\DB::isError($result)) {
+			if ($result === false) {
 				$this->logger->error(\OC_DB::getErrorMessage(),
 					['app' => 'search_elastic']);
 			} else {
@@ -507,7 +507,7 @@ class SearchElasticService {
 
 			$result = $query->execute([$source, Constants::SHARE_TYPE_GROUP]);
 
-			if (\OCP\DB::isError($result)) {
+			if ($result === false) {
 				$this->logger->error(\OC_DB::getErrorMessage(),
 					['app' => 'search_elastic']);
 			} else {
@@ -519,6 +519,8 @@ class SearchElasticService {
 			// let's get the parent for the next round
 			$meta = $cache->get((int)$source);
 			if ($meta !== false) {
+				// Cache->get() returns ICacheEntry which doesnot have array access.
+				// @phan-suppress-next-line PhanTypeArraySuspicious
 				$source = (int)$meta['parent'];
 			} else {
 				$source = -1;

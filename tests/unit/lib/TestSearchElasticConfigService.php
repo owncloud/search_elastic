@@ -36,6 +36,22 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 		$this->searchElasticConfigService->getValue('key', 'default');
 	}
 
+	public function testGetValueCallsOwncloudConfigServiceWithAppIdExternalStorage() {
+		$this->owncloudConfigService->expects($this->once())
+			->method('getAppValue')
+			->with(Application::APP_ID, $this->searchElasticConfigService::SCAN_EXTERNAL_STORAGE, true)
+			->willReturn(true);
+		$this->assertTrue($this->searchElasticConfigService->getScanExternalStorageFlag());
+	}
+
+	public function testGetValueCallsOwncloudConfigServiceWithAppIdExternalStorageFalse() {
+		$this->owncloudConfigService->expects($this->once())
+			->method('getAppValue')
+			->with(Application::APP_ID, $this->searchElasticConfigService::SCAN_EXTERNAL_STORAGE, true)
+			->willReturn('false');
+		$this->assertFalse($this->searchElasticConfigService->getScanExternalStorageFlag());
+	}
+
 	public function testSetUserValueCallsOwncloudConfigServiceWithAppId() {
 		$this->owncloudConfigService->expects($this->once())
 			->method('setUserValue')

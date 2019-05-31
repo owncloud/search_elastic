@@ -107,10 +107,6 @@ return [
 	],
 
 	'suppress_issue_types' => [
-		'PhanTypeArraySuspicious',
-		'PhanDeprecatedFunction',
-		'PhanUnreferencedUseNormal',
-		'PhanUndeclaredClassMethod',
-		'PhanUndeclaredClassConstant',
+		'PhanUnreferencedUseNormal'
 	],
 ];

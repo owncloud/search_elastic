@@ -246,6 +246,8 @@ class StatusMapper extends Mapper {
 
 			// skip shared storages, they must be indexed in the context of
 			// their owner to prevent marking files as vanished
+			/* Files_Sharing\SharedStorage might not be available when phan runs
+			 * @phan-suppress-next-line PhanUndeclaredClassConstant */
 			if ($storage->instanceOfStorage(SharedStorage::class)) {
 				continue;
 			}

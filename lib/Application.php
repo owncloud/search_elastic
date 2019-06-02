@@ -12,21 +12,23 @@
  *
  */
 
-namespace OCA\Search_Elastic\AppInfo;
+namespace OCA\Search_Elastic;
 
+use Elastica\Client as ElasticaClient;
 use OCA\Search_Elastic\Controller\AdminSettingsController;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\Hooks\Files;
-use OCA\Search_Elastic\SearchElasticService;
-use OCA\Search_Elastic\SearchElasticConfigService;
+use OCA\Search_Elastic\Jobs\DeleteJob;
 use OCP\AppFramework\App;
 use OCP\AppFramework\IAppContainer;
 use OCP\IConfig;
+use OCP\IDb;
+use OCP\ILogger;
 
 /**
  * Class Application
  *
- * @package OCA\Search_Elastic\AppInfo
+ * @package OCA\Search_Elastic
  */
 class Application extends App {
 	const APP_ID = 'search_elastic';
@@ -46,12 +48,9 @@ class Application extends App {
 
 		$container = $this->getContainer();
 
-		// register Logger as alias for convenience
-		$container->registerAlias('Logger', 'OCP\\ILogger');
-
 		// register internal configuration service
 		$container->registerService(
-			'SearchElasticConfigService',
+			SearchElasticConfigService::class,
 			function (IAppContainer $appContainer) {
 				return new SearchElasticConfigService(
 					$appContainer->query('ServerContainer')->getConfig()
@@ -60,33 +59,36 @@ class Application extends App {
 		);
 		
 		/**
-		 * SearchElasticService
+		 * Elastica
 		 */
-		$container->registerService('Elastica',
+		$container->registerService(ElasticaClient::class,
 			function (IAppContainer $appContainer) {
-				$config = $appContainer->query('SearchElasticConfigService');
-				return new \Elastica\Client($config->getParsedServers());
+				$config = $appContainer->query(SearchElasticConfigService::class);
+				return new ElasticaClient($config->getParsedServers());
 			}
 		);
 
-		$container->registerService('SearchElasticService', function (IAppContainer $c) {
-			return new SearchElasticService(
-				$c->query(IConfig::class),
-				$c->query('StatusMapper'),
-				$c->query('Logger'),
-				$c->query('Elastica'),
-				$c->query('SearchElasticConfigService')
+		/**
+		 * Mapper
+		 */
+		$container->registerService(StatusMapper::class, function (IAppContainer $c) {
+			return new StatusMapper(
+				$c->query(IDb::class),
+				$c->query(SearchElasticConfigService::class),
+				$c->query(ILogger::class)
 			);
 		});
 
 		/**
-		 * Mappers
+		 * SearchElasticService
 		 */
-		$container->registerService('StatusMapper', function (IAppContainer $c) {
-			return new StatusMapper(
-				$c->query('Db'),
-				$c->query('SearchElasticConfigService'),
-				$c->query('Logger')
+		$container->registerService(SearchElasticService::class, function (IAppContainer $c) {
+			return new SearchElasticService(
+				$c->query(IConfig::class),
+				$c->query(StatusMapper::class),
+				$c->query(ILogger::class),
+				$c->query(ElasticaClient::class),
+				$c->query(SearchElasticConfigService::class)
 			);
 		});
 
@@ -102,21 +104,14 @@ class Application extends App {
 		});
 
 		/**
-		 * DB
-		 */
-		$container->registerService('Db', function (IAppContainer $c) {
-			return $c->query('ServerContainer')->getDb();
-		});
-
-		/**
 		 * Controllers
 		 */
-		$container->registerService('AdminSettingsController', function (IAppContainer $c) {
+		$container->registerService(AdminSettingsController::class, function (IAppContainer $c) {
 			return new AdminSettingsController(
 				$c->query('AppName'),
 				$c->query('Request'),
-				$c->query('SearchElasticConfigService'),
-				$c->query('SearchElasticService')
+				$c->query(SearchElasticConfigService::class),
+				$c->query(SearchElasticService::class)
 			);
 		});
 	}
@@ -128,7 +123,12 @@ class Application extends App {
 			$this->registerHooks();
 			// add background job for deletion
 			$server = $this->getContainer()->getServer();
-			$server->getJobList()->add(new \OCA\Search_Elastic\Jobs\DeleteJob());
+			$container = $this->getContainer();
+			$server->getJobList()->add(new DeleteJob(
+				$container->query(ILogger::class),
+				$container->query(SearchElasticService::class),
+				$container->query(StatusMapper::class)
+			));
 		}
 	}
 

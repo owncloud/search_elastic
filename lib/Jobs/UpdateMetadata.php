@@ -14,7 +14,7 @@
 
 namespace OCA\Search_Elastic\Jobs;
 
-use OCA\Search_Elastic\AppInfo\Application;
+use OCA\Search_Elastic\Application;
 use OC\BackgroundJob\QueuedJob;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\SearchElasticService;
@@ -24,7 +24,10 @@ class UpdateMetadata extends QueuedJob {
 
 	/**
 	 * updates changed metadata for file or folder
+	 *
 	 * @param array $arguments
+	 *
+	 * @return void
 	 */
 	public function run($arguments) {
 		$app = new Application();
@@ -40,9 +43,7 @@ class UpdateMetadata extends QueuedJob {
 			$home = \OC::$server->getUserFolder($userId);
 
 			if ($home instanceof Folder) {
-
-				/** @var StatusMapper $statusMapper */
-				$statusMapper = $container->query('StatusMapper');
+				$statusMapper = $container->query(StatusMapper::class);
 
 				if (isset($arguments['folderId'])) {
 					// we need to update access permissions for subfolders
@@ -80,8 +81,7 @@ class UpdateMetadata extends QueuedJob {
 					['app' => 'search_elastic']
 				);
 
-				/** @var SearchElasticService $service */
-				$service = $container->query('SearchElasticService');
+				$service = $container->query(SearchElasticService::class);
 				$service->indexNodes($userId, $fileIds, false);
 			} else {
 				$logger->debug(

@@ -396,8 +396,7 @@ class SearchElasticService {
 
 			// @phan-suppress-next-line PhanTypeNoAccessiblePropertiesForeach
 			foreach ($result as $response) {
-				/** @var Response $response */
-				if ($response->isOk()) {
+				if ($response instanceof Response && $response->isOk()) {
 					$count++;
 				}
 			}

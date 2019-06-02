@@ -14,47 +14,69 @@
 
 namespace OCA\Search_Elastic\Jobs;
 
-use OCA\Search_Elastic\AppInfo\Application;
 use OC\BackgroundJob\TimedJob;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\SearchElasticService;
+use OCP\ILogger;
 
+/**
+ * Class DeleteJob
+ *
+ * @package OCA\Search_Elastic\Jobs
+ */
 class DeleteJob extends TimedJob {
-	public function __construct() {
+	/**
+	 * @var SearchElasticService
+	 */
+	private $searchElasticService;
+	/**
+	 * @var StatusMapper
+	 */
+	private $statusMapper;
+	/**
+	 * @var ILogger
+	 */
+	private $logger;
+
+	/**
+	 * DeleteJob constructor.
+	 *
+	 * @param ILogger $logger
+	 * @param SearchElasticService $searchElasticService
+	 * @param StatusMapper $statusMapper
+	 */
+	public function __construct(
+		ILogger $logger,
+		SearchElasticService $searchElasticService,
+		StatusMapper $statusMapper
+	) {
+		$this->logger = $logger;
+		$this->searchElasticService = $searchElasticService;
+		$this->statusMapper = $statusMapper;
 		//execute once a minute
 		$this->setInterval(60);
 	}
 
 	/**
 	 * @param array $arguments
+	 *
+	 * @return void
 	 */
 	public function run($arguments) {
-		$app = new Application();
-		$container = $app->getContainer();
-
-		$logger = $container->query('Logger');
-
-		/** @var SearchElasticService $searchElasticService */
-		$searchElasticService = $container->query('SearchElasticService');
-
-		$logger->debug('removing deleted files', ['app' => 'search_elastic']);
-
-		/** @var StatusMapper $mapper */
-		$mapper = $container->query('StatusMapper');
-
-		$deletedIds = $mapper->getDeleted();
+		$this->logger->debug('removing deleted files', ['app' => 'search_elastic']);
+		$deletedIds = $this->statusMapper->getDeleted();
 
 		if (!empty($deletedIds)) {
-			$logger->debug(
-				\count($deletedIds).' fileids need to be removed:'.
-				'( '.\implode(';', $deletedIds).' )',
+			$this->logger->debug(
+				\count($deletedIds) . ' fileids need to be removed:' .
+				'( ' . \implode(';', $deletedIds) . ' )',
 				['app' => 'search_elastic']
 			);
 
 			//delete from status table
-			$deletedInDb = $mapper->deleteIds($deletedIds);
-			$deletedInIndex = $searchElasticService->deleteFiles($deletedIds);
-			$logger->debug(
+			$deletedInDb = $this->statusMapper->deleteIds($deletedIds);
+			$deletedInIndex = $this->searchElasticService->deleteFiles($deletedIds);
+			$this->logger->debug(
 				"removed $deletedInDb ids from status table and $deletedInIndex documents from index",
 				['app' => 'search_elastic']
 			);

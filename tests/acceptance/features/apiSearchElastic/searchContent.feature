@@ -5,7 +5,7 @@ I would like to be able to search for the content of files
 So that I can find needed files quickly
 
   Background:
-    Given user "user0" has been created with default attributes
+    Given user "user0" has been created with default attributes and skeleton files
     And user "user0" has created folder "/just-a-folder"
     And user "user0" has created folder "/फन्नि näme"
     And user "user0" has uploaded file with content "files content" to "/upload.txt"
@@ -288,7 +288,7 @@ So that I can find needed files quickly
 
   Scenario Outline: user should not be able to search in files of other users
     Given using <dav_version> DAV path
-    And user "user1" has been created with default attributes
+    And user "user1" has been created with default attributes and skeleton files
     And user "user1" has uploaded file with content "files content" to "/user1-upload.txt"
     And the search index has been updated
     When user "user1" searches for "content" using the WebDAV API

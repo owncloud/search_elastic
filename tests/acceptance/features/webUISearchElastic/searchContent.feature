@@ -108,7 +108,7 @@ So that I can find needed files quickly
     But file "lorem-big.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
 
   Scenario: user should not be able to search in files of other users
-    Given user "user2" has been created with default attributes
+    Given user "user2" has been created with default attributes and skeleton files
     And user "user2" has uploaded file with content "my secret content" to "/user1-upload.txt"
     And the search index has been updated
     And the user has reloaded the current page of the webUI

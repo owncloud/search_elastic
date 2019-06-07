@@ -5,7 +5,7 @@ I would like to be able to limit the access to search_elastic to specific groups
 So that the server is not overloaded
 
   Background:
-    Given these users have been created with default attributes:
+    Given these users have been created with default attributes and skeleton files:
       | username |
       | user0    |
       | user1    |
@@ -100,7 +100,7 @@ So that the server is not overloaded
 
   Scenario Outline: limit multiple groups to only search in metadata
     Given using <dav_version> DAV path
-    And user "user2" has been created with default attributes
+    And user "user2" has been created with default attributes and skeleton files
     And user "user2" has uploaded file with content "files content" to "/ownCloud.txt"
     And group "grp2" has been created
     And user "user2" has been added to group "grp2"

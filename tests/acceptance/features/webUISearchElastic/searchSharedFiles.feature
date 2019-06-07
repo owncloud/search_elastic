@@ -14,7 +14,7 @@ So that I can find needed files quickly
     And the user has logged in with username "user1" and password "1234" using the webUI
 
   Scenario: user searches for files shared to him as a single user
-    Given user "user2" has been created with default attributes
+    Given user "user2" has been created with default attributes and skeleton files
     And user "user2" has created folder "/just-a-folder"
     And user "user2" has uploaded file with content "files content" to "/upload.txt"
     And user "user2" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"
@@ -28,7 +28,7 @@ So that I can find needed files quickly
     And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
 
   Scenario: user searches for files shared to him as a single user (files have been indexed only after sharing)
-    Given user "user2" has been created with default attributes
+    Given user "user2" has been created with default attributes and skeleton files
     And user "user2" has created folder "/just-a-folder"
     And user "user2" has uploaded file with content "files content" to "/upload.txt"
     And user "user2" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"
@@ -41,7 +41,7 @@ So that I can find needed files quickly
     And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
 
   Scenario: user searches for files shared to him as a member of a group
-    Given user "user2" has been created with default attributes
+    Given user "user2" has been created with default attributes and skeleton files
     And group "grp1" has been created
     And user "user1" has been added to group "grp1"
     And user "user2" has created folder "/just-a-folder"
@@ -57,7 +57,7 @@ So that I can find needed files quickly
     And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
 
   Scenario: user searches for files shared to him as a member of a group (files have been indexed only after sharing)
-    Given user "user2" has been created with default attributes
+    Given user "user2" has been created with default attributes and skeleton files
     And group "grp1" has been created
     And user "user1" has been added to group "grp1"
     And user "user2" has created folder "/just-a-folder"
@@ -72,7 +72,7 @@ So that I can find needed files quickly
     And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
 
   Scenario: unshared files should not be searched
-    Given user "user2" has been created with default attributes
+    Given user "user2" has been created with default attributes and skeleton files
     And user "user2" has created folder "/just-a-folder"
     And user "user2" has uploaded file with content "files content" to "/upload.txt"
     And user "user2" has uploaded file with content "files content" to "/upload-keep.txt"
@@ -92,7 +92,7 @@ So that I can find needed files quickly
     But file "upload.txt" with path "/just-a-folder" should not be listed in the search results in the other folders section on the webUI
 
   Scenario: unshared files should not be searched (files have been indexed only after sharing)
-    Given user "user2" has been created with default attributes
+    Given user "user2" has been created with default attributes and skeleton files
     And user "user2" has created folder "/just-a-folder"
     And user "user2" has uploaded file with content "files content" to "/upload.txt"
     And user "user2" has uploaded file with content "files content" to "/upload-keep.txt"
@@ -111,7 +111,7 @@ So that I can find needed files quickly
     But file "upload.txt" with path "/just-a-folder" should not be listed in the search results in the other folders section on the webUI
 
   Scenario: unshared files should not be searched (files have been indexed only after unsharing)
-    Given user "user2" has been created with default attributes
+    Given user "user2" has been created with default attributes and skeleton files
     And user "user2" has created folder "/just-a-folder"
     And user "user2" has uploaded file with content "files content" to "/upload.txt"
     And user "user2" has uploaded file with content "files content" to "/upload-keep.txt"
@@ -129,8 +129,8 @@ So that I can find needed files quickly
     But file "upload.txt" with path "/just-a-folder" should not be listed in the search results in the other folders section on the webUI
 
   Scenario: user searches for files re-shared to him
-    Given user "user2" has been created with default attributes
-    And user "user3" has been created with default attributes
+    Given user "user2" has been created with default attributes and skeleton files
+    And user "user3" has been created with default attributes and skeleton files
     And user "user3" has created folder "/just-a-folder"
     And user "user3" has uploaded file with content "files content" to "/upload.txt"
     And user "user3" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"
@@ -146,8 +146,8 @@ So that I can find needed files quickly
     And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
 
   Scenario: user searches for files re-shared to him (files have been indexed only after second sharing)
-    Given user "user2" has been created with default attributes
-    And user "user3" has been created with default attributes
+    Given user "user2" has been created with default attributes and skeleton files
+    And user "user3" has been created with default attributes and skeleton files
     And user "user3" has created folder "/just-a-folder"
     And user "user3" has uploaded file with content "files content" to "/upload.txt"
     And user "user3" has uploaded file with content "file with content in subfolder" to "/just-a-folder/upload.txt"

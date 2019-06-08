@@ -6,7 +6,7 @@ I would like to be able to search for the content of files
 So that I can find needed files quickly
 
   Background:
-    Given these users have been created:
+    Given these users have been created with skeleton files:
     |username|password|displayname|email       |
     |user1   |1234    |User One   |u1@oc.com.np|
     And the search index has been built

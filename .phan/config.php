@@ -107,6 +107,7 @@ return [
 	],
 
 	'suppress_issue_types' => [
-		'PhanUnreferencedUseNormal'
+		'PhanUnreferencedUseNormal',
+		'PhanTypeMismatchReturn',
 	],
 ];

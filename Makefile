@@ -115,7 +115,7 @@ test-php-style-fix: vendor-bin/owncloud-codestyle/vendor
 .PHONY: test-php-phan
 test-php-phan: ## Run phan
 test-php-phan: vendor-bin/phan/vendor
-	$(PHAN) --config-file .phan/config.php --require-config-exists
+	$(PHAN) --config-file .phan/config.php --require-config-exists --allow-polyfill-parser
 
 .PHONY: test-php-phpstan
 test-php-phpstan: ## Run phpstan

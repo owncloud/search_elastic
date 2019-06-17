@@ -135,6 +135,12 @@ class ElasticSearchProvider extends PagedProvider {
 		return \substr($mimeType, 0, \strpos($mimeType, '/'));
 	}
 
+	/**
+	 * @param string $query
+	 * @param int $size
+	 * @param int $page
+	 * @return \Elastica\ResultSet
+	 */
 	public function fetchResults($query, $size, $page) {
 		$es_filter = new BoolQuery();
 		$es_filter->addShould(new Match('users', $this->user->getUID()));

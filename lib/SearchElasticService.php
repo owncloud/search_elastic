@@ -385,7 +385,10 @@ class SearchElasticService {
 	}
 
 	// === DELETE =============================================================
-
+	/**
+	 * @param array $fileIds
+	 * @return int
+	 */
 	public function deleteFiles(array $fileIds) {
 		if (\count($fileIds) > 0) {
 			$result = $this->type->deleteIds($fileIds);
@@ -433,6 +436,11 @@ class SearchElasticService {
 		throw new NotIndexedException();
 	}
 
+	/**
+	 * @param Node $node
+	 * @param string $owner
+	 * @return array
+	 */
 	public function getUsersWithReadPermission(Node $node, $owner) {
 		// get path for lookup in sharing
 		$path = $node->getPath();

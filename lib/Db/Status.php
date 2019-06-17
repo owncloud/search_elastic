@@ -67,7 +67,13 @@ class Status extends Entity {
 		$this->_fieldTypes[$fieldName] = $type;
 	}
 
-	// we need to overwrite the setter because it would otherwise use _fieldTypes of the Entity class
+	/**
+	 * we need to overwrite the setter because it would otherwise use _fieldTypes of the Entity class
+	 *
+	 * @param string $name
+	 * @param array $args
+	 * @throws \BadFunctionCallException
+	 */
 	protected function setter($name, $args) {
 		// setters should only work for existing attributes
 		if (\property_exists($this, $name)) {

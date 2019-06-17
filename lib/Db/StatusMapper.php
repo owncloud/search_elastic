@@ -130,7 +130,8 @@ class StatusMapper extends Mapper {
 		return $entity;
 	}
 
-	/**Updates an entry in the db from a status
+	/**
+	 * Updates an entry in the db from a status
 	 * @param Entity $entity the status that should be created
 	 * @return Entity|\PDOStatement
 	 * @throws \InvalidArgumentException if entity has no id
@@ -264,6 +265,9 @@ class StatusMapper extends Mapper {
 		return $files;
 	}
 
+	/**
+	 * @return int
+	 */
 	public function countIndexed() {
 		$sql = "
 			SELECT count(*) AS `count_indexed` FROM `*PREFIX*search_elastic_status` WHERE `status` = ?
@@ -292,37 +296,67 @@ class StatusMapper extends Mapper {
 		}
 	}
 
+	/**
+	 * @param Status $status
+	 * @return Entity|\PDOStatement
+	 */
 	public function markNew(Status $status) {
 		$status->setStatus(Status::STATUS_NEW);
 		return $this->update($status);
 	}
 
+	/**
+	 * @param Status $status
+	 * @return Entity|\PDOStatement
+	 */
 	public function markMetadataChanged(Status $status) {
 		$status->setStatus(Status::STATUS_METADATA_CHANGED);
 		return $this->update($status);
 	}
 
+	/**
+	 * @param Status $status
+	 * @return Entity|\PDOStatement
+	 */
 	public function markIndexed(Status $status) {
 		$status->setStatus(Status::STATUS_INDEXED);
 		return $this->update($status);
 	}
 
+	/**
+	 * @param Status $status
+	 * @param string|null $message
+	 * @return Entity|\PDOStatement
+	 */
 	public function markSkipped(Status $status, $message = null) {
 		$status->setStatus(Status::STATUS_SKIPPED);
 		$status->setMessage($message);
 		return $this->update($status);
 	}
 
+	/**
+	 * @param Status $status
+	 * @return Entity|\PDOStatement
+	 */
 	public function markUnIndexed(Status $status) {
 		$status->setStatus(Status::STATUS_UNINDEXED);
 		return $this->update($status);
 	}
 
+	/**
+	 * @param Status $status
+	 * @return Entity|\PDOStatement
+	 */
 	public function markVanished(Status $status) {
 		$status->setStatus(Status::STATUS_VANISHED);
 		return $this->update($status);
 	}
 
+	/**
+	 * @param Status $status
+	 * @param string|null $message
+	 * @return Entity|\PDOStatement
+	 */
 	public function markError(Status $status, $message = null) {
 		$status->setStatus(Status::STATUS_ERROR);
 		$status->setMessage($message);

@@ -130,10 +130,9 @@ class StatusMapper extends Mapper {
 		return $entity;
 	}
 
-	/**
-	 * Updates an entry in the db from a status
+	/**Updates an entry in the db from a status
 	 * @param Entity $entity the status that should be created
-	 * @return Entity|null
+	 * @return Entity|\PDOStatement
 	 * @throws \InvalidArgumentException if entity has no id
 	 */
 	public function update(Entity $entity) {
@@ -179,10 +178,7 @@ class StatusMapper extends Mapper {
 			$columns . ' WHERE `fileid` = ?';
 		\array_push($params, $fileId);
 
-		$stmt = $this->execute($sql, $params);
-		$stmt->closeCursor();
-
-		return $entity;
+		return $this->execute($sql, $params);
 	}
 
 	/**
@@ -280,7 +276,7 @@ class StatusMapper extends Mapper {
 
 	/**
 	 * @param int $fileId
-	 * @return Entity
+	 * @return Status
 	 */
 	public function getOrCreateFromFileId($fileId) {
 		$sql = '
@@ -296,38 +292,38 @@ class StatusMapper extends Mapper {
 		}
 	}
 
-	public function markNew(Entity $status) {
+	public function markNew(Status $status) {
 		$status->setStatus(Status::STATUS_NEW);
 		return $this->update($status);
 	}
 
-	public function markMetadataChanged(Entity $status) {
+	public function markMetadataChanged(Status $status) {
 		$status->setStatus(Status::STATUS_METADATA_CHANGED);
 		return $this->update($status);
 	}
 
-	public function markIndexed(Entity $status) {
+	public function markIndexed(Status $status) {
 		$status->setStatus(Status::STATUS_INDEXED);
 		return $this->update($status);
 	}
 
-	public function markSkipped(Entity $status, $message = null) {
+	public function markSkipped(Status $status, $message = null) {
 		$status->setStatus(Status::STATUS_SKIPPED);
 		$status->setMessage($message);
 		return $this->update($status);
 	}
 
-	public function markUnIndexed(Entity $status) {
+	public function markUnIndexed(Status $status) {
 		$status->setStatus(Status::STATUS_UNINDEXED);
 		return $this->update($status);
 	}
 
-	public function markVanished(Entity $status) {
+	public function markVanished(Status $status) {
 		$status->setStatus(Status::STATUS_VANISHED);
 		return $this->update($status);
 	}
 
-	public function markError(Entity $status, $message = null) {
+	public function markError(Status $status, $message = null) {
 		$status->setStatus(Status::STATUS_ERROR);
 		$status->setMessage($message);
 		return $this->update($status);

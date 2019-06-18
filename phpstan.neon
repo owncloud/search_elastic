@@ -8,7 +8,8 @@ parameters:
   ignoreErrors:
     - message: '#Cannot access offset.*#'
       path: %currentWorkingDirectory%/lib/SearchElasticService.php
-    - '#Call to an undefined method [a-zA-Z0-9\\_]+#'
+    - '#Call to an undefined method OCP\\AppFramework\\Db\\Entity::getFileId()#'
+    - '#Call to an undefined method OCP\\Files\\Node::getContent()#'
     - '#Else branch is unreachable#'
     - '#Argument of an invalid type [a-zA-Z0-9\\_]+ supplied for foreach, only iterables are supported#'
     - message: '#Method .* should return .* but returns.*#'

@@ -436,7 +436,7 @@ matrix:
 
     # Acceptance test against release tarball
     - PHP_VERSION: 7.0
-      OC_VERSION: 10.2.0
+      OC_VERSION: 10.2.1
       DB_TYPE: mysql
       DB_HOST: mysqlmb4
       DB_NAME: oc_db
@@ -451,7 +451,7 @@ matrix:
       USE_RELEASE_TARBALL: true
 
     - PHP_VERSION: 7.0
-      OC_VERSION: 10.2.0
+      OC_VERSION: 10.2.1
       DB_TYPE: mysql
       DB_HOST: mysqlmb4
       DB_NAME: oc_db
@@ -466,7 +466,7 @@ matrix:
       USE_RELEASE_TARBALL: true
 
     - PHP_VERSION: 7.0
-      OC_VERSION: 10.2.0
+      OC_VERSION: 10.2.1
       DB_TYPE: mysql
       DB_HOST: mysqlmb4
       DB_NAME: oc_db

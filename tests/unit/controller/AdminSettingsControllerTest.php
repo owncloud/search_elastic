@@ -1,7 +1,7 @@
 <?php
 namespace OCA\Search_Elastic\Tests\Unit\Controller;
 
-use OCA\Search_Elastic\AppInfo\Application;
+use OCA\Search_Elastic\Application;
 use OCA\Search_Elastic\Controller\AdminSettingsController;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\SearchElasticService;

@@ -22,7 +22,7 @@ namespace OCA\Search_Elastic\AppInfo;
  * The controller class has to be registered in the application.php file since
  * it's instantiated in there
  */
-$application = new Application();
+$application = new \OCA\Search_Elastic\Application();
 
 // @phan-suppress-next-line PhanUndeclaredVariable
 $application->registerRoutes($this, ['routes' => [

@@ -14,7 +14,7 @@
 
 namespace OCA\Search_Elastic\Hooks;
 
-use OCA\Search_Elastic\AppInfo\Application;
+use OCA\Search_Elastic\Application;
 use OCA\Search_Elastic\SearchElasticService;
 use OCA\Search_Elastic\Db\Status;
 use OCA\Search_Elastic\Db\StatusMapper;
@@ -24,6 +24,7 @@ use OCP\Files\InvalidPathException;
 use OCP\Files\Node;
 use OCP\Files\NotFoundException;
 use OCP\Files\StorageNotAvailableException;
+use OCP\ILogger;
 
 /**
  * Class Files
@@ -111,12 +112,10 @@ class Files {
 		$container = $app->getContainer();
 		$node = \OC::$server->getRootFolder()->get($params['path']);
 		$userId = $node->getOwner()->getUID();
-		$logger = $container->query('Logger');
+		$logger = $container->query(ILogger::class);
 
 		if (!empty($userId)) {
-
-			/** @var StatusMapper $mapper */
-			$mapper = $container->query('StatusMapper');
+			$mapper = $container->query(StatusMapper::class);
 			$status = $mapper->getOrCreateFromFileId($node->getId());
 
 			// mark written file as new
@@ -162,7 +161,7 @@ class Files {
 		$app = new Application();
 		$container = $app->getContainer();
 		$userId = $container->query('UserId');
-		$logger = $container->query('Logger');
+		$logger = $container->query(ILogger::class);
 
 		if (!empty($userId)) {
 
@@ -186,8 +185,7 @@ class Files {
 				return;
 			}
 
-			/** @var StatusMapper $mapper */
-			$mapper = $container->query('StatusMapper');
+			$mapper = $container->query(StatusMapper::class);
 			$status = $mapper->getOrCreateFromFileId($node->getId());
 
 			if ($status->getStatus() === Status::STATUS_NEW) {
@@ -247,12 +245,10 @@ class Files {
 		$app = new Application();
 		$container = $app->getContainer();
 
-		/** @var SearchElasticService $searchElasticService */
-		$searchElasticService = $container->query('SearchElasticService');
+		$searchElasticService = $container->query(SearchElasticService::class);
 
-		/** @var StatusMapper $mapper */
-		$mapper = $container->query('StatusMapper');
-		$logger = $container->query('Logger');
+		$mapper = $container->query(StatusMapper::class);
+		$logger = $container->query(ILogger::class);
 
 		$deletedIds = $mapper->getDeleted();
 		$logger->debug(

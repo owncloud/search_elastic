@@ -17,8 +17,9 @@ namespace OCA\Search_Elastic\Jobs;
 use OC\BackgroundJob\QueuedJob;
 use OCA\Encryption\Crypto\Encryption;
 use OCA\Encryption\KeyManager;
-use OCA\Search_Elastic\AppInfo\Application;
+use OCA\Search_Elastic\Application;
 use OCA\Search_Elastic\Db\StatusMapper;
+use OCA\Search_Elastic\SearchElasticService;
 use OCP\AppFramework\IAppContainer;
 use OCP\Files\Folder;
 use OCP\IConfig;
@@ -55,6 +56,8 @@ class UpdateContent extends QueuedJob implements IUserSession {
 	 * @param array $arguments
 	 *
 	 * @throws \Exception
+	 *
+	 * @return void
 	 */
 	public function run($arguments) {
 		$app = new Application();
@@ -77,9 +80,7 @@ class UpdateContent extends QueuedJob implements IUserSession {
 			$home = \OC::$server->getUserFolder($userId);
 
 			if ($home instanceof Folder) {
-
-				/** @var StatusMapper $statusMapper */
-				$statusMapper = $this->container->query('StatusMapper');
+				$statusMapper = $this->container->query(StatusMapper::class);
 				$fileIds = $statusMapper->findFilesWhereContentChanged($home);
 
 				$this->logger->debug(
@@ -87,7 +88,7 @@ class UpdateContent extends QueuedJob implements IUserSession {
 					['app' => 'search_elastic']
 				);
 
-				$this->container->query('SearchElasticService')->indexNodes($userId, $fileIds);
+				$this->container->query(SearchElasticService::class)->indexNodes($userId, $fileIds);
 			} else {
 				$this->logger->debug(
 					'could not resolve user home: ' . \json_encode($arguments),
@@ -123,8 +124,7 @@ class UpdateContent extends QueuedJob implements IUserSession {
 			$encryption_manager->unregisterEncryptionModule(Encryption::ID);
 			$encryption->registerEncryptionModule();
 
-			/** @var KeyManager $keyManager */
-			$keyManager = $encryption->getContainer()->query('KeyManager');
+			$keyManager = $encryption->getContainer()->query(KeyManager::class);
 			$keyManager->init('', ''); // uid and password are overwritten in master key mode
 		}
 	}

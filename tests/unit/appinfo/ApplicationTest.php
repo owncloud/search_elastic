@@ -14,7 +14,7 @@
 
 namespace OCA\Search_Elastic\Tests\Unit\AppInfo;
 
-use OCA\Search_Elastic\AppInfo\Application;
+use OCA\Search_Elastic\Application;
 use Test\TestCase;
 
 class ApplicationTest extends TestCase {

@@ -17,8 +17,7 @@ namespace OCA\Search_Elastic\Search;
 use Elastica\Query;
 use Elastica\Query\BoolQuery;
 use Elastica\Query\Match;
-use Elastica\Result;
-use OCA\Search_Elastic\AppInfo\Application;
+use OCA\Search_Elastic\Application;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\SearchElasticService;
 use OCP\Files\Node;
@@ -61,11 +60,11 @@ class ElasticSearchProvider extends PagedProvider {
 		$app = new Application();
 		$container = $app->getContainer();
 
-		$this->logger = $container->query('Logger');
-		$this->searchElasticService = $container->query('SearchElasticService');
+		$this->logger = $container->query(ILogger::class);
+		$this->searchElasticService = $container->query(SearchElasticService::class);
 		$this->user = $container->getServer()->getUserSession()->getUser();
 		$this->groups = $container->getServer()->getGroupManager()->getUserGroups($this->user);
-		$this->config = $container->query('SearchElasticConfigService');
+		$this->config = $container->query(SearchElasticConfigService::class);
 	}
 
 	/**
@@ -88,7 +87,6 @@ class ElasticSearchProvider extends PagedProvider {
 
 			do {
 				$resultSet = $this->fetchResults($query, $size, $page);
-				/** @var Result $result */
 				foreach ($resultSet as $result) {
 					$fileId = (int)$result->getId();
 					$nodes = $home->getById($fileId);

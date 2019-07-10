@@ -14,7 +14,6 @@
 
 namespace OCA\Search_Elastic\Command;
 
-use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\SearchElasticService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -28,6 +27,21 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
  * @package OCA\Search_Elastic\Command
  */
 class Reset extends Command {
+	/**
+	 * @var SearchElasticService
+	 */
+	private $searchElasticService;
+
+	/**
+	 * Reset constructor.
+	 *
+	 * @param SearchElasticService $searchElasticService
+	 */
+	public function __construct(SearchElasticService $searchElasticService) {
+		parent::__construct();
+		$this->searchElasticService = $searchElasticService;
+	}
+
 	/**
 	 * Command Config and options
 	 *
@@ -70,13 +84,7 @@ class Reset extends Command {
 			return 0;
 		}
 
-		$app = new Application();
-		$container = $app->getContainer();
-		/**
-		 * @var SearchElasticService $searchElasticService
-		 */
-		$searchElasticService = $container->query('SearchElasticService');
-		$searchElasticService->setup();
+		$this->searchElasticService->setup();
 		$output->writeln('Search index has been reset.');
 	}
 }

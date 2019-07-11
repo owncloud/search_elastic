@@ -17,7 +17,7 @@ So that I can find needed files quickly
     And user "user0" has uploaded file with content "does-not-matter" to "/फन्नि näme/a-image.png"
     And user "user0" has uploaded file "filesForUpload/simple.odt" to "/simple.odt"
     And user "user0" has uploaded file "filesForUpload/simple.pdf" to "/simple.pdf"
-    And the search index has been built
+    And the search index has been created
 
   Scenario Outline: user searches for files shared to him as a single user
     Given using <dav_version> DAV path

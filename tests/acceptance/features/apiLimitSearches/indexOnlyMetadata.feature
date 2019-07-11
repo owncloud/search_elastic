@@ -18,7 +18,7 @@ So that I can use search_elastic only as a more scalable search on filenames
     And user "user0" has uploaded file "filesForUpload/simple.odt" to "/simple.odt"
     And user "user0" has uploaded file "filesForUpload/simple.pdf" to "/simple.pdf"
     And the administrator has configured the search_elastic app to index only metadata
-    And the search index has been built
+    And the search index has been created
 
   Scenario Outline: search for content
     Given using <dav_version> DAV path

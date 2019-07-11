@@ -13,7 +13,7 @@ So that the server is not overloaded
     And user "user1" has uploaded file with content "files content" to "/ownCloud.txt"
     And group "grp1" has been created
     And user "user0" has been added to group "grp1"
-    And the search index has been built
+    And the search index has been created
 
   Scenario Outline: limit search_elastic access to a group
     Given using <dav_version> DAV path

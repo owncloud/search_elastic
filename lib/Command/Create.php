@@ -22,7 +22,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class Build extends Command {
+class Create extends Command {
 
 	/**
 	 * @var IUserManager $userManager
@@ -56,7 +56,7 @@ class Build extends Command {
 	 */
 	protected function configure() {
 		$this
-			->setName('search:index:build')
+			->setName('search:index:create')
 			->setDescription('Create initial Search Index for one or all users. This command could not update the search index correctly after the initial indexing.')
 			->addArgument(
 				'user_id',

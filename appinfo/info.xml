@@ -20,7 +20,7 @@
 		<admin>OCA\Search_Elastic\AdminPanel</admin>
 	</settings>
 	<commands>
-		<command>OCA\Search_Elastic\Command\Build</command>
+		<command>OCA\Search_Elastic\Command\Create</command>
 		<command>OCA\Search_Elastic\Command\Reset</command>
 		<command>OCA\Search_Elastic\Command\Update</command>
 		<command>OCA\Search_Elastic\Command\Rebuild</command>

@@ -51,18 +51,18 @@ class SearchElasticContext implements Context {
 	private $originalGroupNoContentSetting = null;
 
 	/**
-	 * @Given the search index has been built
-	 * @Given the search index of user :user has been built
+	 * @Given the search index has been created
+	 * @Given the search index of user :user has been created
 	 *
 	 * @param string $user
 	 *
 	 * @return void
 	 */
-	public function buildIndex($user = null) {
+	public function createIndex($user = null) {
 		if ($user === null) {
 			$user = '--all';
 		}
-		SetupHelper::runOcc(["search:index:build", $user]);
+		SetupHelper::runOcc(["search:index:create", $user]);
 		SetupHelper::resetOpcache(
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getAdminUsername(),

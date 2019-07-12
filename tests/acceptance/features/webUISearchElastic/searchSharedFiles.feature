@@ -9,7 +9,7 @@ So that I can find needed files quickly
     Given these users have been created with skeleton files:
     |username|password|displayname|email       |
     |user1   |1234    |User One   |u1@oc.com.np|
-    And the search index has been built
+    And the search index has been created
     And the user has browsed to the login page
     And the user has logged in with username "user1" and password "1234" using the webUI
 

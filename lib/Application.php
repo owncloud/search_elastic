@@ -147,7 +147,12 @@ class Application extends App {
 		$server = $this->getContainer()->getServer();
 		$config = $server->getConfig();
 		$group = $config->getAppValue(self::APP_ID, SearchElasticConfigService::ENABLED_GROUPS, null);
-		if (empty($group) || (
+		$isAdmin = false;
+		if ($server->getUserSession()->isLoggedIn()) {
+			$isAdmin = $server->getGroupManager()->isAdmin($server->getUserSession()->getUser()->getUID());
+		}
+
+		if (empty($group) || $isAdmin || (
 				$server->getUserSession()->getUser()
 				&& $server->getGroupManager()->isInGroup(
 					$server->getUserSession()->getUser()->getUID(), $group

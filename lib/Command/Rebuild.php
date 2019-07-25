@@ -118,33 +118,54 @@ class Rebuild extends Command {
 	 */
 	public function execute(InputInterface $input, OutputInterface $output) {
 		$users = $input->getArgument('user_id');
-		$usersString = \implode(', ', $users);
 		$quiet = $input->getOption('quiet');
 
-		if ($input->getOption('force')) {
-			$continue = true;
-		} else {
-			$helper = $this->getHelper('question');
-			$question = new ChoiceQuestion(
-				"This will delete all search index data for {$usersString}! Do you want to proceed?",
-				['no', 'yes'],
-				'no'
-			);
-			$continue = $helper->ask($input, $output, $question) === 'yes';
-		}
-		if (!$continue) {
-			$output->writeln('Aborting.');
-			return 0;
-		}
-
 		foreach ($users as $user) {
-			if ($this->userManager->userExists($user)) {
-				$userObject = $this->userManager->get($user);
+			$userObject = $this->userManager->get($user);
+			if ($userObject !== null) {
+				if ($this->shouldAbort($input, $output)) {
+					$output->writeln('Aborting.');
+					return -1;
+				}
 				$this->rebuildIndex($userObject, $quiet, $output);
 			} else {
 				$output->writeln("<error>Unknown user $user</error>");
 			}
 		}
+	}
+
+	/**
+	 * Decides whether the command has to be aborted or not
+	 *
+	 * @param InputInterface $input
+	 * @param OutputInterface $output
+	 * @return bool, returns true when the command has to be aborted, else false
+	 */
+	private function shouldAbort(InputInterface $input, OutputInterface $output) {
+		/**
+		 * We are using static variable here because this method is private and
+		 * the question should be asked once for the user, instead of asking for
+		 * each user. So at any point we need to maintain a state to know if the
+		 * question was asked or not.
+		 */
+		static $result = null;
+
+		if (isset($result)) {
+			return $result;
+		}
+
+		if (!$input->getOption('force')) {
+			$helper = $this->getHelper('question');
+			$question = new ChoiceQuestion(
+				"This will delete all search index data for selected users! Do you want to proceed?",
+				['no', 'yes'],
+				'no'
+			);
+			$result = ($helper->ask($input, $output, $question) === 'yes') ? false : true;
+		} else {
+			$result = false;
+		}
+		return $result;
 	}
 
 	/**

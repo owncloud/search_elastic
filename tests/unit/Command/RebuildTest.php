@@ -99,11 +99,9 @@ class RebuildTest extends TestCase {
 	public function testNonExistingUserId() {
 		$this->userManager
 			->expects($this->once())
-			->method('userExists')
-			->willReturnMap(['testuser', false]);
-		$this->userManager
-			->expects($this->never())
-			->method('get');
+			->method('get')
+			->with('testuser')
+			->willReturn(null);
 		$this->rootFolder
 			->expects($this->never())
 			->method('getUserFolder');
@@ -134,10 +132,6 @@ class RebuildTest extends TestCase {
 		$folder = $this->createMock(Folder::class);
 		$this->userManager
 			->expects($this->once())
-			->method('userExists')
-			->willReturn(true);
-		$this->userManager
-			->expects($this->once())
 			->method('get')
 			->willReturn($this->user);
 		$this->rootFolder
@@ -162,5 +156,45 @@ class RebuildTest extends TestCase {
 
 		self::assertContains('Rebuilding Search Index for', $output);
 		self::assertContains($uid, $output);
+	}
+
+	public function testExistingAndNonExistingUsers() {
+		$uid = self::getUniqueID();
+		$this->user
+			->method('getUID')
+			->willReturn($uid);
+		$uid2 = $uid . "1";
+		$uid3 = $uid . "2";
+		$folder = $this->createMock(Folder::class);
+		$this->userManager
+			->method('get')
+			->will($this->returnValueMap([
+				[$uid, $this->user],
+				[$uid2, null],
+				[$uid3, null],
+			]));
+		$this->rootFolder
+			->expects($this->once())
+			->method('getUserFolder')
+			->willReturn($folder);
+		$this->searchElasticService
+			->expects($this->once())
+			->method('resetUserIndex')
+			->willReturn(true);
+		$this->job
+			->expects($this->once())
+			->method('run')
+			->willReturn(true);
+		$this->commandTester->execute(
+			[
+				'user_id' => [$uid, $uid2, $uid3],
+				'--force' => true
+			]
+		);
+		$output = $this->commandTester->getDisplay();
+		$this->assertContains('Rebuilding Search Index for', $output);
+		$this->assertContains($uid, $output);
+		$this->assertContains("Unknown user $uid2", $output);
+		$this->assertContains("Unknown user $uid3", $output);
 	}
 }

@@ -94,7 +94,7 @@ class Files {
 
 	/**
 	 * @param Node $node
-	 * @param string $userId
+	 * @param string $userId This could be either userId of the node or the userId who accepted the remote share
 	 * @throws InvalidPathException
 	 * @throws NotFoundException
 	 * @throws StorageNotAvailableException
@@ -183,7 +183,10 @@ class Files {
 		 * update to have the federated share added.
 		 */
 		\OC_Util::tearDownFS();
-		\OC_Util::setupFS($share['user']);
+		/**
+		 * Setup fs for the currently logged in user.
+		 */
+		\OC_Util::setupFS();
 		$userFolder = \OC::$server->getUserFolder($share['user']);
 
 		if ($userFolder !== null) {

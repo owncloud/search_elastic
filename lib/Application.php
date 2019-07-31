@@ -24,6 +24,7 @@ use OCP\AppFramework\IAppContainer;
 use OCP\IConfig;
 use OCP\IDb;
 use OCP\ILogger;
+use OCP\Share\Events\AcceptShare;
 
 /**
  * Class Application
@@ -199,6 +200,23 @@ class Application extends App {
 		$fileHook = new Files();
 		$eventDispatcher->addListener('file.aftercreate', [$fileHook, 'contentChanged']);
 		$eventDispatcher->addListener('file.afterupdate', [$fileHook, 'contentChanged']);
+		$eventDispatcher->addListener(AcceptShare::class, [$fileHook, 'federatedShareUpdate']);
+
+		// Connect to the trashbin restore
+		\OCP\Util::connectHook(
+			'\OCA\Files_Trashbin\Trashbin',
+			'post_restore',
+			'OCA\Search_Elastic\Hooks\Files',
+			'trashbinRestoreUpdate'
+		);
+
+		// Connect to the file version restore
+		\OCP\Util::connectHook(
+			'\OCP\Versions',
+			'rollback',
+			'OCA\Search_Elastic\Hooks\Files',
+			'fileVersionRestoreUpdate'
+		);
 
 		//connect to the filesystem for rename
 		\OCP\Util::connectHook(

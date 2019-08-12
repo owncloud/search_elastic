@@ -243,7 +243,6 @@ services:
       - MYSQL_ROOT_PASSWORD=secret
     when:
       matrix:
-        DB_TYPE: mysql
         DB_HOST: mysql
 
   mysqlmb4:
@@ -255,7 +254,6 @@ services:
       - MYSQL_ROOT_PASSWORD=secret
     when:
       matrix:
-        DB_TYPE: mysql
         DB_HOST: mysqlmb4
 
   pgsql:

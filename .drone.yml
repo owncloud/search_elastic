@@ -342,6 +342,13 @@ matrix:
       NEED_CORE: true
       NEED_INSTALL_APP: true
 
+    - PHP_VERSION: 7.3
+      OC_VERSION: daily-master-qa
+      DB_TYPE: sqlite
+      TEST_SUITE: phpunit
+      NEED_CORE: true
+      NEED_INSTALL_APP: true
+
     - PHP_VERSION: 7.1
       OC_VERSION: daily-master-qa
       DB_TYPE: pgsql

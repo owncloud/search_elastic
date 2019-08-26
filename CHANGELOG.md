@@ -16,6 +16,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Refactor Commands [#85](https://github.com/owncloud/search_elastic/pull/85)
 
 ### Fixed
+- React to federated share accept, trashbin restore and versions restore [#131](https://github.com/owncloud/search_elastic/pull/131)
+- Check if user exists before asking questions in command line [#128](https://github.com/owncloud/search_elastic/pull/128)
+- Adding group restrictions should not prohibit search for admin users [#129](https://github.com/owncloud/search_elastic/pull/129)
 - Remove deprecated shipped tag [#87](https://github.com/owncloud/search_elastic/pull/87)
 - Fix search via DAV when app is enabled for groups only [#83](https://github.com/owncloud/search_elastic/pull/83)
 

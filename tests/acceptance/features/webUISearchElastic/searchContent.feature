@@ -84,8 +84,6 @@ So that I can find needed files quickly
     Then file "utf-upload.txt" with path "/" should be listed in the search results in the other folders section on the webUI
     And file "utf-upload.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI
 
-  @skipOnFIREFOX @issue-136
-  # The last 'But' step fails on Firefox.
   Scenario: search for deleted or renamed file
     When the user deletes file "lorem.txt" using the webUI
     And the user renames file "lorem-big.txt" to "aaa-lorem.txt" using the webUI

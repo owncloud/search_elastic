@@ -7,6 +7,8 @@ The search_elastic app adds a full text search for files stored in ownCloud. It 
  apache tika, eg. plain text, .docx, .xlsx, .pptx, .odt, .ods and .pdf files. The source
 code is [available on GitHub](https://github.com/owncloud/search_elastic)
 
+Make a dummy change.
+
 ## Installation of elasticsearch
 
 ### Elasticsearch 6

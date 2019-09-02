@@ -4,10 +4,6 @@ workspace:
 
 branches: [ master, release* ]
 
-clone:
-  git:
-    image: plugins/git:next
-
 pipeline:
   install-core:
     image: owncloudci/core

@@ -9,6 +9,8 @@ code is [available on GitHub](https://github.com/owncloud/search_elastic)
 
 ## Installation of elasticsearch
 
+Trigger CI
+
 ### Elasticsearch 6
 
 > Elasticsearch 6 is not yet supported

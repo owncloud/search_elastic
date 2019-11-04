@@ -1414,7 +1414,9 @@ services:
 
 - name: elasticsearch
   pull: always
-  image: owncloudci/elasticsearch
+  image: webhippie/elasticsearch:5.6
+  environment:
+    ELASTICSEARCH_PLUGINS_INSTALL: ingest-attachment
 
 - name: server
   pull: always
@@ -1556,7 +1558,9 @@ services:
 
 - name: elasticsearch
   pull: always
-  image: owncloudci/elasticsearch
+  image: webhippie/elasticsearch:5.6
+  environment:
+    ELASTICSEARCH_PLUGINS_INSTALL: ingest-attachment
 
 - name: server
   pull: always
@@ -1697,7 +1701,9 @@ services:
 
 - name: elasticsearch
   pull: always
-  image: owncloudci/elasticsearch
+  image: webhippie/elasticsearch:5.6
+  environment:
+    ELASTICSEARCH_PLUGINS_INSTALL: ingest-attachment
 
 - name: server
   pull: always
@@ -1839,7 +1845,9 @@ services:
 
 - name: elasticsearch
   pull: always
-  image: owncloudci/elasticsearch
+  image: webhippie/elasticsearch:5.6
+  environment:
+    ELASTICSEARCH_PLUGINS_INSTALL: ingest-attachment
 
 - name: server
   pull: always
@@ -1970,7 +1978,9 @@ services:
 
 - name: elasticsearch
   pull: always
-  image: owncloudci/elasticsearch
+  image: webhippie/elasticsearch:5.6
+  environment:
+    ELASTICSEARCH_PLUGINS_INSTALL: ingest-attachment
 
 - name: server
   pull: always
@@ -2101,7 +2111,9 @@ services:
 
 - name: elasticsearch
   pull: always
-  image: owncloudci/elasticsearch
+  image: webhippie/elasticsearch:5.6
+  environment:
+    ELASTICSEARCH_PLUGINS_INSTALL: ingest-attachment
 
 - name: server
   pull: always
@@ -2232,7 +2244,9 @@ services:
 
 - name: elasticsearch
   pull: always
-  image: owncloudci/elasticsearch
+  image: webhippie/elasticsearch:5.6
+  environment:
+    ELASTICSEARCH_PLUGINS_INSTALL: ingest-attachment
 
 - name: server
   pull: always
@@ -2363,7 +2377,9 @@ services:
 
 - name: elasticsearch
   pull: always
-  image: owncloudci/elasticsearch
+  image: webhippie/elasticsearch:5.6
+  environment:
+    ELASTICSEARCH_PLUGINS_INSTALL: ingest-attachment
 
 - name: server
   pull: always

@@ -83,8 +83,11 @@ config = {
 			'extraServices': [
 				{
 					'name': 'elasticsearch',
-					'image': 'owncloudci/elasticsearch',
+					'image': 'webhippie/elasticsearch:5.6',
 					'pull': 'always',
+					'environment': {
+						'ELASTICSEARCH_PLUGINS_INSTALL': 'ingest-attachment'
+					}
 				}
 			]
 		},

@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <info>
 	<id>search_elastic</id>
-	<name>Elasticsearch</name>
+	<name>Full Text Search</name>
 	<version>1.0.0</version>
-	<licence>Commercial</licence>
-	<author>ownCloud Inc.</author>
+	<licence>GPLv2</licence>
+	<author>ownCloud GmbH</author>
 	<dependencies>
 		<owncloud min-version="10.2" max-version="10" />
 	</dependencies>
@@ -13,9 +13,13 @@
 	<types>
 		<filesystem/>
 	</types>
-	<description>This app uses a separate elasticsearch cluster to enable
-		searching in content and meta data of files.
-	</description>
+	<category>tools</category>
+	<summary>Find files based on their content</summary>
+	<description>The Full Text Search extension integrates the [Elasticsearch](https://www.elastic.co/products/elasticsearch) search engine with ownCloud Server. The integration enables files stored in ownCloud to be indexed by Elasticsearch. Thereby it allows users to find files by their content (instead of just by file names) using the ownCloud search bar or Search API. For more information on requirements, usage and limitations, administrators can check the ownCloud Documentation.</description>
+	<documentation>
+    		<admin>MISSING</admin>
+    	</documentation>
+	<screenshot>https://raw.githubusercontent.com/owncloud/screenshots/master/search_elastic/ownCloud-app-full-text-search.jpg</screenshot>
 	<settings>
 		<admin>OCA\Search_Elastic\AdminPanel</admin>
 	</settings>
@@ -26,4 +30,3 @@
 		<command>OCA\Search_Elastic\Command\Rebuild</command>
 	</commands>
 </info>
-

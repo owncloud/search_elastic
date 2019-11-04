@@ -223,6 +223,7 @@ pipeline:
 services:
   oci:
     image: deepdiver/docker-oracle-xe-11g
+    pull: true
     environment:
        - ORACLE_USER=autotest
        - ORACLE_DB=XE
@@ -232,6 +233,7 @@ services:
 
   mysql:
     image: mysql:5.5
+    pull: true
     environment:
       - MYSQL_USER=admin
       - MYSQL_PASSWORD=secret
@@ -243,6 +245,7 @@ services:
 
   mysqlmb4:
     image: mysql:5.7
+    pull: true
     environment:
       - MYSQL_USER=admin
       - MYSQL_PASSWORD=secret
@@ -254,6 +257,7 @@ services:
 
   pgsql:
     image: postgres:9.4
+    pull: true
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=secret
@@ -263,7 +267,10 @@ services:
         DB_TYPE: pgsql
 
   elasticsearch:
-    image: owncloudci/elasticsearch
+    image: webhippie/elasticsearch:5.6
+    pull: true
+    environment:
+      - ELASTICSEARCH_PLUGINS_INSTALL=ingest-attachment
     when:
       matrix:
         NEED_ELASTICSEARCH_SERVER: true

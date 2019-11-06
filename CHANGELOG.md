@@ -4,8 +4,6 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
-
 ## [1.0.0]
 
 ### Changed
@@ -14,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Migrate Namespace to PSR-4 [#91](https://github.com/owncloud/search_elastic/pull/91)
 - Ask security questions on destructive commands [#89](https://github.com/owncloud/search_elastic/pull/89)
 - Refactor Commands [#85](https://github.com/owncloud/search_elastic/pull/85)
+- Updated dependencies [#151](https://github.com/owncloud/search_elastic/pull/151)
 
 ### Fixed
 - React to federated share accept, trashbin restore and versions restore [#131](https://github.com/owncloud/search_elastic/pull/131)
@@ -57,8 +56,6 @@ This release requires Elastic Search 5.6.x and the `ingest-attachment` processor
 ### Removed
 - Dropped support for Elastic Search 2.x
 
-
-[Unreleased]: https://github.com/owncloud/search_elastic/compare/v1.0.0..HEAD
 [1.0.0]: https://github.com/owncloud/search_elastic/compare/v0.5.4...v1.0.0
 [0.5.4]: https://github.com/owncloud/search_elastic/compare/v0.5.2...v0.5.4
 [0.5.2]: https://github.com/owncloud/search_elastic/compare/v0.5.1...v0.5.2

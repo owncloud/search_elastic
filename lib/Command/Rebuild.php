@@ -1,16 +1,24 @@
 <?php
 /**
- * ownCloud
- *
  * @author Michael Barz <mbarz@owncloud.com>
- * @copyright (C) 2019 ownCloud GmbH
- * @license ownCloud Commercial License
+ * @author Sujith H <sharidasan@owncloud.com>
  *
- * This code is covered by the ownCloud Commercial License.
+ * @copyright Copyright (c) 2019, ownCloud GmbH
+ * @license GPL-2.0
  *
- * You should have received a copy of the ownCloud Commercial License
- * along with this program. If not, see
- * <https://owncloud.com/licenses/owncloud-commercial/>.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */
 
@@ -118,33 +126,54 @@ class Rebuild extends Command {
 	 */
 	public function execute(InputInterface $input, OutputInterface $output) {
 		$users = $input->getArgument('user_id');
-		$usersString = \implode(', ', $users);
 		$quiet = $input->getOption('quiet');
 
-		if ($input->getOption('force')) {
-			$continue = true;
-		} else {
-			$helper = $this->getHelper('question');
-			$question = new ChoiceQuestion(
-				"This will delete all search index data for {$usersString}! Do you want to proceed?",
-				['no', 'yes'],
-				'no'
-			);
-			$continue = $helper->ask($input, $output, $question) === 'yes';
-		}
-		if (!$continue) {
-			$output->writeln('Aborting.');
-			return 0;
-		}
-
 		foreach ($users as $user) {
-			if ($this->userManager->userExists($user)) {
-				$userObject = $this->userManager->get($user);
+			$userObject = $this->userManager->get($user);
+			if ($userObject !== null) {
+				if ($this->shouldAbort($input, $output)) {
+					$output->writeln('Aborting.');
+					return -1;
+				}
 				$this->rebuildIndex($userObject, $quiet, $output);
 			} else {
 				$output->writeln("<error>Unknown user $user</error>");
 			}
 		}
+	}
+
+	/**
+	 * Decides whether the command has to be aborted or not
+	 *
+	 * @param InputInterface $input
+	 * @param OutputInterface $output
+	 * @return bool, returns true when the command has to be aborted, else false
+	 */
+	private function shouldAbort(InputInterface $input, OutputInterface $output) {
+		/**
+		 * We are using static variable here because this method is private and
+		 * the question should be asked once for the user, instead of asking for
+		 * each user. So at any point we need to maintain a state to know if the
+		 * question was asked or not.
+		 */
+		static $result = null;
+
+		if (isset($result)) {
+			return $result;
+		}
+
+		if (!$input->getOption('force')) {
+			$helper = $this->getHelper('question');
+			$question = new ChoiceQuestion(
+				"This will delete all search index data for selected users! Do you want to proceed?",
+				['no', 'yes'],
+				'no'
+			);
+			$result = ($helper->ask($input, $output, $question) === 'yes') ? false : true;
+		} else {
+			$result = false;
+		}
+		return $result;
 	}
 
 	/**

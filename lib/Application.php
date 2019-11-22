@@ -1,14 +1,28 @@
 <?php
 /**
- * ownCloud
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Michael Barz <mbarz@owncloud.com>
+ * @author Patrick Jahns <github@patrickjahns.de>
+ * @author Phil Davis <phil@jankaritech.com>
+ * @author Sujith H <sharidasan@owncloud.com>
+ * @author VicDeo <victor.dubiniuk@gmail.com>
  *
- * @author Jörn Friedrich Dreyer <jfd@owncloud.com>
- * @copyright (C) 2014-2016 ownCloud, Inc.
+ * @copyright Copyright (c) 2019, ownCloud GmbH
+ * @license GPL-2.0
  *
- * This code is covered by the ownCloud Commercial License.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
  *
- * You should have received a copy of the ownCloud Commercial License
- * along with this program. If not, see <https://owncloud.com/licenses/owncloud-commercial/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */
 
@@ -24,6 +38,7 @@ use OCP\AppFramework\IAppContainer;
 use OCP\IConfig;
 use OCP\IDb;
 use OCP\ILogger;
+use OCP\Share\Events\AcceptShare;
 
 /**
  * Class Application
@@ -147,7 +162,12 @@ class Application extends App {
 		$server = $this->getContainer()->getServer();
 		$config = $server->getConfig();
 		$group = $config->getAppValue(self::APP_ID, SearchElasticConfigService::ENABLED_GROUPS, null);
-		if (empty($group) || (
+		$isAdmin = false;
+		if ($server->getUserSession()->isLoggedIn()) {
+			$isAdmin = $server->getGroupManager()->isAdmin($server->getUserSession()->getUser()->getUID());
+		}
+
+		if (empty($group) || $isAdmin || (
 				$server->getUserSession()->getUser()
 				&& $server->getGroupManager()->isInGroup(
 					$server->getUserSession()->getUser()->getUID(), $group
@@ -194,6 +214,23 @@ class Application extends App {
 		$fileHook = new Files();
 		$eventDispatcher->addListener('file.aftercreate', [$fileHook, 'contentChanged']);
 		$eventDispatcher->addListener('file.afterupdate', [$fileHook, 'contentChanged']);
+		$eventDispatcher->addListener(AcceptShare::class, [$fileHook, 'federatedShareUpdate']);
+
+		// Connect to the trashbin restore
+		\OCP\Util::connectHook(
+			'\OCA\Files_Trashbin\Trashbin',
+			'post_restore',
+			'OCA\Search_Elastic\Hooks\Files',
+			'trashbinRestoreUpdate'
+		);
+
+		// Connect to the file version restore
+		\OCP\Util::connectHook(
+			'\OCP\Versions',
+			'rollback',
+			'OCA\Search_Elastic\Hooks\Files',
+			'fileVersionRestoreUpdate'
+		);
 
 		//connect to the filesystem for rename
 		\OCP\Util::connectHook(

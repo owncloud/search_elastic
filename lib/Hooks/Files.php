@@ -1,14 +1,28 @@
 <?php
 /**
- * ownCloud
+ * @author Jörn Friedrich Dreyer <jfd@butonic.de>
+ * @author Michael Barz <mbarz@owncloud.com>
+ * @author Patrick Jahns <github@patrickjahns.de>
+ * @author Phil Davis <phil@jankaritech.com>
+ * @author Saugat Pachhai <suagatchhetri@outlook.com>
+ * @author Sujith H <sharidasan@owncloud.com>
  *
- * @author Jörn Friedrich Dreyer <jfd@owncloud.com>
- * @copyright (C) 2014-2016 ownCloud, Inc.
+ * @copyright Copyright (c) 2019, ownCloud GmbH
+ * @license GPL-2.0
  *
- * This code is covered by the ownCloud Commercial License.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
  *
- * You should have received a copy of the ownCloud Commercial License
- * along with this program. If not, see <https://owncloud.com/licenses/owncloud-commercial/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */
 
@@ -25,6 +39,7 @@ use OCP\Files\Node;
 use OCP\Files\NotFoundException;
 use OCP\Files\StorageNotAvailableException;
 use OCP\ILogger;
+use OCP\Share\Events\AcceptShare;
 
 /**
  * Class Files
@@ -92,26 +107,15 @@ class Files {
 	}
 
 	/**
-	 * Handle file writes (triggers reindexing)
-	 *
-	 * The file indexing is queued as a background job
-	 *
-	 * @param mixed $params from event
-	 *
-	 * @throws NotFoundException
+	 * @param Node $node
+	 * @param string $userId This could be either userId of the node or the userId who accepted the remote share
 	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 * @throws StorageNotAvailableException
 	 */
-	public static function contentChanged($params) {
-		$result = self::excludeIndex($params['path']);
-		if ($result === true) {
-			return;
-		}
-
+	private static function processNode($node, $userId) {
 		$app = new Application();
 		$container = $app->getContainer();
-		$node = \OC::$server->getRootFolder()->get($params['path']);
-		$userId = $node->getOwner()->getUID();
 		$logger = $container->query(ILogger::class);
 
 		if (!empty($userId)) {
@@ -128,7 +132,10 @@ class Files {
 
 				if ($node->isShared()) {
 					$storage = $node->getStorage();
-					$userId = $storage->getOwner($node->getPath()); // is in the public API with 9
+					$shareUserId = $storage->getOwner($node->getPath()); // is in the public API with 9
+					if (\strpos($shareUserId, '@') === false) {
+						$userId = $shareUserId;
+					}
 					$logger->debug(
 						"Hook metadataChanged: resolved owner to $userId",
 						['app' => 'search_elastic']
@@ -144,11 +151,104 @@ class Files {
 				);
 				$mapper->markSkipped($status);
 			}
+		}
+	}
+
+	/**
+	 * Handle file writes (triggers reindexing)
+	 *
+	 * The file indexing is queued as a background job
+	 *
+	 * @param mixed $params from event
+	 *
+	 * @throws NotFoundException
+	 * @throws InvalidPathException
+	 * @throws StorageNotAvailableException
+	 */
+	public static function contentChanged($params) {
+		$result = self::excludeIndex($params['path']);
+		if ($result === true) {
+			return;
+		}
+
+		$node = \OC::$server->getRootFolder()->get($params['path']);
+		$userId = $node->getOwner()->getUID();
+		if (!empty($userId)) {
+			self::processNode($node, $userId);
 		} else {
-			$logger->debug(
+			\OC::$server->getLogger()->debug(
 				'Hook contentChanged could not determine user when called with param '
 				.\json_encode($params), ['app' => 'search_elastic']
 			);
+		}
+	}
+
+	/**
+	 * Teardown and setup the fs for the user, so that the mount manager adds
+	 * and lists the federated share.
+	 *
+	 * @param AcceptShare $acceptShare
+	 */
+	public static function federatedShareUpdate(AcceptShare $acceptShare) {
+		$share = $acceptShare->getShare();
+
+		/**
+		 * We need to tear down and setup the fs, so that the mount manager will
+		 * update to have the federated share added.
+		 */
+		\OC_Util::tearDownFS();
+		/**
+		 * Setup fs for the currently logged in user.
+		 */
+		\OC_Util::setupFS();
+		$userFolder = \OC::$server->getUserFolder($share['user']);
+
+		if ($userFolder !== null) {
+			$node = $userFolder->get($share['name']);
+			self::processNode($node, $share['user']);
+		} else {
+			\OC::$server->getLogger()->debug('Hook federatedShareUpdate could not find key: user in param '
+				. \json_encode($share), ['app' => 'search_elastic']);
+		}
+	}
+
+	/**
+	 * Updates the trashbin restore for the search
+	 * @param array $params
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
+	 * @throws StorageNotAvailableException
+	 */
+	public static function trashbinRestoreUpdate($params) {
+		$user = \OC::$server->getUserSession()->getUser();
+		if ($user !== null) {
+			$userFolder = \OC::$server->getUserFolder($user->getUID());
+			if ($userFolder !== null) {
+				$node = $userFolder->get($params['filePath']);
+				self::processNode($node, $node->getOwner()->getUID());
+			}
+		} else {
+			\OC::$server->getLogger()->debug('Hook trashbinRestoreUpdate could not update because the user is not logged in. '
+				. \json_encode($params), ['app' => 'search_elastic']);
+		}
+	}
+
+	/**
+	 * Updates the version restore for the search
+	 *
+	 * @param array $params
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
+	 * @throws StorageNotAvailableException
+	 */
+	public static function fileVersionRestoreUpdate($params) {
+		$userFolder = \OC::$server->getUserFolder($params['user']);
+		if ($userFolder !== null) {
+			$node = $userFolder->get($params['path']);
+			self::processNode($node, $node->getOwner()->getUID());
+		} else {
+			\OC::$server->getLogger()->debug("Hook fileVersionRestoreUpdate could not find user: ${params['user']} revision in param "
+				. \json_encode($params), ['app' => 'search_elastic']);
 		}
 	}
 

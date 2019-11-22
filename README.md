@@ -120,27 +120,39 @@ results with content based hits.
 
 # Commands
 
-## search:index
-To index any not yet indexed files run
+## search:index:create
+Create a search index from scratch. Use it for a single user by entering the username as an argument. Use `--all` to run it for all users.
 ```
-# sudo -u www-data php occ search:index --all
+# sudo -u www-data php occ search:index:create --all
 Indexing user admin
 Indexing user user1
 Indexing user user2
 ...
 ```
 
-This will not reindex already indexed files, so it can be run immediately
-after an initial full indexing and should take significantly less time.
+This should be used to index all files for the first time. It doesn't update changes to the metadata correctly, if you run it multiple times.
 
-- [ ] Implement a force option
 - [ ] add console output for every file (currently using loglevel debug
       will log what is going on)
 
-## search:reset
-Reset an index. Can be "index" or "temp". Resetting "index" will also reset the "temp" index.
+## search:index:update
+Updates to the search index due to changed content or changed metadata are 
+happening via background jobs that are added to a queue. These background jobs are normally run by the ownCloud cronjob.
+Use this command to run the background jobs more often.
 ```
-# sudo -u www-data php occ search:reset temp
+# sudo -u www-data php occ search:index:update
+```
+
+## search:index:reset
+Reset an index. Needs to be run once before first indexing. Use the `--force` option to skip further warning messages.
+```
+# sudo -u www-data php occ search:index:reset --force
+```
+
+## search:index:rebuild
+Reset an index for a single user and recreate it from scratch. Use the `--force` option to skip further warning messages.
+```
+# sudo -u www-data php occ search:index:rebuild USERID --force
 ```
 
 # Design decisions
@@ -199,8 +211,8 @@ When you recently edited a file, chances are that you still know where it reside
     - [ ] at least index metadata in this case (catch encryption exception and ignore content extraction)
 - [ ] statistics on admin settings page
 - [ ] statistics on personal settings page
-- [ ] cleanup code
-- [ ] port test suite from search_lucene
+- [x] cleanup code
+- [x] port test suite from search_lucene
 - [x] resolve path for shared files
 - [x] files with empty content extraction are reindexed indefinitely? eg empty text file
 - [x] more debug logging

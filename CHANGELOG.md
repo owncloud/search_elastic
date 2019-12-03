@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
 ## [1.0.0]
 
 ### Changed
@@ -56,6 +58,7 @@ This release requires Elastic Search 5.6.x and the `ingest-attachment` processor
 ### Removed
 - Dropped support for Elastic Search 2.x
 
+[Unreleased]: https://github.com/owncloud/search_elastic/compare/v1.0.0...master
 [1.0.0]: https://github.com/owncloud/search_elastic/compare/v0.5.4...v1.0.0
 [0.5.4]: https://github.com/owncloud/search_elastic/compare/v0.5.2...v0.5.4
 [0.5.2]: https://github.com/owncloud/search_elastic/compare/v0.5.1...v0.5.2

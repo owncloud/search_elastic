@@ -76,7 +76,7 @@ class RebuildTest extends TestCase {
 	 *
 	 * @return void
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->searchElasticService = $this->createMock(SearchElasticService::class);
 		$this->userManager = $this->createMock(IUserManager::class);

@@ -1144,7 +1144,7 @@ steps:
   - rsync -aIX /tmp/testrunner /var/www/owncloud
   - cp -r /var/www/owncloud/testrunner/apps/search_elastic /var/www/owncloud/server/apps/
   - cd /var/www/owncloud/testrunner
-  - make install-composer-deps vendor-bin-deps
+  - make install-composer-deps
 
 - name: install-app-search_elastic
   pull: always
@@ -1286,7 +1286,7 @@ steps:
   - rsync -aIX /tmp/testrunner /var/www/owncloud
   - cp -r /var/www/owncloud/testrunner/apps/search_elastic /var/www/owncloud/server/apps/
   - cd /var/www/owncloud/testrunner
-  - make install-composer-deps vendor-bin-deps
+  - make install-composer-deps
 
 - name: install-app-search_elastic
   pull: always
@@ -1429,7 +1429,7 @@ steps:
   - rsync -aIX /tmp/testrunner /var/www/owncloud
   - cp -r /var/www/owncloud/testrunner/apps/search_elastic /var/www/owncloud/server/apps/
   - cd /var/www/owncloud/testrunner
-  - make install-composer-deps vendor-bin-deps
+  - make install-composer-deps
 
 - name: install-app-search_elastic
   pull: always
@@ -1571,7 +1571,7 @@ steps:
   - rsync -aIX /tmp/testrunner /var/www/owncloud
   - cp -r /var/www/owncloud/testrunner/apps/search_elastic /var/www/owncloud/server/apps/
   - cd /var/www/owncloud/testrunner
-  - make install-composer-deps vendor-bin-deps
+  - make install-composer-deps
 
 - name: install-app-search_elastic
   pull: always
@@ -1714,7 +1714,7 @@ steps:
   - rsync -aIX /tmp/testrunner /var/www/owncloud
   - cp -r /var/www/owncloud/testrunner/apps/search_elastic /var/www/owncloud/server/apps/
   - cd /var/www/owncloud/testrunner
-  - make install-composer-deps vendor-bin-deps
+  - make install-composer-deps
 
 - name: install-app-search_elastic
   pull: always
@@ -1846,7 +1846,7 @@ steps:
   - rsync -aIX /tmp/testrunner /var/www/owncloud
   - cp -r /var/www/owncloud/testrunner/apps/search_elastic /var/www/owncloud/server/apps/
   - cd /var/www/owncloud/testrunner
-  - make install-composer-deps vendor-bin-deps
+  - make install-composer-deps
 
 - name: install-app-search_elastic
   pull: always
@@ -1978,7 +1978,7 @@ steps:
   - rsync -aIX /tmp/testrunner /var/www/owncloud
   - cp -r /var/www/owncloud/testrunner/apps/search_elastic /var/www/owncloud/server/apps/
   - cd /var/www/owncloud/testrunner
-  - make install-composer-deps vendor-bin-deps
+  - make install-composer-deps
 
 - name: install-app-search_elastic
   pull: always
@@ -2110,7 +2110,7 @@ steps:
   - rsync -aIX /tmp/testrunner /var/www/owncloud
   - cp -r /var/www/owncloud/testrunner/apps/search_elastic /var/www/owncloud/server/apps/
   - cd /var/www/owncloud/testrunner
-  - make install-composer-deps vendor-bin-deps
+  - make install-composer-deps
 
 - name: install-app-search_elastic
   pull: always

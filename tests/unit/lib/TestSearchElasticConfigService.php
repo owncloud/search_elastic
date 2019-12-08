@@ -36,7 +36,7 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 	 */
 	private $searchElasticConfigService;
 
-	public function setUp() {
+	public function setUp(): void {
 		$this->owncloudConfigService = $this->getMockBuilder(IConfig::class)
 			->disableOriginalConstructor()
 			->getMock();

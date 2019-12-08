@@ -57,7 +57,7 @@ class UpdateTest extends TestCase {
 	 *
 	 * @return void
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->jobList = self::createMock(SearchJobList::class);
 		$this->logger = self::createMock(ILogger::class);

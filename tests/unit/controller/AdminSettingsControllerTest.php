@@ -42,7 +42,7 @@ class AdminSettingsControllerTest extends TestCase {
 
 	private $searchElasticService;
 
-	public function setUp() {
+	public function setUp(): void {
 		$request = $this->getMockBuilder(IRequest::class)
 			->disableOriginalConstructor()
 			->getMock();

@@ -1176,6 +1176,7 @@ steps:
   commands:
   - cd /var/www/owncloud/server
   - php occ config:app:set search_elastic servers --value elasticsearch
+  - wait-for-it -t 60 elasticsearch:9200
   - php occ search:index:reset --force
 
 - name: fix-permissions
@@ -1316,6 +1317,7 @@ steps:
   commands:
   - cd /var/www/owncloud/server
   - php occ config:app:set search_elastic servers --value elasticsearch
+  - wait-for-it -t 60 elasticsearch:9200
   - php occ search:index:reset --force
 
 - name: fix-permissions
@@ -1457,6 +1459,7 @@ steps:
   commands:
   - cd /var/www/owncloud/server
   - php occ config:app:set search_elastic servers --value elasticsearch
+  - wait-for-it -t 60 elasticsearch:9200
   - php occ search:index:reset --force
 
 - name: fix-permissions
@@ -1597,6 +1600,7 @@ steps:
   commands:
   - cd /var/www/owncloud/server
   - php occ config:app:set search_elastic servers --value elasticsearch
+  - wait-for-it -t 60 elasticsearch:9200
   - php occ search:index:reset --force
 
 - name: fix-permissions
@@ -1738,6 +1742,7 @@ steps:
   commands:
   - cd /var/www/owncloud/server
   - php occ config:app:set search_elastic servers --value elasticsearch
+  - wait-for-it -t 60 elasticsearch:9200
   - php occ search:index:reset --force
 
 - name: fix-permissions
@@ -1868,6 +1873,7 @@ steps:
   commands:
   - cd /var/www/owncloud/server
   - php occ config:app:set search_elastic servers --value elasticsearch
+  - wait-for-it -t 60 elasticsearch:9200
   - php occ search:index:reset --force
 
 - name: fix-permissions
@@ -1998,6 +2004,7 @@ steps:
   commands:
   - cd /var/www/owncloud/server
   - php occ config:app:set search_elastic servers --value elasticsearch
+  - wait-for-it -t 60 elasticsearch:9200
   - php occ search:index:reset --force
 
 - name: fix-permissions
@@ -2128,6 +2135,7 @@ steps:
   commands:
   - cd /var/www/owncloud/server
   - php occ config:app:set search_elastic servers --value elasticsearch
+  - wait-for-it -t 60 elasticsearch:9200
   - php occ search:index:reset --force
 
 - name: fix-permissions

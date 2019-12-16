@@ -91,11 +91,12 @@ class RebuildTest extends TestCase {
 	/**
 	 * Test no userId provided
 	 *
-	 * @expectedException RuntimeException
 	 *
 	 * @return void
 	 */
 	public function testNoUserId() {
+		$this->expectException(\RuntimeException::class);
+
 		$this->commandTester->execute([]);
 	}
 

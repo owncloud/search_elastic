@@ -23,14 +23,14 @@ So that I can find needed files quickly
     Given using <dav_version> DAV path
     When user "user0" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
       |/फन्नि näme/upload.txt    |
       |/simple.odt                  |
       |/simple.pdf                  |
-    But the search result should not contain these files:
+    But the search result of user "user0" should not contain these files:
       |/a-image.png                 |
     Examples:
       | dav_version |
@@ -41,7 +41,7 @@ So that I can find needed files quickly
     Given using <dav_version> DAV path
     When user "user0" searches for "oWncLOUd" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/textfile0.txt         |
       |/textfile1.txt         |
       |/textfile2.txt         |
@@ -52,7 +52,7 @@ So that I can find needed files quickly
       |/welcome.txt           |
       |/simple.odt            |
       |/simple.pdf            |
-    But the search result should not contain these files:
+    But the search result of user "user0" should not contain these files:
       |/a-image.png                 |
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
@@ -67,7 +67,7 @@ So that I can find needed files quickly
     Given using <dav_version> DAV path
     When user "user0" searches for "ownC" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/textfile0.txt         |
       |/textfile1.txt         |
       |/textfile2.txt         |
@@ -78,7 +78,7 @@ So that I can find needed files quickly
       |/welcome.txt           |
       |/simple.odt            |
       |/simple.pdf            |
-    But the search result should not contain these files:
+    But the search result of user "user0" should not contain these files:
       |/a-image.png                 |
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
@@ -94,8 +94,8 @@ So that I can find needed files quickly
     Given using <dav_version> DAV path
     When user "user0" searches for "Cloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    #And the search result should contain these files:
-    And the search result should not contain these files:
+    #And the search result of user "user0" should contain these files:
+    And the search result of user "user0" should not contain these files:
       |/textfile0.txt         |
       |/textfile1.txt         |
       |/textfile2.txt         |
@@ -106,7 +106,7 @@ So that I can find needed files quickly
       |/welcome.txt           |
       |/simple.odt            |
       |/simple.pdf            |
-    But the search result should not contain these files:
+    But the search result of user "user0" should not contain these files:
       |/a-image.png                 |
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
@@ -122,8 +122,8 @@ So that I can find needed files quickly
     Given using <dav_version> DAV path
     When user "user0" searches for "wnClo" using the WebDAV API
     Then the HTTP status code should be "207"
-    #And the search result should contain these files:
-    And the search result should not contain these files:
+    #And the search result of user "user0" should contain these files:
+    And the search result of user "user0" should not contain these files:
       |/textfile0.txt         |
       |/textfile1.txt         |
       |/textfile2.txt         |
@@ -134,7 +134,7 @@ So that I can find needed files quickly
       |/welcome.txt           |
       |/simple.odt            |
       |/simple.pdf            |
-    But the search result should not contain these files:
+    But the search result of user "user0" should not contain these files:
       |/a-image.png                 |
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
@@ -151,7 +151,7 @@ So that I can find needed files quickly
     And the search index has been updated
     When user "user0" searches for <search> using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/upload-edge-case.txt |
     Examples:
       | dav_version | file-content | search |
@@ -172,7 +172,7 @@ So that I can find needed files quickly
     And the search index has been updated
     When user "user0" searches for "upload" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -188,7 +188,7 @@ So that I can find needed files quickly
     And the search index has been updated
     When user "user0" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/ownCloud.txt  |
       |/textfile0.txt |
       |/textfile1.txt |
@@ -207,10 +207,10 @@ So that I can find needed files quickly
     And the search index has been updated
     When user "user0" searches for "नेपालि" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/utf-upload.txt              |
       |/just-a-folder/utf-upload.txt|
-    And the search result should not contain these files:
+    And the search result of user "user0" should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -225,11 +225,11 @@ So that I can find needed files quickly
     When user "user0" deletes file "/upload.txt" using the WebDAV API
     And user "user0" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
       |/फन्नि näme/upload.txt    |
-    But the search result should not contain these files:
+    But the search result of user "user0" should not contain these files:
       |/upload.txt                  |
     Examples:
       | dav_version |
@@ -242,12 +242,12 @@ So that I can find needed files quickly
     And the search index has been updated
     And user "user0" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/renamed_textfile0.txt       |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
       |/फन्नि näme/upload.txt    |
-    But the search result should not contain these files:
+    But the search result of user "user0" should not contain these files:
       |/upload.txt                  |
     Examples:
       | dav_version |
@@ -260,9 +260,9 @@ So that I can find needed files quickly
     And the search index has been updated
     And user "user0" searches for "change" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/upload.txt                  |
-    And the search result should not contain these files:
+    And the search result of user "user0" should not contain these files:
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
       |/फन्नि näme/upload.txt    |
@@ -277,9 +277,9 @@ So that I can find needed files quickly
     And the search index has been updated
     And user "user0" searches for "more" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/फन्नि näme/upload.txt          |
-    And the search result should not contain these files:
+    And the search result of user "user0" should not contain these files:
       |/just-a-folder/uploadÜठिF.txt|
     Examples:
       | dav_version |
@@ -293,9 +293,9 @@ So that I can find needed files quickly
     And the search index has been updated
     When user "user1" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user1" should contain these files:
       |/user1-upload.txt                  |
-    But the search result should not contain these files:
+    But the search result of user "user1" should not contain these files:
       |/upload.txt                  |
       |/just-a-folder/upload.txt    |
       |/just-a-folder/uploadÜठिF.txt|
@@ -314,12 +314,12 @@ So that I can find needed files quickly
     And the search index has been updated
     And user "user0" searches for "content" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/local_storage/upload.txt               |
       |/local_storage/just-a-folder/upload.txt |
       |/just-a-folder/uploadÜठिF.txt            |
       |/फन्नि näme/upload.txt                     |
-    But the search result should not contain these files:
+    But the search result of user "user0" should not contain these files:
       |/upload.txt                             |
       |/just-a-folder/upload.txt               |
     Examples:

@@ -21,7 +21,7 @@ So that the server is not overloaded
     And the search index has been updated
     And user "user0" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/textfile0.txt |
       |/textfile1.txt |
       |/textfile2.txt |
@@ -30,9 +30,9 @@ So that the server is not overloaded
       |/ownCloud.txt  |
     When user "user1" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user1" should contain these files:
       |/ownCloud.txt  |
-    But the search result should not contain these files:
+    But the search result of user "user1" should not contain these files:
       |/textfile0.txt |
       |/textfile1.txt |
       |/textfile2.txt |
@@ -48,9 +48,9 @@ So that the server is not overloaded
     When the administrator disables the full text search for "grp1"
     And user "user0" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/ownCloud.txt  |
-    But the search result should not contain these files:
+    But the search result of user "user0" should not contain these files:
       |/textfile0.txt |
       |/textfile1.txt |
       |/textfile2.txt |
@@ -58,7 +58,7 @@ So that the server is not overloaded
       |/textfile4.txt |
     When user "user1" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user1" should contain these files:
       |/ownCloud.txt  |
       |/textfile0.txt |
       |/textfile1.txt |
@@ -76,9 +76,9 @@ So that the server is not overloaded
     And the search index has been updated
     And user "user0" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/ownCloud.txt  |
-    And the search result should not contain these files:
+    And the search result of user "user0" should not contain these files:
       |/textfile0.txt |
       |/textfile1.txt |
       |/textfile2.txt |
@@ -86,7 +86,7 @@ So that the server is not overloaded
       |/textfile4.txt |
     When user "user1" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user1" should contain these files:
       |/ownCloud.txt  |
       |/textfile0.txt |
       |/textfile1.txt |
@@ -108,9 +108,9 @@ So that the server is not overloaded
     And the search index has been updated
     And user "user0" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/ownCloud.txt  |
-    But the search result should not contain these files:
+    But the search result of user "user0" should not contain these files:
       |/textfile0.txt |
       |/textfile1.txt |
       |/textfile2.txt |
@@ -118,9 +118,9 @@ So that the server is not overloaded
       |/textfile4.txt |
     When user "user2" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user2" should contain these files:
       |/ownCloud.txt  |
-    But the search result should not contain these files:
+    But the search result of user "user2" should not contain these files:
       |/textfile0.txt |
       |/textfile1.txt |
       |/textfile2.txt |
@@ -128,7 +128,7 @@ So that the server is not overloaded
       |/textfile4.txt |
     When user "user1" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user1" should contain these files:
       |/ownCloud.txt  |
       |/textfile0.txt |
       |/textfile1.txt |
@@ -147,9 +147,9 @@ So that the server is not overloaded
     When the administrator disables the full text search for "grp1"
     And user "user0" searches for "ownCloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result should contain these files:
+    And the search result of user "user0" should contain these files:
       |/ownCloud.txt  |
-    But the search result should not contain these files:
+    But the search result of user "user0" should not contain these files:
       |/textfile0.txt |
       |/textfile1.txt |
       |/textfile2.txt |

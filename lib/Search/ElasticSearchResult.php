@@ -58,6 +58,7 @@ class ElasticSearchResult extends FileResult {
 	 * @param Folder $home
 	 */
 	public function __construct(Result $result, Node $node, Folder $home) {
+		parent::__construct($node);
 		$data = $result->getData();
 		$highlights = $result->getHighlights();
 		$this->id = $result->getId();

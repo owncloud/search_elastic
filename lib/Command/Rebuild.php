@@ -140,6 +140,7 @@ class Rebuild extends Command {
 				$output->writeln("<error>Unknown user $user</error>");
 			}
 		}
+		return 0;
 	}
 
 	/**

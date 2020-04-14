@@ -97,5 +97,6 @@ class Reset extends Command {
 
 		$this->searchElasticService->setup();
 		$output->writeln('Search index has been reset.');
+		return 0;
 	}
 }

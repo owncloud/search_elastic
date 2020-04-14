@@ -6,19 +6,17 @@ parameters:
     - %currentWorkingDirectory%/appinfo/Migrations
     - %currentWorkingDirectory%/appinfo/routes.php
   ignoreErrors:
-    - message: '#Cannot access offset.*#'
-      path: %currentWorkingDirectory%/lib/SearchElasticService.php
     - '#Call to an undefined method OCP\\AppFramework\\Db\\Entity::getFileId()#'
     - '#Call to an undefined method OCP\\Files\\Node::getContent()#'
     - message: '#Method .* should return .* but returns.*#'
       path: %currentWorkingDirectory%/lib/Db/StatusMapper.php
     - message: '#OCA\\Encryption#'
       path: %currentWorkingDirectory%/lib/Jobs/UpdateContent.php
-    - message: '#OCA\\Search_Elastic\\Search\\ElasticSearchResult.* does not call parent#'
-      path: %currentWorkingDirectory%/lib/Search/ElasticSearchResult.php
     - message: '#Else branch is unreachable because previous condition is always true#'
       path: %currentWorkingDirectory%/lib/Hooks/Files.php
     - message: '#Else branch is unreachable because previous condition is always true#'
       path: %currentWorkingDirectory%/lib/Search/ElasticSearchProvider.php
     - message: '#Argument of an invalid type Elastica\\Response supplied for foreach, only iterables are supported#'
       path: %currentWorkingDirectory%/lib/SearchElasticService.php
+    - message: '#Method .* should return .* #'
+      path: %currentWorkingDirectory%/lib/Controller/AdminSettingsController.php

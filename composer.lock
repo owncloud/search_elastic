@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "4c5b0104bbd0ef8c7db273fd4e2147e5",
+    "content-hash": "d9d37937bfe2cc4afe7152b3aa902b5d",
     "packages": [
         {
             "name": "elasticsearch/elasticsearch",

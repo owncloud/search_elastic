@@ -63,6 +63,15 @@ return [
 		'../../core'
 	],
 
+	// A list of files that will be excluded from parsing and analysis
+	// and will not be read at all.
+	//
+	// This is useful for excluding hopelessly unanalyzable
+	// files that can't be removed for whatever reason.
+	'exclude_file_list' => [
+		'appinfo/routes.php',
+	],
+
 	// A regular expression to match files to be excluded
 	// from parsing and analysis and will not be read at all.
 	//

@@ -24,7 +24,6 @@ namespace OCA\Search_Elastic\Migrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Type;
-use Doctrine\DBAL\Types\Types;
 use OCP\Migration\ISchemaMigration;
 
 /** Updates some fields to bigint if required */
@@ -36,8 +35,14 @@ class Version20170811212112 implements ISchemaMigration {
 			$table = $schema->getTable("{$prefix}search_elastic_status");
 
 			$fileIdColumn = $table->getColumn('fileid');
-			if ($fileIdColumn && $fileIdColumn->getType()->getName() !== Types::BIGINT) {
-				$fileIdColumn->setType(Type::getType(Types::BIGINT));
+			// Type::BIGINT is deprecated in the DBAL version that comes with
+			// ownCloud core 10.5. In future use Types::BIGINT
+			// For now, to support search_elastic with older ownCloud
+			// (e.g. 10.3.2 or 10.4.1) suppress the deprecated error from phan
+			/* @phan-suppress-next-line PhanDeprecatedClassConstant */
+			if ($fileIdColumn && $fileIdColumn->getType()->getName() !== Type::BIGINT) {
+				/* @phan-suppress-next-line PhanDeprecatedClassConstant */
+				$fileIdColumn->setType(Type::getType(Type::BIGINT));
 				$fileIdColumn->setOptions(['length' => 20]);
 			}
 		}

@@ -107,12 +107,14 @@ class SearchJobList extends JobList {
 
 			if ($count === 0) {
 				// Background job already executed elsewhere, try again.
+				/* @phan-suppress-next-line PhanPossiblyInfiniteRecursionSameParams */
 				return $this->getNext();
 			}
 			$job = $this->buildJob($row);
 
 			if ($job === null) {
 				// Background job from disabled app, try again.
+				/* @phan-suppress-next-line PhanPossiblyInfiniteRecursionSameParams */
 				return $this->getNext();
 			}
 

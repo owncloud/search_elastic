@@ -49,6 +49,11 @@ class StatusMapper extends Mapper {
 	private $config;
 
 	/**
+	 * @var IDb
+	 */
+	protected $db;
+
+	/**
 	 * StatusMapper constructor.
 	 *
 	 * @param IDb $db
@@ -256,8 +261,8 @@ class StatusMapper extends Mapper {
 
 			// skip shared storages, they must be indexed in the context of
 			// their owner to prevent marking files as vanished
-			/* Files_Sharing\SharedStorage might not be available when phan runs
-			 * @phan-suppress-next-line PhanUndeclaredClassConstant */
+			// Files_Sharing\SharedStorage might not be available when phan runs
+			/* @phan-suppress-next-line PhanUndeclaredClassReference */
 			if ($storage->instanceOfStorage(SharedStorage::class)) {
 				continue;
 			}

@@ -47,6 +47,9 @@ config = {
 			'suites': {
 				'webUISearchElastic': 'webUISearchElastic',
 			},
+			'phpVersions': [
+				'7.4',
+			],
 			'browsers': [
 				'chrome',
 				'firefox'
@@ -56,6 +59,9 @@ config = {
 			'suites': [
 				'apiLimitSearches',
 				'apiSearchElastic'
+			],
+			'phpVersions': [
+				'7.4',
 			],
 		},
 	},
@@ -1212,7 +1218,7 @@ def installCore(version, db, useBundledApp):
 		'image': 'owncloudci/core',
 		'pull': 'always',
 		'settings': {
-			'version': version,
+			'git_reference': 'php7.4-20200310',
 			'core_path': '/var/www/owncloud/server',
 			'db_type': dbType,
 			'db_name': database,

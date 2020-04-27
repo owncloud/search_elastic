@@ -97,7 +97,7 @@ class WebUIElasticSearchContext extends RawMinkContext implements Context {
 		$highlights = $this->searchResultInOtherFoldersPage->getHighlightsText(
 			$this->getSession(), $fileName, $path
 		);
-		Assert::assertContains(
+		Assert::assertStringContainsString(
 			$highlightsExpectations->getRaw(), $highlights
 		);
 	}

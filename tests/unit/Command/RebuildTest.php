@@ -125,7 +125,7 @@ class RebuildTest extends TestCase {
 		);
 		$output = $this->commandTester->getDisplay();
 
-		self::assertContains('Unknown user testuser', $output);
+		self::assertStringContainsString('Unknown user testuser', $output);
 	}
 
 	/**
@@ -163,8 +163,8 @@ class RebuildTest extends TestCase {
 		);
 		$output = $this->commandTester->getDisplay();
 
-		self::assertContains('Rebuilding Search Index for', $output);
-		self::assertContains($uid, $output);
+		self::assertStringContainsString('Rebuilding Search Index for', $output);
+		self::assertStringContainsString($uid, $output);
 	}
 
 	public function testExistingAndNonExistingUsers() {
@@ -201,9 +201,9 @@ class RebuildTest extends TestCase {
 			]
 		);
 		$output = $this->commandTester->getDisplay();
-		$this->assertContains('Rebuilding Search Index for', $output);
-		$this->assertContains($uid, $output);
-		$this->assertContains("Unknown user $uid2", $output);
-		$this->assertContains("Unknown user $uid3", $output);
+		$this->assertStringContainsString('Rebuilding Search Index for', $output);
+		$this->assertStringContainsString($uid, $output);
+		$this->assertStringContainsString("Unknown user $uid2", $output);
+		$this->assertStringContainsString("Unknown user $uid3", $output);
 	}
 }

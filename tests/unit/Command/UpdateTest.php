@@ -83,8 +83,8 @@ class UpdateTest extends TestCase {
 		$this->commandTester->execute([]);
 		$output = $this->commandTester->getDisplay();
 
-		self::assertContains('Start Updating the Elastic Search index:', $output);
-		self::assertContains('No pending jobs found.', $output);
+		self::assertStringContainsString('Start Updating the Elastic Search index:', $output);
+		self::assertStringContainsString('No pending jobs found.', $output);
 	}
 
 	/**
@@ -111,10 +111,10 @@ class UpdateTest extends TestCase {
 		$this->commandTester->execute([]);
 		$output = $this->commandTester->getDisplay();
 
-		self::assertContains('Start Updating the Elastic Search index:', $output);
-		self::assertContains('Executing', $output);
-		self::assertContains(\get_class($updateJob), $output);
-		self::assertNotContains('No pending jobs found.', $output);
+		self::assertStringContainsString('Start Updating the Elastic Search index:', $output);
+		self::assertStringContainsString('Executing', $output);
+		self::assertStringContainsString(\get_class($updateJob), $output);
+		self::assertStringNotContainsString('No pending jobs found.', $output);
 	}
 
 	/**
@@ -148,10 +148,10 @@ class UpdateTest extends TestCase {
 		$this->commandTester->execute([]);
 		$output = $this->commandTester->getDisplay();
 
-		self::assertContains('Start Updating the Elastic Search index:', $output);
-		self::assertContains('Executing', $output);
-		self::assertContains(\get_class($updateJob), $output);
-		self::assertContains(\get_class($metadataJob), $output);
-		self::assertNotContains('No pending jobs found.', $output);
+		self::assertStringContainsString('Start Updating the Elastic Search index:', $output);
+		self::assertStringContainsString('Executing', $output);
+		self::assertStringContainsString(\get_class($updateJob), $output);
+		self::assertStringContainsString(\get_class($metadataJob), $output);
+		self::assertStringNotContainsString('No pending jobs found.', $output);
 	}
 }

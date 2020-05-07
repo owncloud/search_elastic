@@ -178,9 +178,9 @@ class RebuildTest extends TestCase {
 		$this->userManager
 			->method('get')
 			->will($this->returnValueMap([
-				[$uid, $this->user],
-				[$uid2, null],
-				[$uid3, null],
+				[$uid, false, $this->user],
+				[$uid2, false, null],
+				[$uid3, false, null],
 			]));
 		$this->rootFolder
 			->expects($this->once())

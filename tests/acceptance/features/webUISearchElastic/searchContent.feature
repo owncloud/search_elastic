@@ -1,17 +1,17 @@
 @webUI @insulated @disablePreviews
 Feature: Search
 
-As a user
-I would like to be able to search for the content of files
-So that I can find needed files quickly
+  As a user
+  I would like to be able to search for the content of files
+  So that I can find needed files quickly
 
   Background:
     Given these users have been created with skeleton files:
-    |username|password|displayname|email       |
-    |user1   |1234    |User One   |u1@oc.com.np|
+      | username | password | displayname  | email             |
+      | Brian    | 1234     | Brian Murphy | brian@example.org |
     And the search index has been created
     And the user has browsed to the login page
-    And the user has logged in with username "user1" and password "1234" using the webUI
+    And the user has logged in with username "Brian" and password "1234" using the webUI
 
   Scenario: Simple search
     When the user searches for "lorem" using the webUI
@@ -63,8 +63,8 @@ So that I can find needed files quickly
     #  """
 
   Scenario: Search pattern matches filename of one file and content of others
-    Given user "user1" has uploaded file with content "content to search for" to "/new-file.txt"
-    And user "user1" has uploaded file with content "does-not-matter" to "/file-to-search-for.txt"
+    Given user "Brian" has uploaded file with content "content to search for" to "/new-file.txt"
+    And user "Brian" has uploaded file with content "does-not-matter" to "/file-to-search-for.txt"
     And the search index has been updated
     And the user has reloaded the current page of the webUI
     When the user searches for "search" using the webUI
@@ -72,12 +72,12 @@ So that I can find needed files quickly
     And file "new-file.txt" with path "/" should be listed in the search results in the other folders section on the webUI with highlights containing:
       """
       content to search for
-      """ 
+      """
     But file "lorem.txt" should not be listed on the webUI
 
   Scenario: search for files by UTF pattern
-    Given user "user1" has uploaded file with content "मेरो नेपालि content" to "/utf-upload.txt"
-    And user "user1" has uploaded file with content "मेरो दोस्रो नेपालि content" to "/simple-folder/utf-upload.txt"
+    Given user "Brian" has uploaded file with content "मेरो नेपालि content" to "/utf-upload.txt"
+    And user "Brian" has uploaded file with content "मेरो दोस्रो नेपालि content" to "/simple-folder/utf-upload.txt"
     And the search index has been updated
     And the user has reloaded the current page of the webUI
     When the user searches for "नेपालि" using the webUI
@@ -110,10 +110,10 @@ So that I can find needed files quickly
     But file "lorem-big.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
 
   Scenario: user should not be able to search in files of other users
-    Given user "user2" has been created with default attributes and skeleton files
-    And user "user2" has uploaded file with content "my secret content" to "/user1-upload.txt"
+    Given user "Carol" has been created with default attributes and skeleton files
+    And user "Carol" has uploaded file with content "my secret content" to "/Brian-upload.txt"
     And the search index has been updated
     And the user has reloaded the current page of the webUI
     And the user searches for "secret" using the webUI
-    Then file "user1-upload.txt" should not be listed on the webUI
-    Then file "user1-upload.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
+    Then file "Brian-upload.txt" should not be listed on the webUI
+    Then file "Brian-upload.txt" with path "/" should not be listed in the search results in the other folders section on the webUI

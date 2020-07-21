@@ -1,13 +1,12 @@
 parameters:
-  bootstrap: %currentWorkingDirectory%/../../lib/base.php
-  autoload_directories:
-    - %currentWorkingDirectory%/appinfo/Migrations
+  bootstrapFiles:
+    - %currentWorkingDirectory%/../../lib/base.php
   excludes_analyse:
     - %currentWorkingDirectory%/appinfo/Migrations
     - %currentWorkingDirectory%/appinfo/routes.php
   ignoreErrors:
-    - '#Call to an undefined method OCP\\AppFramework\\Db\\Entity::getFileId()#'
-    - '#Call to an undefined method OCP\\Files\\Node::getContent()#'
+    - '#Call to an undefined method OCP\\AppFramework\\Db\\Entity::getFileId\(\)#'
+    - '#Call to an undefined method OCP\\Files\\Node::getContent\(\)#'
     - message: '#Method .* should return .* but returns.*#'
       path: %currentWorkingDirectory%/lib/Db/StatusMapper.php
     - message: '#OCA\\Encryption#'

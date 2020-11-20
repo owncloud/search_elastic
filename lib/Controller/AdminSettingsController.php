@@ -31,6 +31,7 @@ use OC\AppFramework\Http;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\SearchElasticService;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\ILogger;
 use OCP\IRequest;
 use OCP\AppFramework\ApiController;
 
@@ -45,64 +46,47 @@ class AdminSettingsController extends ApiController {
 	 * @var SearchElasticService
 	 */
 	private $searchElasticService;
-
 	/**
-	 * @param string $appName
-	 * @param IRequest $request
-	 * @param SearchElasticConfigService $config
-	 * @param SearchElasticService $searchElasticService
+	 * @var ILogger
 	 */
+	private $logger;
+
 	public function __construct(
-		$appName,
+		string $appName,
 		IRequest $request,
 		SearchElasticConfigService $config,
-		SearchElasticService $searchElasticService
+		SearchElasticService $searchElasticService,
+		ILogger $logger
 	) {
 		parent::__construct($appName, $request);
 		$this->config = $config;
 		$this->searchElasticService = $searchElasticService;
+		$this->logger = $logger;
 	}
 
-	/**
-	 * @return JSONResponse
-	 */
-	public function loadServers() {
+	public function loadServers(): JSONResponse {
 		return new JSONResponse([
 			SearchElasticConfigService::SERVERS => $this->config->getServers()
 		]);
 	}
 
-	/**
-	 * @param string $servers
-	 * @return JSONResponse
-	 */
-	public function saveServers($servers) {
+	public function saveServers(string $servers): JSONResponse {
 		$this->config->setServers($servers);
 		return new JSONResponse();
 	}
 
-	/**
-	 * @return JSONResponse
-	 */
-	public function getScanExternalStorages() {
+	public function getScanExternalStorages(): JSONResponse {
 		return new JSONResponse([
 			SearchElasticConfigService::SCAN_EXTERNAL_STORAGE => $this->config->getScanExternalStorageFlag()
 		]);
 	}
 
-	/**
-	 * @param bool $scanExternalStorages
-	 * @return JSONResponse
-	 */
-	public function setScanExternalStorages($scanExternalStorages) {
+	public function setScanExternalStorages(bool $scanExternalStorages): JSONResponse {
 		$this->config->setScanExternalStorageFlag($scanExternalStorages);
 		return new JSONResponse();
 	}
 
-	/**
-	 * @return JSONResponse
-	 */
-	public function checkStatus() {
+	public function checkStatus(): JSONResponse {
 		try {
 			if (!$this->searchElasticService->isSetup()) {
 				return new JSONResponse(['message' => 'Index not set up'], Http::STATUS_EXPECTATION_FAILED);
@@ -116,24 +100,18 @@ class AdminSettingsController extends ApiController {
 		return new JSONResponse(['stats' => $stats]);
 	}
 
-	/**
-	 * @return JSONResponse
-	 */
-	public function setup() {
+	public function setup(): JSONResponse {
 		try {
 			$this->searchElasticService->setup();
 		} catch (\Exception $e) {
-			// TODO log exception
-			return new JSONResponse(['message' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+			$this->logger->logException($e);
+			return new JSONResponse(['message' => $e->getMessage()], Http::STATUS_SERVICE_UNAVAILABLE);
 		}
 		return $this->checkStatus();
 	}
 
-	/**
-	 * @suppress PhanTypeMissingReturn FIXME
-	 * @return JSONResponse
-	 */
-	public function rescan() {
+	public function rescan(): JSONResponse {
+		return new JSONResponse([], Http::STATUS_NOT_IMPLEMENTED);
 		/*
 		 * FIXME we need to iterate over all files. how do we access users files in external storages?
 		 * It would make more sense to iterate over all storages.

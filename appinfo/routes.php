@@ -26,18 +26,7 @@
 
 namespace OCA\Search_Elastic\AppInfo;
 
-/**
- * Create your routes in here. The name is the lowercase name of the controller
- * without the controller part, the stuff after the hash is the method.
- * e.g. page#index -> PageController->index()
- *
- * The controller class has to be registered in the application.php file since
- * it's instantiated in there
- */
-$application = new \OCA\Search_Elastic\Application();
-
-// @phan-suppress-next-line PhanUndeclaredVariable
-$application->registerRoutes($this, ['routes' => [
+return ['routes' => [
 	['name' => 'admin_settings#loadServers', 'url' => '/settings/servers', 'verb' => 'GET'],
 	['name' => 'admin_settings#saveServers', 'url' => '/settings/servers', 'verb' => 'POST'],
 	['name' => 'admin_settings#getScanExternalStorages', 'url' => '/settings/scanExternalStorages', 'verb' => 'GET'],
@@ -47,4 +36,4 @@ $application->registerRoutes($this, ['routes' => [
 	['name' => 'admin_settings#rescan', 'url' => '/rescan', 'verb' => 'POST'],
 	['name' => 'api#index', 'url' => '/indexer/index', 'verb' => 'GET'],
 	['name' => 'api#optimize', 'url' => '/indexer/optimize', 'verb' => 'POST'],
-]]);
+]];

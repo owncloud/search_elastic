@@ -28,7 +28,7 @@
 
 namespace OCA\Search_Elastic\Hooks;
 
-use OCA\Search_Elastic\Application;
+use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\SearchElasticService;
 use OCA\Search_Elastic\Db\Status;
 use OCA\Search_Elastic\Db\StatusMapper;

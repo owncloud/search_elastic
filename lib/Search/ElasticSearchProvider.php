@@ -30,7 +30,7 @@ namespace OCA\Search_Elastic\Search;
 use Elastica\Query;
 use Elastica\Query\BoolQuery;
 use Elastica\Query\Match;
-use OCA\Search_Elastic\Application;
+use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\SearchElasticService;
 use OCP\Files\Node;

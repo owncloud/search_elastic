@@ -25,7 +25,7 @@
  */
 namespace OCA\Search_Elastic;
 
-use OCA\Search_Elastic\Application;
+use OCA\Search_Elastic\AppInfo\Application;
 use OCP\IConfig;
 
 class SearchElasticConfigService {

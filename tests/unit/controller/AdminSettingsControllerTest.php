@@ -23,11 +23,12 @@
  */
 namespace OCA\Search_Elastic\Tests\Unit\Controller;
 
-use OCA\Search_Elastic\Application;
+use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\Controller\AdminSettingsController;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\SearchElasticService;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\ILogger;
 use OCP\IRequest;
 use Test\TestCase;
 
@@ -55,18 +56,21 @@ class AdminSettingsControllerTest extends TestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		$this->logger = $this->createMock(ILogger::class);
+
 		$this->controller = new AdminSettingsController(
 			Application::APP_ID,
 			$request,
 			$this->configService,
-			$this->searchElasticService
+			$this->searchElasticService,
+			$this->logger
 		);
 	}
 
 	public function testLoadServers() {
 		$this->configService->expects($this->once())
 			->method('getServers')
-			->will($this->returnValue('localhost:9200'));
+			->willReturn('localhost:9200');
 		$response = $this->controller->loadServers();
 		$expected = new JSONResponse([SearchElasticConfigService::SERVERS => 'localhost:9200']);
 		$this->assertEquals($expected, $response);

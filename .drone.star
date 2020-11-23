@@ -37,25 +37,14 @@ config = {
 	},
 
 	'acceptance': {
-		'webUI': {
+		'webUIwith5.6': {
 			'suites': {
-				'webUISearchElastic': 'webUISearchElastic',
+				'webUISearchElastic': 'webUISE5.6',
 			},
 			'browsers': [
 				'chrome',
 				'firefox'
 			],
-		},
-		'api': {
-			'suites': [
-				'apiLimitSearches',
-				'apiSearchElastic'
-			],
-		},
-	},
-
-	'defaults': {
-		'acceptance': {
 			'databases': [
 				'mysql:5.7'
 			],
@@ -83,6 +72,105 @@ config = {
 				}
 			]
 		},
+		'webUIwith6.4': {
+			'suites': {
+				'webUISearchElastic': 'webUISE6.4',
+			},
+			'browsers': [
+				'chrome',
+				'firefox'
+			],
+			'databases': [
+				'mysql:5.7'
+			],
+			'extraSetup': [
+				{
+					'name': 'configure-app',
+					'image': 'owncloudci/php:7.2',
+					'pull': 'always',
+					'commands': [
+						'cd /var/www/owncloud/server',
+						'php occ config:app:set search_elastic servers --value elasticsearch',
+						'wait-for-it -t 60 elasticsearch:9200',
+						'php occ search:index:reset --force'
+					]
+				}
+			],
+			'extraServices': [
+				{
+					'name': 'elasticsearch',
+					'image': 'webhippie/elasticsearch:6.4',
+					'pull': 'always',
+					'environment': {
+						'ELASTICSEARCH_PLUGINS_INSTALL': 'ingest-attachment'
+					}
+				}
+			]
+		},
+		'apiWith5.6': {
+			'suites': {
+				'apiLimitSearches': 'apiLS5.6',
+				'apiSearchElastic': 'apiSE5.6',
+			},
+			'databases': [
+				'mysql:5.7'
+			],
+			'extraSetup': [
+				{
+					'name': 'configure-app',
+					'image': 'owncloudci/php:7.2',
+					'pull': 'always',
+					'commands': [
+						'cd /var/www/owncloud/server',
+						'php occ config:app:set search_elastic servers --value elasticsearch',
+						'wait-for-it -t 60 elasticsearch:9200',
+						'php occ search:index:reset --force'
+					]
+				}
+			],
+			'extraServices': [
+				{
+					'name': 'elasticsearch',
+					'image': 'webhippie/elasticsearch:5.6',
+					'pull': 'always',
+					'environment': {
+						'ELASTICSEARCH_PLUGINS_INSTALL': 'ingest-attachment'
+					}
+				}
+			]
+		},
+		'apiWith6.4': {
+			'suites': {
+				'apiLimitSearches': 'apiLS6.4',
+				'apiSearchElastic': 'apiSE6.4',
+			},
+			'databases': [
+				'mysql:5.7'
+			],
+			'extraSetup': [
+				{
+					'name': 'configure-app',
+					'image': 'owncloudci/php:7.2',
+					'pull': 'always',
+					'commands': [
+						'cd /var/www/owncloud/server',
+						'php occ config:app:set search_elastic servers --value elasticsearch',
+						'wait-for-it -t 60 elasticsearch:9200',
+						'php occ search:index:reset --force'
+					]
+				}
+			],
+			'extraServices': [
+				{
+					'name': 'elasticsearch',
+					'image': 'webhippie/elasticsearch:6.4',
+					'pull': 'always',
+					'environment': {
+						'ELASTICSEARCH_PLUGINS_INSTALL': 'ingest-attachment'
+					}
+				}
+			]
+		}
 	}
 }
 

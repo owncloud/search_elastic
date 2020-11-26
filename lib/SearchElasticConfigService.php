@@ -25,18 +25,18 @@
  */
 namespace OCA\Search_Elastic;
 
-use OCA\Search_Elastic\Application;
+use OCA\Search_Elastic\AppInfo\Application;
 use OCP\IConfig;
 
 class SearchElasticConfigService {
-	const SERVERS = 'servers';
-	const SCAN_EXTERNAL_STORAGE = 'scanExternalStorages';
-	const INDEX_MAX_FILE_SIZE = 'max_size';
-	const INDEX_NO_CONTENT = 'nocontent';
-	const SKIPPED_DIRS = 'skipped_dirs';
-	const NO_CONTENT_GROUP = 'group.nocontent';
-	const APP_MODE = 'mode';
-	const ENABLED_GROUPS = 'group';
+	public const SERVERS = 'servers';
+	public const SCAN_EXTERNAL_STORAGE = 'scanExternalStorages';
+	public const INDEX_MAX_FILE_SIZE = 'max_size';
+	public const INDEX_NO_CONTENT = 'nocontent';
+	public const SKIPPED_DIRS = 'skipped_dirs';
+	public const NO_CONTENT_GROUP = 'group.nocontent';
+	public const APP_MODE = 'mode';
+	public const ENABLED_GROUPS = 'group';
 
 	/**
 	 * @var IConfig

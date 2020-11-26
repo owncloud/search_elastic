@@ -75,9 +75,10 @@ config = {
 			'extraServices': [
 				{
 					'name': 'elasticsearch',
-					'image': 'webhippie/elasticsearch:5.6',
+					'image': 'deepdiver/elasticsearch:7.10',
 					'pull': 'always',
 					'environment': {
+					    'ELASTICSEARCH_XPACK_SECURITY_ENABLED': 'false',
 						'ELASTICSEARCH_PLUGINS_INSTALL': 'ingest-attachment'
 					}
 				}

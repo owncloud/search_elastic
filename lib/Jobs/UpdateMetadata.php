@@ -25,7 +25,7 @@
 
 namespace OCA\Search_Elastic\Jobs;
 
-use OCA\Search_Elastic\Application;
+use OCA\Search_Elastic\AppInfo\Application;
 use OC\BackgroundJob\QueuedJob;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\SearchElasticService;

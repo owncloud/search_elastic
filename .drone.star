@@ -59,19 +59,6 @@ config = {
 			'databases': [
 				'mysql:5.7'
 			],
-			'extraSetup': [
-				{
-					'name': 'configure-app',
-					'image': 'owncloudci/php:7.2',
-					'pull': 'always',
-					'commands': [
-						'cd /var/www/owncloud/server',
-						'php occ config:app:set search_elastic servers --value elasticsearch',
-						'wait-for-it -t 60 elasticsearch:9200',
-						'php occ search:index:reset --force'
-					]
-				}
-			],
 			'esVersions': ['5.6', '6.4'],
 		},
 	}
@@ -891,6 +878,7 @@ def acceptance():
 											owncloudLog('server') +
 											setupCeph(params['cephS3']) +
 											setupScality(params['scalityS3']) +
+											setupElasticSearch(esVersion) +
 											params['extraSetup'] +
 											fixPermissions(phpVersion, params['federatedServerNeeded']) +
 										[
@@ -1351,6 +1339,22 @@ def setupScality(serviceParams):
 		] if createFirstBucket else []) + ([
 			'for I in $(seq 1 9); do php ./occ s3:create-bucket  owncloud$I --accept-warning; done',
 		] if createExtraBuckets else [])
+	}]
+
+def setupElasticSearch(esVersion):
+	if esVersion == "none":
+		return []
+
+	return [{
+		'name': 'setup-es',
+		'image': 'owncloudci/php:7.2',
+		'pull': 'always',
+		'commands': [
+			'cd /var/www/owncloud/server',
+			'php occ config:app:set search_elastic servers --value elasticsearch',
+			'wait-for-it -t 60 elasticsearch:9200',
+			'php occ search:index:reset --force'
+		]
 	}]
 
 def fixPermissions(phpVersion, federatedServerNeeded):

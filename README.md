@@ -1,6 +1,9 @@
 # Elasticsearch
 
 [![Build Status](https://drone.owncloud.com/api/badges/owncloud/search_elastic/status.svg?branch=master)](https://drone.owncloud.com/owncloud/search_elastic)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=owncloud_search_elastic&metric=alert_status)](https://sonarcloud.io/dashboard?id=owncloud_search_elastic)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=owncloud_search_elastic&metric=security_rating)](https://sonarcloud.io/dashboard?id=owncloud_search_elastic)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=owncloud_search_elastic&metric=coverage)](https://sonarcloud.io/dashboard?id=owncloud_search_elastic)
 
 The search_elastic app adds a full text search for files stored in ownCloud. It requires an
 [elasticsearch](http://www.elasticsearch.org) server and can index all fitles supported by

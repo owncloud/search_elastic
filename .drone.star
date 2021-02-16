@@ -57,7 +57,7 @@ config = {
 	'defaults': {
 		'acceptance': {
 			'databases': [
-				'mysql:5.7'
+				'mysql:8.0'
 			],
 			'esVersions': ['5.6'],
 		},

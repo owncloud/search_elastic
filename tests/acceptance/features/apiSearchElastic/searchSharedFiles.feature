@@ -5,7 +5,7 @@ Feature: Search for content
   So that I can find needed files quickly
 
   Background:
-    Given user "Alice" has been created with default attributes and skeleton files
+    Given user "Alice" has been created with default attributes and small skeleton files
     And user "Alice" has created folder "/just-a-folder"
     And user "Alice" has created folder "/फन्नि näme"
     And user "Alice" has uploaded file with content "files content" to "/upload.txt"

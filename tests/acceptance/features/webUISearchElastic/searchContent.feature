@@ -6,7 +6,7 @@ Feature: Search
   So that I can find needed files quickly
 
   Background:
-    Given these users have been created with skeleton files:
+    Given these users have been created with large skeleton files:
       | username | password | displayname  | email             |
       | Brian    | 1234     | Brian Murphy | brian@example.org |
     And the search index has been created

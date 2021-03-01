@@ -5,7 +5,7 @@ Feature: index only metadata
   So that I can use search_elastic only as a more scalable search on filenames
 
   Background:
-    Given user "Alice" has been created with default attributes and skeleton files
+    Given user "Alice" has been created with default attributes and small skeleton files
     And user "Alice" has created folder "/just-a-folder"
     And user "Alice" has created folder "/फन्नि näme"
     And user "Alice" has uploaded file with content "files content" to "/upload.txt"
@@ -236,7 +236,7 @@ Feature: index only metadata
 
   Scenario Outline: user should not be able to search in files of other users
     Given using <dav_version> DAV path
-    And user "Brian" has been created with default attributes and skeleton files
+    And user "Brian" has been created with default attributes and small skeleton files
     And user "Brian" has uploaded file with content "files content" to "/upload-Brian.txt"
     And the search index has been updated
     When user "Brian" searches for "upload" using the WebDAV API
@@ -255,7 +255,7 @@ Feature: index only metadata
 
   Scenario Outline: user searches for files shared to him as a single user
     Given using <dav_version> DAV path
-    And user "Brian" has been created with default attributes and skeleton files
+    And user "Brian" has been created with default attributes and small skeleton files
     And user "Alice" has shared file "upload.txt" with user "Brian"
     And user "Alice" has shared folder "just-a-folder" with user "Brian"
     And the search index has been updated

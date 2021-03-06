@@ -21,7 +21,7 @@ Feature: Search for content
 
   Scenario Outline: user searches for files shared to him as a single user
     Given using <dav_version> DAV path
-    And user "Brian" has been created with default attributes and skeleton files
+    And user "Brian" has been created with default attributes and small skeleton files
     And user "Alice" has shared file "upload.txt" with user "Brian"
     And user "Alice" has shared folder "just-a-folder" with user "Brian"
     And the search index has been updated
@@ -38,7 +38,7 @@ Feature: Search for content
 
   Scenario Outline: user searches for files shared to him as a single user (files have been indexed only after sharing)
     Given using <dav_version> DAV path
-    And user "Brian" has been created with default attributes and skeleton files
+    And user "Brian" has been created with default attributes and small skeleton files
     And user "Alice" has created folder "/not-indexed-folder"
     And user "Alice" has uploaded file with content "files content" to "/not-indexed-upload.txt"
     And user "Alice" has uploaded file with content "file with content in subfolder" to "/not-indexed-folder/upload.txt"
@@ -59,7 +59,7 @@ Feature: Search for content
 
   Scenario Outline: user searches for files shared to him as a member of a group
     Given using <dav_version> DAV path
-    And user "Brian" has been created with default attributes and skeleton files
+    And user "Brian" has been created with default attributes and small skeleton files
     And group "grp1" has been created
     And user "Brian" has been added to group "grp1"
     And user "Alice" has shared file "upload.txt" with group "grp1"
@@ -78,7 +78,7 @@ Feature: Search for content
 
   Scenario Outline: user searches for files shared to him as a member of a group (files have been indexed only after sharing)
     Given using <dav_version> DAV path
-    And user "Brian" has been created with default attributes and skeleton files
+    And user "Brian" has been created with default attributes and small skeleton files
     And group "grp1" has been created
     And user "Brian" has been added to group "grp1"
     And user "Alice" has created folder "/not-indexed-folder"
@@ -101,7 +101,7 @@ Feature: Search for content
 
   Scenario Outline: Unshared files should not be searched
     Given using <dav_version> DAV path
-    And user "Brian" has been created with default attributes and skeleton files
+    And user "Brian" has been created with default attributes and small skeleton files
     And user "Alice" has shared file "upload.txt" with user "Brian"
     And user "Alice" has shared folder "just-a-folder" with user "Brian"
     And user "Alice" has shared file "/फन्नि näme/upload.txt" with user "Brian"
@@ -126,7 +126,7 @@ Feature: Search for content
 
   Scenario Outline: Unshared files should not be searched (files have been indexed only after sharing)
     Given using <dav_version> DAV path
-    And user "Brian" has been created with default attributes and skeleton files
+    And user "Brian" has been created with default attributes and small skeleton files
     And user "Alice" has created folder "/not-indexed-folder"
     And user "Alice" has uploaded file with content "files content" to "/not-indexed-upload.txt"
     And user "Alice" has uploaded file with content "files content" to "/not-indexed-upload-keep.txt"
@@ -156,7 +156,7 @@ Feature: Search for content
 
   Scenario Outline: Unshared files should not be searched (files have been indexed only after unsharing)
     Given using <dav_version> DAV path
-    And user "Brian" has been created with default attributes and skeleton files
+    And user "Brian" has been created with default attributes and small skeleton files
     And user "Alice" has created folder "/not-indexed-folder"
     And user "Alice" has uploaded file with content "files content" to "/not-indexed-upload.txt"
     And user "Alice" has uploaded file with content "files content" to "/not-indexed-upload-keep.txt"
@@ -185,7 +185,7 @@ Feature: Search for content
 
   Scenario Outline: users searches for files re-shared to him
     Given using <dav_version> DAV path
-    And these users have been created with default attributes and skeleton files:
+    And these users have been created with default attributes and small skeleton files:
       | username |
       | Brian    |
       | Carol    |
@@ -207,7 +207,7 @@ Feature: Search for content
 
   Scenario Outline: users searches for files re-shared to him (files have been indexed only after second sharing)
     Given using <dav_version> DAV path
-    And these users have been created with default attributes and skeleton files:
+    And these users have been created with default attributes and small skeleton files:
       | username |
       | Brian    |
       | Carol    |
@@ -233,7 +233,7 @@ Feature: Search for content
 
   Scenario Outline: new files in a shared folder get indexed for all users
     Given using <dav_version> DAV path
-    And these users have been created with default attributes and skeleton files:
+    And these users have been created with default attributes and small skeleton files:
       | username |
       | Brian    |
       | Carol    |
@@ -268,7 +268,7 @@ Feature: Search for content
 
   Scenario Outline: changed files in a shared folder get indexed for all users
     Given using <dav_version> DAV path
-    And these users have been created with default attributes and skeleton files:
+    And these users have been created with default attributes and small skeleton files:
       | username |
       | Brian    |
       | Carol    |

@@ -288,7 +288,7 @@ Feature: Search for content
 
   Scenario Outline: user should not be able to search in files of other users
     Given using <dav_version> DAV path
-    And user "Brian" has been created with default attributes and skeleton files
+    And user "Brian" has been created with default attributes and without skeleton files
     And user "Brian" has uploaded file with content "files content" to "/Brian-upload.txt"
     And the search index has been updated
     When user "Brian" searches for "content" using the WebDAV API

@@ -272,7 +272,7 @@ Feature: index only metadata
 
   Scenario Outline:  user searches for files shared to him as a member of a group
     Given using <dav_version> DAV path
-    And user "Brian" has been created with default attributes and skeleton files
+    And user "Brian" has been created with default attributes and small skeleton files
     And group "grp1" has been created
     And user "Brian" has been added to group "grp1"
     And user "Alice" has shared file "upload.txt" with group "grp1"
@@ -291,7 +291,7 @@ Feature: index only metadata
 
   Scenario Outline: Unshared files should not be searched
     Given using <dav_version> DAV path
-    And user "Brian" has been created with default attributes and skeleton files
+    And user "Brian" has been created with default attributes and small skeleton files
     And user "Alice" has shared file "upload.txt" with user "Brian"
     And user "Alice" has shared folder "just-a-folder" with user "Brian"
     And user "Brian" has uploaded file with content "files content" to "/upload-Brian.txt"

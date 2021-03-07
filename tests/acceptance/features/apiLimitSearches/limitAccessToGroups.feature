@@ -100,7 +100,7 @@ Feature: Limit access to groups
 
   Scenario Outline: limit multiple groups to only search in metadata
     Given using <dav_version> DAV path
-    And user "Carol" has been created with default attributes and skeleton files
+    And user "Carol" has been created with default attributes and small skeleton files
     And user "Carol" has uploaded file with content "files content" to "/ownCloud.txt"
     And group "grp2" has been created
     And user "Carol" has been added to group "grp2"

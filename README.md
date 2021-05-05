@@ -179,8 +179,8 @@ When you recently edited a file, chances are that you still know where it reside
 # Todo
 
 - [x] update elastica lib
-- [x] restore compatability with oc8.2
-- [x] restore compatability with elasticsearch (requires new indexes)
+- [x] restore compatibility with oc8.2
+- [x] restore compatibility with elasticsearch (requires new indexes)
 - [x] store groups and users with access to filter search results by group membership
 - [x] store fileid instead of filenames so we don't have to handle renames 
 - [x] use instanceid to set up index - allows using the same elasticsearch instance for muliple oc instances
@@ -208,7 +208,7 @@ When you recently edited a file, chances are that you still know where it reside
 - [ ] use file tab
   - [ ] show index status
   - [ ] remember index error message in db
-- [x] check encryption compatability
+- [x] check encryption compatibility
   - [x] had to jump a few hoops to get master key working
   - not compatible with user individual keys
     - [ ] at least index metadata in this case (catch encryption exception and ignore content extraction)

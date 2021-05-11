@@ -59,7 +59,7 @@ config = {
 			'databases': [
 				'mysql:8.0'
 			],
-			'esVersions': ['5.6'],
+			'esVersions': ['5.6', '6.4'],
 		},
 	}
 }

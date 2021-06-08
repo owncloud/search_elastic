@@ -309,7 +309,7 @@ def phpstan(ctx):
         return pipelines
 
     default = {
-        "phpVersions": ["7.3"],
+        "phpVersions": ["7.4"],
         "logLevel": "2",
         "extraApps": {},
         "enableApp": True,

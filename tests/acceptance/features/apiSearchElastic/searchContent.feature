@@ -94,8 +94,7 @@ Feature: Search for content
     Given using <dav_version> DAV path
     When user "Alice" searches for "Cloud" using the WebDAV API
     Then the HTTP status code should be "207"
-    #And the search result of user "Alice" should contain these files:
-    And the search result of user "Alice" should not contain these files:
+    And the search result of user "Alice" should contain these files:
       | /textfile0.txt          |
       | /textfile1.txt          |
       | /textfile2.txt          |
@@ -122,8 +121,7 @@ Feature: Search for content
     Given using <dav_version> DAV path
     When user "Alice" searches for "wnClo" using the WebDAV API
     Then the HTTP status code should be "207"
-    #And the search result of user "Alice" should contain these files:
-    And the search result of user "Alice" should not contain these files:
+    And the search result of user "Alice" should contain these files:
       | /textfile0.txt          |
       | /textfile1.txt          |
       | /textfile2.txt          |

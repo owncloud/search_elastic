@@ -79,10 +79,9 @@ Feature: index only metadata
   @issue-40
   Scenario Outline: search for filename (not full word - start of filename missing)
     Given using <dav_version> DAV path
-    When user "Alice" searches for "ad.txt" using the WebDAV API
+    When user "Alice" searches for "*ad.txt" using the WebDAV API
     Then the HTTP status code should be "207"
-    #And the search result of user "Alice" should contain these files:
-    And the search result of user "Alice" should not contain these files:
+    And the search result of user "Alice" should contain these files:
       | /upload.txt               |
       | /just-a-folder/upload.txt |
       | /फन्नि näme/upload.txt    |
@@ -98,15 +97,13 @@ Feature: index only metadata
     Given using <dav_version> DAV path
     And user "Alice" has uploaded file with content "does-not-matter" to "/a-png-file.txt"
     And the search index has been updated
-    When user "Alice" searches for ".png" using the WebDAV API
+    When user "Alice" searches for "*.png" using the WebDAV API
     Then the HTTP status code should be "207"
-    #And the search result of user "Alice" should contain these files:
-    And the search result of user "Alice" should not contain these files:
+    And the search result of user "Alice" should contain these files:
       | /a-image.png               |
       | /just-a-folder/a-image.png |
       | /फन्नि näme/a-image.png    |
-    #But the search result of user "Alice" should not contain these files:
-    But the search result of user "Alice" should contain these files:
+    But the search result of user "Alice" should not contain these files:
       | /a-png-file.txt |
     Examples:
       | dav_version |
@@ -116,10 +113,9 @@ Feature: index only metadata
   @issue-40
   Scenario Outline: search for filename (not full word - only middle part of filename given)
     Given using <dav_version> DAV path
-    When user "Alice" searches for "oad" using the WebDAV API
+    When user "Alice" searches for "*oad*" using the WebDAV API
     Then the HTTP status code should be "207"
-    #And the search result of user "Alice" should contain these files:
-    And the search result of user "Alice" should not contain these files:
+    And the search result of user "Alice" should contain these files:
       | /upload.txt                   |
       | /just-a-folder/upload.txt     |
       | /just-a-folder/uploadÜठिF.txt |
@@ -141,10 +137,10 @@ Feature: index only metadata
       | dav_version | filename   | search  |
       | old         | /000       | "000"   |
       | new         | /000       | "000"   |
-      | old         | /000       | "  0"   |
-      | new         | /000       | "  0"   |
-      | old         | /text -1 t | " -1"   |
-      | new         | /text -1 t | " -1"   |
+      | old         | /000       | "*0"   |
+      | new         | /000       | "0"   |
+      | old         | /text -1 t | "*-1"   |
+      | new         | /text -1 t | "*-1"   |
       | old         | /false     | "false" |
       | new         | /false     | "false" |
       | old         | /null      | "null"  |

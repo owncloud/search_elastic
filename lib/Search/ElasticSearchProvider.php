@@ -173,9 +173,9 @@ class ElasticSearchProvider extends PagedProvider {
 		// wildcard queries are not analyzed, so ignore case. See http://stackoverflow.com/a/17280591
 		$loweredQuery = \strtolower($query);
 		if ($searchContent) {
-			$es_bool->addShould(new Query\MatchPhrasePrefix('file.content', $loweredQuery));
+			$es_bool->addShould(new Query\SimpleQueryString($loweredQuery, ['file.content']));
 		}
-		$es_bool->addShould(new Query\MatchPhrasePrefix('name', $loweredQuery));
+		$es_bool->addShould(new Query\SimpleQueryString($loweredQuery, ['name']));
 		$es_bool->setMinimumShouldMatch(1);
 
 		$es_query = new Query($es_bool);

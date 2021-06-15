@@ -105,12 +105,14 @@ class ElasticSearchProvider extends PagedProvider {
 					$nodes = $home->getById($fileId);
 
 					if (empty($nodes[0])) {
-						$this->logger->debug("Could not find file for id $fileId in"
+						$this->logger->debug(
+							"Could not find file for id $fileId in"
 							. " storage {$home->getStorage()->getId()}'."
 							. " Removing it from results. Maybe it was unshared"
 							. " for {$this->user->getUID()}. A background job will"
 							. " update the index with the new permissions.",
-							['app' => 'search_elastic']);
+							['app' => 'search_elastic']
+						);
 					}
 
 					foreach ($nodes as $node) {
@@ -120,7 +122,8 @@ class ElasticSearchProvider extends PagedProvider {
 							$this->logger->error(
 								"Expected a Node for $fileId, received "
 								. \json_encode($node),
-								['app' => 'search_elastic']);
+								['app' => 'search_elastic']
+							);
 						}
 					}
 				}

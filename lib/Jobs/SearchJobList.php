@@ -56,7 +56,8 @@ class SearchJobList extends JobList {
 			)
 			->andWhere(
 				$query->expr()->in(
-					'class', [
+					'class',
+					[
 						$query->expr()->literal(UpdateContent::class),
 						$query->expr()->literal(UpdateMetadata::class)
 					]
@@ -79,7 +80,8 @@ class SearchJobList extends JobList {
 			)
 			->where(
 				$update->expr()->eq(
-					'id', $update->createParameter('jobid')
+					'id',
+					$update->createParameter('jobid')
 				)
 			)
 			->andWhere(

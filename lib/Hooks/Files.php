@@ -52,21 +52,21 @@ class Files {
 	 *
 	 * @param string $path
 	 */
-	const handle_post_rename = 'metadataChanged';
+	public const handle_post_rename = 'metadataChanged';
 
 	/**
 	 * handle for sharing file
 	 *
 	 * @param string $path
 	 */
-	const handle_share = 'metadataChanged';
+	public const handle_share = 'metadataChanged';
 
 	/**
 	 * handle for removing file
 	 *
 	 * @param string $path
 	 */
-	const handle_delete = 'deleteFile';
+	public const handle_delete = 'deleteFile';
 
 	/**
 	 * Check if the path is outside users home folder
@@ -178,7 +178,8 @@ class Files {
 		} else {
 			\OC::$server->getLogger()->debug(
 				'Hook contentChanged could not determine user when called with param '
-				.\json_encode($params), ['app' => 'search_elastic']
+				.\json_encode($params),
+				['app' => 'search_elastic']
 			);
 		}
 	}
@@ -358,12 +359,14 @@ class Files {
 		);
 
 		$deletedStatus = $mapper->deleteIds($deletedIds);
-		$logger->debug('removed '.$deletedStatus.' files from status table',
+		$logger->debug(
+			'removed '.$deletedStatus.' files from status table',
 			['app' => 'search_elastic']
 		);
 
 		$deletedIndex = $searchElasticService->deleteFiles($deletedIds);
-		$logger->debug('removed '.$deletedIndex.' files from index',
+		$logger->debug(
+			'removed '.$deletedIndex.' files from index',
 			['app' => 'search_elastic']
 		);
 	}

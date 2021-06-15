@@ -112,14 +112,17 @@ class SearchElasticContext implements Context {
 				$this->featureContext->getBaseUrl(),
 				$this->featureContext->getAdminUsername(),
 				$this->featureContext->getAdminPassword(),
-				"search_elastic", "nocontent"
+				"search_elastic",
+				"nocontent"
 			)['value'];
 		}
 		AppConfigHelper::modifyAppConfig(
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
-			"search_elastic", "nocontent", "true"
+			"search_elastic",
+			"nocontent",
+			"true"
 		);
 	}
 
@@ -137,14 +140,17 @@ class SearchElasticContext implements Context {
 				$this->featureContext->getBaseUrl(),
 				$this->featureContext->getAdminUsername(),
 				$this->featureContext->getAdminPassword(),
-				"search_elastic", "group"
+				"search_elastic",
+				"group"
 			)['value'];
 		}
 		AppConfigHelper::modifyAppConfig(
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
-			"search_elastic", "group", $group
+			"search_elastic",
+			"group",
+			$group
 		);
 	}
 
@@ -162,14 +168,17 @@ class SearchElasticContext implements Context {
 				$this->featureContext->getBaseUrl(),
 				$this->featureContext->getAdminUsername(),
 				$this->featureContext->getAdminPassword(),
-				"search_elastic", "group.nocontent"
+				"search_elastic",
+				"group.nocontent"
 			)['value'];
 		}
 		AppConfigHelper::modifyAppConfig(
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
-			"search_elastic", "group.nocontent", $group
+			"search_elastic",
+			"group.nocontent",
+			$group
 		);
 	}
 
@@ -217,14 +226,17 @@ class SearchElasticContext implements Context {
 					$this->featureContext->getBaseUrl(),
 					$this->featureContext->getAdminUsername(),
 					$this->featureContext->getAdminPassword(),
-					"search_elastic", $configKey
+					"search_elastic",
+					$configKey
 				);
 			} elseif ($originalValue !== null) {
 				AppConfigHelper::modifyAppConfig(
 					$this->featureContext->getBaseUrl(),
 					$this->featureContext->getAdminUsername(),
 					$this->featureContext->getAdminPassword(),
-					"search_elastic", $configKey, $originalValue
+					"search_elastic",
+					$configKey,
+					$originalValue
 				);
 			}
 		}

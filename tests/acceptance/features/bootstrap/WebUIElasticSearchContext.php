@@ -84,7 +84,9 @@ class WebUIElasticSearchContext extends RawMinkContext implements Context {
 	 * @return void
 	 */
 	public function fileShouldBeListedSearchResultOtherFoldersWithHighlights(
-		$fileName, $path, PyStringNode $highlightsExpectations
+		$fileName,
+		$path,
+		PyStringNode $highlightsExpectations
 	) {
 		$fileName = \trim($fileName, $fileName[0]);
 		$path = \trim($path, $path[0]);
@@ -92,13 +94,20 @@ class WebUIElasticSearchContext extends RawMinkContext implements Context {
 			$this->searchResultInOtherFoldersPage
 		);
 		$this->webUIFilesContext->checkIfFileFolderIsListedOnTheWebUI(
-			$fileName, "should", "search results page", "", $path
+			$fileName,
+			"should",
+			"search results page",
+			"",
+			$path
 		);
 		$highlights = $this->searchResultInOtherFoldersPage->getHighlightsText(
-			$this->getSession(), $fileName, $path
+			$this->getSession(),
+			$fileName,
+			$path
 		);
 		Assert::assertContains(
-			$highlightsExpectations->getRaw(), $highlights
+			$highlightsExpectations->getRaw(),
+			$highlights
 		);
 	}
 

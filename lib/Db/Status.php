@@ -36,13 +36,13 @@ use OCP\AppFramework\Db\Entity;
  * @method setMessage(string $status)
  */
 class Status extends Entity {
-	const STATUS_NEW = 'N';
-	const STATUS_METADATA_CHANGED = 'M';
-	const STATUS_INDEXED = 'I';
-	const STATUS_SKIPPED = 'S';
-	const STATUS_UNINDEXED = 'U';
-	const STATUS_VANISHED = 'V';
-	const STATUS_ERROR = 'E';
+	public const STATUS_NEW = 'N';
+	public const STATUS_METADATA_CHANGED = 'M';
+	public const STATUS_INDEXED = 'I';
+	public const STATUS_SKIPPED = 'S';
+	public const STATUS_UNINDEXED = 'U';
+	public const STATUS_VANISHED = 'V';
+	public const STATUS_ERROR = 'E';
 
 	public $fileId;
 	public $status;

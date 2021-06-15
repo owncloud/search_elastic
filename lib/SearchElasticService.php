@@ -303,7 +303,8 @@ class SearchElasticService {
 	 * @throws NotIndexedException when an unsupported file type is encountered
 	 */
 	public function indexNode($userId, Node $node, $extractContent = true) {
-		$this->logger->debug("indexNode {$node->getPath()} ({$node->getId()}) for $userId",
+		$this->logger->debug(
+			"indexNode {$node->getPath()} ({$node->getId()}) for $userId",
 			['app' => 'search_elastic']
 		);
 
@@ -345,7 +346,8 @@ class SearchElasticService {
 
 		$this->logger->debug(
 			"indexNode: upserting document to index: ".
-			\json_encode($doc->getData()), ['app' => 'search_elastic']
+			\json_encode($doc->getData()),
+			['app' => 'search_elastic']
 		);
 		$this->type->updateDocument($doc);
 		return true;
@@ -364,33 +366,39 @@ class SearchElasticService {
 		$maxSize = $this->config->getMaxFileSizeForIndex();
 
 		if (!$this->config->shouldContentBeIncluded()) {
-			$this->logger->debug("indexNode: folder, skipping content extraction",
+			$this->logger->debug(
+				"indexNode: folder, skipping content extraction",
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;
 		} elseif ($node instanceof Folder) {
-			$this->logger->debug("indexNode: folder, skipping content extraction",
+			$this->logger->debug(
+				"indexNode: folder, skipping content extraction",
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;
 		} elseif ($size < 0) {
-			$this->logger->debug("indexNode: unknown size, skipping content extraction",
+			$this->logger->debug(
+				"indexNode: unknown size, skipping content extraction",
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;
 		} elseif ($size === 0) {
-			$this->logger->debug("indexNode: file empty, skipping content extraction",
+			$this->logger->debug(
+				"indexNode: file empty, skipping content extraction",
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;
 		} elseif ($size > $maxSize) {
-			$this->logger->debug("indexNode: file exceeds $maxSize, skipping content extraction",
+			$this->logger->debug(
+				"indexNode: file exceeds $maxSize, skipping content extraction",
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;
 		} elseif ($this->config->getScanExternalStorageFlag() === false
 			&& $storage->isLocal() === false) {
-			$this->logger->debug("indexNode: not indexing on remote storage {$storage->getId()}, skipping content extraction",
+			$this->logger->debug(
+				"indexNode: not indexing on remote storage {$storage->getId()}, skipping content extraction",
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;
@@ -435,7 +443,8 @@ class SearchElasticService {
 		// Since we only want to index the file once, we only use the first entry
 
 		if (isset($nodes[0])) {
-			$this->logger->debug("getFileForId: $fileId -> node {$nodes[0]->getPath()} ({$nodes[0]->getId()})",
+			$this->logger->debug(
+				"getFileForId: $fileId -> node {$nodes[0]->getPath()} ({$nodes[0]->getId()})",
 				['app' => 'search_elastic']
 			);
 			$node = $nodes[0];
@@ -474,7 +483,8 @@ class SearchElasticService {
 	 *       not '/admin/data/file.txt'
 	 */
 	public function getUsersSharingFile($path, $ownerUser) {
-		$this->logger->debug("determining access to $path",
+		$this->logger->debug(
+			"determining access to $path",
 			['app' => 'search_elastic']
 		);
 
@@ -509,8 +519,10 @@ class SearchElasticService {
 			$result = $query->execute([$source, Constants::SHARE_TYPE_USER]);
 
 			if ($result === false) {
-				$this->logger->error(\OC_DB::getErrorMessage(),
-					['app' => 'search_elastic']);
+				$this->logger->error(
+					\OC_DB::getErrorMessage(),
+					['app' => 'search_elastic']
+				);
 			} else {
 				while ($row = $result->fetchRow()) {
 					$users[] = $row['share_with'];
@@ -529,8 +541,10 @@ class SearchElasticService {
 			$result = $query->execute([$source, Constants::SHARE_TYPE_GROUP]);
 
 			if ($result === false) {
-				$this->logger->error(\OC_DB::getErrorMessage(),
-					['app' => 'search_elastic']);
+				$this->logger->error(
+					\OC_DB::getErrorMessage(),
+					['app' => 'search_elastic']
+				);
 			} else {
 				while ($row = $result->fetchRow()) {
 					$groups[] = $row['share_with'];

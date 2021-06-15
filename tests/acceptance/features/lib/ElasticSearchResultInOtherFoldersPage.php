@@ -47,7 +47,9 @@ class ElasticSearchResultInOtherFoldersPage extends SearchResultInOtherFoldersPa
 		 * @var FileRow $fileRow
 		 */
 		$fileRow = $this->findFileRowByNameAndPath(
-			$fileName, $path, $session
+			$fileName,
+			$path,
+			$session
 		);
 		return $fileRow->getHighlightsElement()->getText();
 	}

@@ -46,7 +46,7 @@ use OCP\Share\Events\AcceptShare;
  * @package OCA\Search_Elastic
  */
 class Application extends App {
-	const APP_ID = 'search_elastic';
+	public const APP_ID = 'search_elastic';
 
 	/**
 	 * @var bool
@@ -76,7 +76,8 @@ class Application extends App {
 		/**
 		 * Elastica
 		 */
-		$container->registerService(ElasticaClient::class,
+		$container->registerService(
+			ElasticaClient::class,
 			function (IAppContainer $appContainer) {
 				$config = $appContainer->query(SearchElasticConfigService::class);
 				return new ElasticaClient($config->getParsedServers());
@@ -168,11 +169,12 @@ class Application extends App {
 		}
 
 		if (empty($group) || $isAdmin || (
-				$server->getUserSession()->getUser()
+			$server->getUserSession()->getUser()
 				&& $server->getGroupManager()->isInGroup(
-					$server->getUserSession()->getUser()->getUID(), $group
+					$server->getUserSession()->getUser()->getUID(),
+					$group
 				)
-			)
+		)
 		) {
 			$this->isSearchProviderRegistered = true;
 			$server->getSearch()->removeProvider('OC\Search\Provider\File');

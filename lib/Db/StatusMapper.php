@@ -165,7 +165,8 @@ class StatusMapper extends Mapper {
 		$fileId = $entity->getFileId();
 		if (!\is_int($fileId)) {
 			throw new \InvalidArgumentException(
-				'Entity which should be updated has no fileId');
+				'Entity which should be updated has no fileId'
+			);
 		}
 
 		// get updated fields to save, fields have to be set using a setter to

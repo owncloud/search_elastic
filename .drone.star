@@ -66,7 +66,7 @@ config = {
 
 def main(ctx):
 	
-	before = beforePipelines()
+	before = beforePipelines(ctx)
 
 	coverageTests = coveragePipelines(ctx)
 	if (coverageTests == False):
@@ -100,8 +100,8 @@ def main(ctx):
 
 	return before + coverageTests + afterCoverageTests + nonCoverageTests + stages + after
 
-def beforePipelines():
-	return codestyle() + jscodestyle() + phpstan() + phan()
+def beforePipelines(ctx):
+	return codestyle(ctx) + jscodestyle(ctx) + phpstan(ctx) + phan(ctx)
 
 def coveragePipelines(ctx):
 	# All unit test pipelines that have coverage or other test analysis reported
@@ -124,7 +124,7 @@ def nonCoveragePipelines(ctx):
 	return jsPipelines + phpUnitPipelines + phpIntegrationPipelines
 
 def stagePipelines(ctx):
-	buildPipelines = build()
+	buildPipelines = build(ctx)
 	acceptancePipelines = acceptance(ctx)
 	if (buildPipelines == False) or (acceptancePipelines == False):
 		return False
@@ -141,7 +141,7 @@ def afterPipelines(ctx):
 		notify()
 	]
 
-def codestyle():
+def codestyle(ctx):
 	pipelines = []
 
 	if 'codestyle' not in config:
@@ -183,7 +183,7 @@ def codestyle():
 				'name': name,
 				'workspace' : {
 					'base': '/var/www/owncloud',
-					'path': 'server/apps/%s' % config['app']
+					'path': 'server/apps/%s' % ctx.repo.name
 				},
 				'steps': [
 					{
@@ -211,7 +211,7 @@ def codestyle():
 
 	return pipelines
 
-def jscodestyle():
+def jscodestyle(ctx):
 	pipelines = []
 
 	if 'jscodestyle' not in config:
@@ -227,7 +227,7 @@ def jscodestyle():
 		'name': 'coding-standard-js',
 		'workspace' : {
 			'base': '/var/www/owncloud',
-			'path': 'server/apps/%s' % config['app']
+			'path': 'server/apps/%s' % ctx.repo.name
 		},
 		'steps': [
 			{
@@ -255,7 +255,7 @@ def jscodestyle():
 
 	return pipelines
 
-def phpstan():
+def phpstan(ctx):
 	pipelines = []
 
 	if 'phpstan' not in config:
@@ -299,13 +299,13 @@ def phpstan():
 				'name': name,
 				'workspace' : {
 					'base': '/var/www/owncloud',
-					'path': 'server/apps/%s' % config['app']
+					'path': 'server/apps/%s' % ctx.repo.name
 				},
 				'steps':
-					installCore('daily-master-qa', 'sqlite', False) +
-					installApp(phpVersion) +
+					installCore(ctx, 'daily-master-qa', 'sqlite', False) +
+					installApp(ctx, phpVersion) +
 					installExtraApps(phpVersion, params['extraApps']) +
-					setupServerAndApp(phpVersion, params['logLevel']) +
+					setupServerAndApp(ctx, phpVersion, params['logLevel']) +
 				[
 					{
 						'name': 'phpstan',
@@ -332,7 +332,7 @@ def phpstan():
 
 	return pipelines
 
-def phan():
+def phan(ctx):
 	pipelines = []
 
 	if 'phan' not in config:
@@ -374,10 +374,10 @@ def phan():
 				'name': name,
 				'workspace' : {
 					'base': '/var/www/owncloud',
-					'path': 'server/apps/%s' % config['app']
+					'path': 'server/apps/%s' % ctx.repo.name
 				},
 				'steps':
-					installCore('daily-master-qa', 'sqlite', False) +
+					installCore(ctx, 'daily-master-qa', 'sqlite', False) +
 				[
 					{
 						'name': 'phan',
@@ -404,7 +404,7 @@ def phan():
 
 	return pipelines
 
-def build():
+def build(ctx):
 	pipelines = []
 
 	if 'build' not in config:
@@ -444,7 +444,7 @@ def build():
 			'name': 'build',
 			'workspace' : {
 				'base': '/var/www/owncloud',
-				'path': 'server/apps/%s' % config['app']
+				'path': 'server/apps/%s' % ctx.repo.name
 			},
 			'steps': [
 				{
@@ -462,7 +462,7 @@ def build():
 					'settings': {
 						'checksum': 'sha256',
 						'file_exists': 'overwrite',
-						'files': 'build/dist/%s.tar.gz' % config['app'],
+						'files': 'build/dist/%s.tar.gz' % ctx.repo.name,
 						'prerelease': True,
 					},
 					'environment': {
@@ -545,12 +545,12 @@ def javascript(ctx, withCoverage):
 		'name': 'javascript-tests',
 		'workspace' : {
 			'base': '/var/www/owncloud',
-			'path': 'server/apps/%s' % config['app']
+			'path': 'server/apps/%s' % ctx.repo.name
 		},
 		'steps':
-			installCore('daily-master-qa', 'sqlite', False) +
-			installApp('7.4') +
-			setupServerAndApp('7.4', params['logLevel']) +
+			installCore(ctx, 'daily-master-qa', 'sqlite', False) +
+			installApp(ctx, '7.4') +
+			setupServerAndApp(ctx, '7.4', params['logLevel']) +
 			params['extraSetup'] +
 		[
 			{
@@ -678,7 +678,7 @@ def phpTests(ctx, testType, withCoverage):
 			scalityS3Needed = True
 			filesPrimaryS3NeededForScality = scalityS3Params['filesPrimaryS3Needed'] if 'filesPrimaryS3Needed' in scalityS3Params else True
 
-		if ((config['app'] != 'files_primary_s3') and (filesPrimaryS3NeededForCeph or filesPrimaryS3NeededForScality)):
+		if ((ctx.repo.name != 'files_primary_s3') and (filesPrimaryS3NeededForCeph or filesPrimaryS3NeededForScality)):
 			# If we are not already 'files_primary_s3' and we need S3 storage, then install the 'files_primary_s3' app
 			extraAppsDict = {
 				'files_primary_s3': 'composer install'
@@ -715,13 +715,13 @@ def phpTests(ctx, testType, withCoverage):
 					'name': name,
 					'workspace' : {
 						'base': '/var/www/owncloud',
-						'path': 'server/apps/%s' % config['app']
+						'path': 'server/apps/%s' % ctx.repo.name
 					},
 					'steps':
-						installCore('daily-master-qa', db, False) +
-						installApp(phpVersion) +
+						installCore(ctx, 'daily-master-qa', db, False) +
+						installApp(ctx, phpVersion) +
 						installExtraApps(phpVersion, params['extraApps']) +
-						setupServerAndApp(phpVersion, params['logLevel']) +
+						setupServerAndApp(ctx, phpVersion, params['logLevel']) +
 						setupCeph(params['cephS3']) +
 						setupScality(params['scalityS3']) +
 						params['extraSetup'] +
@@ -833,7 +833,8 @@ def acceptance(ctx):
 		'pullRequestAndCron': 'nightly',
 		'skip': False,
 		'debugSuites': [],
-		'skipExceptParts': []
+		'skipExceptParts': [],
+		'earlyFail': True,
 	}
 
 	if 'defaults' in config:
@@ -869,6 +870,14 @@ def acceptance(ctx):
 			if params['skip']:
 				continue
 
+			# switch off earlyFail if the PR title contains full-ci
+			if ("full-ci" in ctx.build.title.lower()):
+				params["earlyFail"] = False
+
+			# switch off earlyFail when running cron builds (for example, nightly CI)
+			if (ctx.build.event == "cron"):
+				params["earlyFail"] = False
+
 			if isAPI or isCLI:
 				params['browsers'] = ['']
 
@@ -888,7 +897,7 @@ def acceptance(ctx):
 				scalityS3Needed = True
 				filesPrimaryS3NeededForScality = scalityS3Params['filesPrimaryS3Needed'] if 'filesPrimaryS3Needed' in scalityS3Params else True
 
-			if ((config['app'] != 'files_primary_s3') and (filesPrimaryS3NeededForCeph or filesPrimaryS3NeededForScality)):
+			if ((ctx.repo.name != 'files_primary_s3') and (filesPrimaryS3NeededForCeph or filesPrimaryS3NeededForScality)):
 				# If we are not already 'files_primary_s3' and we need S3 object storage, then install the 'files_primary_s3' app
 				extraAppsDict = {
 					'files_primary_s3': 'composer install'
@@ -970,15 +979,15 @@ def acceptance(ctx):
 					'name': name,
 					'workspace' : {
 						'base': '/var/www/owncloud',
-						'path': 'testrunner/apps/%s' % config['app']
+						'path': 'testrunner/apps/%s' % ctx.repo.name
 					},
 					'steps':
-						installCore(testConfig['server'], testConfig['database'], testConfig['useBundledApp']) +
-						installTestrunner('7.4', testConfig['useBundledApp']) +
+						installCore(ctx, testConfig['server'], testConfig['database'], testConfig['useBundledApp']) +
+						installTestrunner(ctx, '7.4', testConfig['useBundledApp']) +
 						(installFederated(testConfig['server'], testConfig['phpVersion'], testConfig['logLevel'], testConfig['database'], federationDbSuffix) + owncloudLog('federated') if testConfig['federatedServerNeeded'] else []) +
-						installApp(testConfig['phpVersion']) +
+						installApp(ctx, testConfig['phpVersion']) +
 						installExtraApps(testConfig['phpVersion'], testConfig['extraApps']) +
-						setupServerAndApp(testConfig['phpVersion'], testConfig['logLevel']) +
+						setupServerAndApp(ctx, testConfig['phpVersion'], testConfig['logLevel']) +
 						owncloudLog('server') +
 						setupCeph(testConfig['cephS3']) +
 						setupScality(testConfig['scalityS3']) +
@@ -997,7 +1006,7 @@ def acceptance(ctx):
 								'make %s' % makeParameter
 							]
 						}),
-					] + testConfig['extraTeardown'],
+					] + testConfig['extraTeardown'] + buildGithubCommentForBuildStopped(name, params['earlyFail']) + githubComment(params['earlyFail']) + stopBuild(ctx, params['earlyFail']),
 					'services':
 						databaseService(testConfig['database']) +
 						browserService(testConfig['browser']) +
@@ -1035,18 +1044,46 @@ def acceptance(ctx):
 	return pipelines
 
 def sonarAnalysis(ctx, phpVersion = '7.4'):
+	sonar_env = {
+			"SONAR_TOKEN": {
+				"from_secret": "sonar_token",
+			},
+			'SONAR_SCANNER_OPTS': '-Xdebug'
+		}
+
+	if ctx.build.event == "pull_request":
+		sonar_env.update({
+			"SONAR_PULL_REQUEST_BASE": "%s" % (ctx.build.target),
+			"SONAR_PULL_REQUEST_BRANCH": "%s" % (ctx.build.source),
+			"SONAR_PULL_REQUEST_KEY": "%s" % (ctx.build.ref.replace("refs/pull/", "").split("/")[0]),
+		})
+
+	repo_slug = ctx.build.source_repo if ctx.build.source_repo else ctx.repo.slug
+
 	result = {
 		'kind': 'pipeline',
 		'type': 'docker',
 		'name': 'sonar-analysis',
 		'workspace' : {
 			'base': '/var/www/owncloud',
-			'path': 'server/apps/%s' % config['app']
+			'path': 'server/apps/%s' % ctx.repo.name
 		},
-		'steps':
+		'clone': {
+			'disable': True, # Sonarcloud does not apply issues on already merged branch
+		},
+		'steps': [
+			{
+				"name": "clone",
+				"image": "owncloudci/alpine:latest",
+				"commands": [
+					"git clone https://github.com/%s.git ." % repo_slug,
+					"git checkout $DRONE_COMMIT",
+				],
+			},
+		] +
 			cacheRestore() +
 			composerInstall(phpVersion) +
-			installCore('daily-master-qa', 'sqlite', False) +
+			installCore(ctx, 'daily-master-qa', 'sqlite', False) +
 		[
 			{
 				'name': 'sync-from-cache',
@@ -1074,15 +1111,7 @@ def sonarAnalysis(ctx, phpVersion = '7.4'):
 				'name': 'sonarcloud',
 				'image': 'sonarsource/sonar-scanner-cli',
 				'pull': 'always',
-				'environment': {
-					'SONAR_TOKEN': {
-						'from_secret': 'sonar_token'
-					},
-					'SONAR_PULL_REQUEST_BASE': 'master' if ctx.build.event == 'pull_request' else '',
-					'SONAR_PULL_REQUEST_BRANCH': ctx.build.source if ctx.build.event == 'pull_request' else '',
-					'SONAR_PULL_REQUEST_KEY': ctx.build.ref.replace("refs/pull/", "").split("/")[0] if ctx.build.event == 'pull_request' else '',
-					'SONAR_SCANNER_OPTS': '-Xdebug'
-				},
+				'environment': sonar_env,
 				'when': {
 					'instance': [
 						'drone.owncloud.services',
@@ -1106,6 +1135,7 @@ def sonarAnalysis(ctx, phpVersion = '7.4'):
 		'depends_on': [],
 		'trigger': {
 			'ref': [
+				'refs/heads/master',
 				'refs/pull/**',
 				'refs/tags/**'
 			]
@@ -1412,7 +1442,7 @@ def composerInstall(phpVersion):
 		]
 	}]
 
-def installCore(version, db, useBundledApp):
+def installCore(ctx, version, db, useBundledApp):
 	host = getDbName(db)
 	dbType = host
 
@@ -1445,11 +1475,11 @@ def installCore(version, db, useBundledApp):
 	}
 
 	if not useBundledApp:
-		stepDefinition['settings']['exclude'] = 'apps/%s' % config['app']
+		stepDefinition['settings']['exclude'] = 'apps/%s' % ctx.repo.name
 
 	return [stepDefinition]
 
-def installTestrunner(phpVersion, useBundledApp):
+def installTestrunner(ctx, phpVersion, useBundledApp):
 	return [{
 		'name': 'install-testrunner',
 		'image': 'owncloudci/php:%s' % phpVersion,
@@ -1459,7 +1489,7 @@ def installTestrunner(phpVersion, useBundledApp):
 			'git clone -b master --depth=1 https://github.com/owncloud/core.git /tmp/testrunner',
 			'rsync -aIX /tmp/testrunner /var/www/owncloud',
 		] + ([
-			'cp -r /var/www/owncloud/testrunner/apps/%s /var/www/owncloud/server/apps/' % config['app']
+			'cp -r /var/www/owncloud/testrunner/apps/%s /var/www/owncloud/server/apps/' % ctx.repo.name
 		] if not useBundledApp else [])
 	}]
 
@@ -1486,29 +1516,29 @@ def installExtraApps(phpVersion, extraApps):
 		'commands': commandArray
 	}]
 
-def installApp(phpVersion):
+def installApp(ctx, phpVersion):
 	if 'appInstallCommand' not in config:
 		return []
 
 	return [{
-		'name': 'install-app-%s' % config['app'],
+		'name': 'install-app-%s' % ctx.repo.name,
 		'image': 'owncloudci/php:%s' % phpVersion,
 		'pull': 'always',
 		'commands': [
-			'cd /var/www/owncloud/server/apps/%s' % config['app'],
+			'cd /var/www/owncloud/server/apps/%s' % ctx.repo.name,
 			config['appInstallCommand']
 		]
 	}]
 
-def setupServerAndApp(phpVersion, logLevel):
+def setupServerAndApp(ctx, phpVersion, logLevel):
 	return [{
-		'name': 'setup-server-%s' % config['app'],
+		'name': 'setup-server-%s' % ctx.repo.name,
 		'image': 'owncloudci/php:%s' % phpVersion,
 		'pull': 'always',
 		'commands': [
 			'cd /var/www/owncloud/server',
 			'php occ a:l',
-			'php occ a:e %s' % config['app'],
+			'php occ a:e %s' % ctx.repo.name,
 			'php occ a:e testing',
 			'php occ a:l',
 			'php occ config:system:set trusted_domains 1 --value=server',
@@ -1702,3 +1732,80 @@ def buildTestConfig(params):
 							config['runPart'] = runPart
 							configs.append(config)
 	return configs
+
+def stopBuild(ctx, earlyFail):
+    if (earlyFail):
+        return [{
+            "name": "stop-build",
+            "image": "drone/cli:alpine",
+            "pull": "always",
+            "environment": {
+                "DRONE_SERVER": "https://drone.owncloud.com",
+                "DRONE_TOKEN": {
+                    "from_secret": "drone_token",
+                },
+            },
+            "commands": [
+                "drone build stop owncloud/%s ${DRONE_BUILD_NUMBER}" % ctx.repo.name,
+            ],
+            "when": {
+                "status": [
+                    "failure",
+                ],
+                "event": [
+                    "pull_request",
+                ],
+            },
+        }]
+
+    else:
+        return []
+
+def buildGithubCommentForBuildStopped(alternateSuiteName, earlyFail):
+    if (earlyFail):
+        return [{
+            "name": "build-github-comment-buildStop",
+            "image": "owncloud/ubuntu:16.04",
+            "pull": "always",
+            "commands": [
+                'echo ":boom: Acceptance tests pipeline <strong>%s</strong> failed. The build has been cancelled.\\n\\n${DRONE_BUILD_LINK}/${DRONE_JOB_NUMBER}${DRONE_STAGE_NUMBER}/1\\n" >> /drone/src/comments.file' % alternateSuiteName,
+            ],
+            "when": {
+                 "status": [
+                     "failure",
+                 ],
+                "event": [
+                    "pull_request",
+                ],
+            },
+        }]
+
+    else:
+        return []
+
+def githubComment(earlyFail):
+    if (earlyFail):
+        return [{
+            "name": "github-comment",
+            "image": "jmccann/drone-github-comment:1",
+            "pull": "if-not-exists",
+            "settings": {
+                "message_file": "/drone/src/comments.file",
+            },
+            "environment": {
+                "GITHUB_TOKEN": {
+                    "from_secret": "github_token",
+                },
+            },
+            "when": {
+                "status": [
+                    "failure",
+                ],
+                "event": [
+                    "pull_request",
+                ],
+            },
+        }]
+
+    else:
+        return []

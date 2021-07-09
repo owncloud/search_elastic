@@ -105,8 +105,7 @@ Feature: index only metadata
       | /a-image.png               |
       | /just-a-folder/a-image.png |
       | /फन्नि näme/a-image.png    |
-    #But the search result of user "Alice" should not contain these files:
-    But the search result of user "Alice" should contain these files:
+    But the search result of user "Alice" should not contain these files:
       | /a-png-file.txt |
     Examples:
       | dav_version |

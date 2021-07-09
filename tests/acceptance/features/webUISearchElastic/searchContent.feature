@@ -27,21 +27,21 @@ Feature: Search
     When the user searches for "ipsum" using the webUI
     Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
       """
-      This is lorem text in the simple-folder.
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
       """
 
   Scenario: Search content only (not exact case)
     When the user searches for "iPsUM" using the webUI
     Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
       """
-      This is lorem text in the simple-folder.
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
       """
 
   Scenario: Search content only (not full word - end of word missing)
     When the user searches for "ipsu" using the webUI
     Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
       """
-      This is lorem text in the simple-folder.
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
       """
 
   @issue-38

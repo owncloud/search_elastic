@@ -24,7 +24,7 @@
  */
 namespace OCA\Search_Elastic\Tests\Unit\Lib;
 
-use OCA\Search_Elastic\Application;
+use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\IConfig;
 

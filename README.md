@@ -6,8 +6,8 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=owncloud_search_elastic&metric=coverage)](https://sonarcloud.io/dashboard?id=owncloud_search_elastic)
 
 The search_elastic app adds a full text search for files stored in ownCloud. It requires an
-[elasticsearch](http://www.elasticsearch.org) server and can index all fitles supported by
- apache tika, eg. plain text, .docx, .xlsx, .pptx, .odt, .ods and .pdf files. The source
+[elasticsearch](http://www.elasticsearch.org) server and can index all files supported by
+ apache tika, e.g., plain text, .docx, .xlsx, .pptx, .odt, .ods and .pdf files. The source
 code is [available on GitHub](https://github.com/owncloud/search_elastic)
 
 ## Installation of elasticsearch
@@ -35,8 +35,8 @@ $ bin/elasticsearch
 
 ##### testing locally with docker
 
-To have a elastic-search running locally, use `docker-compose  -f tests/docker-compose.yml up `.
-It will build an image with the ingest-attachment plugin available and expose elasticseach locally at port 9200/9300 
+To have an elastic-search running locally, use `docker-compose  -f tests/docker-compose.yml up `.
+It will build an image with the ingest-attachment plugin available and expose elasticsearch locally at port 9200/9300 
 
 
 ### Elasticsearch 2.x
@@ -79,16 +79,16 @@ Switching back to active mode can be done with
 ## Limit search_elastic access to a group
 
 It is possible to limit the users that will have access to full text
-search by setting a group eg. to 'admin' with
+search by setting a group e.g., to 'admin' with
 ```
 # sudo -u www-data php occ config:app:set search_elastic group --value admin
 ```
 This will cause only members of the admin group to do a full text search.
 If you want the index to be built subsequently in *active mode* use a 
-group that no user is a member of or that des not exist, eg. 'nobody'.
+group that no user is a member of or that des not exist, e.g., 'nobody'.
 If you leave the group empty every user will be able to use the app.
 This functionality also allows you to provide full text search as an 
-added value eg for the 'premium' users.
+added value e.g., for the 'premium' users.
 
 ## Only index metadata
 
@@ -109,7 +109,7 @@ go with limiting full text search to certain groups, by setting
 If you only want to use the search in shared filenames you can disable
 full text search for a specific group by setting `group.nocontent` to the
 group whose users should only receive results based on filenames (not the
-full path), eg. users in group 'nofulltext':
+full path), e.g., users in group 'nofulltext':
 ```
 # sudo -u www-data php occ config:app:set search_elastic group.nocontent --value nofulltext
 ```
@@ -166,7 +166,7 @@ There are two ways to trigger the indexing of a file. Either you do it immediate
 or you make a note that the file changed and do it later (asynchronous). The former makes sure that the files and the
 index remain consistent. The latter will eventually reach consistency and has significant benefits:
 
-* The original file write operation can complete earlier, which improves syncronization speed.
+* The original file write operation can complete earlier, which improves synchronization speed.
 * Several write operations to the same files can be treated as one, reducing indexing overhead.
 * Indexing can happen in a background job
 
@@ -183,13 +183,13 @@ When you recently edited a file, chances are that you still know where it reside
 - [x] restore compatibility with elasticsearch (requires new indexes)
 - [x] store groups and users with access to filter search results by group membership
 - [x] store fileid instead of filenames so we don't have to handle renames 
-- [x] use instanceid to set up index - allows using the same elasticsearch instance for muliple oc instances
+- [x] use instanceid to set up index - allows using the same elasticsearch instance for multiple oc instances
 - [x] store the filename to allow faster search in shared files
   - index files and folders
 - [ ] store tags?
 - [ ] store image / video dimensions?
-- sharing a file immediately after it has been uploadad throws an exception
-  - [x] fix exception / do not try to update a nonexisting document
+- sharing a file immediately after it has been uploaded throws an exception
+  - [x] fix exception / do not try to update a nonexistent document
   - [x] get all users and groups when initially indexing the document
 - [x] move share updates to background job -> eventually searchable
   - [x] descend subdirs when updating
@@ -217,9 +217,9 @@ When you recently edited a file, chances are that you still know where it reside
 - [x] cleanup code
 - [x] port test suite from search_lucene
 - [x] resolve path for shared files
-- [x] files with empty content extraction are reindexed indefinitely? eg empty text file
+- [x] files with empty content extraction are reindexed indefinitely? e.g., empty text file
 - [x] more debug logging
 - [x] wildcard search ... but there is a bug in core js code preventing wildcard search, see https://github.com/owncloud/core/pull/23531
-  - well partly. * and ? are no longer supported. Instead we now mimic core, which is called a "match phrase prefix" type query: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html#query-dsl-match-query-phrase-prefix
+  - well partly. * and ? are no longer supported. Instead, we now mimic core, which is called a "match phrase prefix" type query: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html#query-dsl-match-query-phrase-prefix
 - [ ] to find out why a node cannot be found by its contents mark it as "NO CONTENT EXTRACTED"? 
 - [ ] how should we handle files in userhome/files_versions/ or userhome/thumbnails/  ... currently a 'vanished' message will be logged ... annoying 

@@ -26,19 +26,20 @@
  *
  */
 
-namespace OCA\Search_Elastic;
+namespace OCA\Search_Elastic\AppInfo;
 
 use Elastica\Client as ElasticaClient;
-use OCA\Search_Elastic\Controller\AdminSettingsController;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\Hooks\Files;
 use OCA\Search_Elastic\Jobs\DeleteJob;
+use OCA\Search_Elastic\SearchElasticConfigService;
+use OCA\Search_Elastic\SearchElasticService;
 use OCP\AppFramework\App;
 use OCP\AppFramework\IAppContainer;
-use OCP\IConfig;
-use OCP\IDb;
 use OCP\ILogger;
 use OCP\Share\Events\AcceptShare;
+
+require __DIR__ . '/../../vendor/autoload.php';
 
 /**
  * Class Application
@@ -63,16 +64,6 @@ class Application extends App {
 
 		$container = $this->getContainer();
 
-		// register internal configuration service
-		$container->registerService(
-			SearchElasticConfigService::class,
-			function (IAppContainer $appContainer) {
-				return new SearchElasticConfigService(
-					$appContainer->query('ServerContainer')->getConfig()
-				);
-			}
-		);
-		
 		/**
 		 * Elastica
 		 */
@@ -80,33 +71,11 @@ class Application extends App {
 			ElasticaClient::class,
 			function (IAppContainer $appContainer) {
 				$config = $appContainer->query(SearchElasticConfigService::class);
-				return new ElasticaClient($config->getParsedServers());
+				$logger = null;
+				// $logger = $appContainer->query(ElasticLogger::class);
+				return new ElasticaClient($config->getParsedServers(), null, $logger);
 			}
 		);
-
-		/**
-		 * Mapper
-		 */
-		$container->registerService(StatusMapper::class, function (IAppContainer $c) {
-			return new StatusMapper(
-				$c->query(IDb::class),
-				$c->query(SearchElasticConfigService::class),
-				$c->query(ILogger::class)
-			);
-		});
-
-		/**
-		 * SearchElasticService
-		 */
-		$container->registerService(SearchElasticService::class, function (IAppContainer $c) {
-			return new SearchElasticService(
-				$c->query(IConfig::class),
-				$c->query(StatusMapper::class),
-				$c->query(ILogger::class),
-				$c->query(ElasticaClient::class),
-				$c->query(SearchElasticConfigService::class)
-			);
-		});
 
 		/**
 		 * Core
@@ -117,18 +86,6 @@ class Application extends App {
 				return $c->query('ServerContainer')->getUserSession()->getUser()->getUID();
 			}
 			return false;
-		});
-
-		/**
-		 * Controllers
-		 */
-		$container->registerService(AdminSettingsController::class, function (IAppContainer $c) {
-			return new AdminSettingsController(
-				$c->query('AppName'),
-				$c->query('Request'),
-				$c->query(SearchElasticConfigService::class),
-				$c->query(SearchElasticService::class)
-			);
 		});
 	}
 

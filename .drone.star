@@ -1344,11 +1344,11 @@ def elasticSearchService(esVersion):
 
     return [{
         "name": "elasticsearch",
-        "image": "deepdiver/elasticsearch:%s" % esVersion,
+        "image": "owncloudops/elasticsearch:%s" % esVersion,
         "pull": "always",
         "environment": {
-            "ELASTICSEARCH_XPACK_SECURITY_ENABLED": "false",
-            "ELASTICSEARCH_PLUGINS_INSTALL": "ingest-attachment",
+            "ELASTICSEARCH_ROOT_LOG_LEVEL": "warn",
+            "ELASTICSEARCH_BOOTSTRAP_MEMORY_LOCK": "false",
         },
     }]
 

@@ -4,9 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [2.0.0] - 2021-08-05
 
-## [1.0.0]
+### Changed
+- Support ES7 [#215](https://github.com/owncloud/search_elastic/pull/215)
+
+### Fixed
+- Full Text Search 1.0 cannot connect to elasticsearch 1.0 [#197](https://github.com/owncloud/search_elastic/pull/197)
+- ES7: The length of [file.content] field of [0] doc of [oc-ocu5gka0ocd4] index has exceeded [1000000] - maximum allowed to be analyzed for highlighting. #194
+
+
+## [1.0.0] - 2019-11-21
 
 ### Changed
 - Rename build Command to create [#119](https://github.com/owncloud/search_elastic/pull/119)
@@ -23,7 +31,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Remove deprecated shipped tag [#87](https://github.com/owncloud/search_elastic/pull/87)
 - Fix search via DAV when app is enabled for groups only [#83](https://github.com/owncloud/search_elastic/pull/83)
 
-## [0.5.4]
+## [0.5.4] - 2019-03-18
 
 ### Removed
 - Drop PHP 5.6 [#77](https://github.com/owncloud/search_elastic/pull/77)
@@ -58,7 +66,8 @@ This release requires Elastic Search 5.6.x and the `ingest-attachment` processor
 ### Removed
 - Dropped support for Elastic Search 2.x
 
-[Unreleased]: https://github.com/owncloud/search_elastic/compare/v1.0.0...master
+[Unreleased]: https://github.com/owncloud/search_elastic/compare/v2.0.0...master
+[2.0.0]: https://github.com/owncloud/search_elastic/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/owncloud/search_elastic/compare/v0.5.4...v1.0.0
 [0.5.4]: https://github.com/owncloud/search_elastic/compare/v0.5.2...v0.5.4
 [0.5.2]: https://github.com/owncloud/search_elastic/compare/v0.5.1...v0.5.2

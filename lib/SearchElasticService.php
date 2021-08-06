@@ -33,7 +33,6 @@ use Elastica\Index;
 use Elastica\Request;
 use Elastica\Response;
 use Elastica\Search;
-use Elastica\Type;
 use Elastica\Document;
 use Elastica\Bulk;
 use OC\Files\Cache\Cache;
@@ -52,11 +51,6 @@ class SearchElasticService {
 	 * @var Index
 	 */
 	private $index;
-
-	/**
-	 * @var Type
-	 */
-	private $type;
 
 	/**
 	 * @var StatusMapper
@@ -106,7 +100,6 @@ class SearchElasticService {
 
 		$instanceID = $serverConfig->getSystemValue('instanceid', '');
 		$this->index = new Index($client, 'oc-' . $instanceID);
-		$this->type = new Type($this->index, 'file');
 		$this->processorName = 'oc-processor-' . $instanceID;
 	}
 
@@ -193,34 +186,13 @@ class SearchElasticService {
 	 */
 	private function setupIndex() {
 		// the number of shards and replicas should be adjusted as necessary outside of owncloud
-		$this->index->create(['index' => ['number_of_shards' => 1, 'number_of_replicas' => 0],], true);
-
-		$type = new Type($this->index, 'file');
-
-		$mapping = new Type\Mapping($type, [
-			// indexed for all files and folders
-			'size'           => [ 'type' => 'long',   'store' => true ],
-			'name'           => [ 'type' => 'text', 'store' => true ],
-			'mtime'          => [ 'type' => 'long',   'store' => true ],
-			'users'          => [ 'type' => 'text', 'store' => true ],
-			'groups'         => [ 'type' => 'text', 'store' => true ],
-			// only indexed when content was extracted
-			'file.content' => [
-				'type' => 'text', 'store' => true,
-				'term_vector' => 'with_positions_offsets',
-			],
-			'file.title' => [
-				'type' => 'text', 'store' => true,
-				'term_vector' => 'with_positions_offsets',
-			],
-			'file.date'           => [ 'type' => 'text', 'store' => true ],
-			'file.author'         => [ 'type' => 'text', 'store' => true ],
-			'file.keywords'       => [ 'type' => 'text', 'store' => true ],
-			'file.content_type'   => [ 'type' => 'text', 'store' => true ],
-			'file.content_length' => [ 'type' => 'long',   'store' => true ],
-			'file.language'       => [ 'type' => 'text', 'store' => true ],
-		]);
-		$type->setMapping($mapping);
+		$this->index->create([
+			'settings' =>
+				[
+					'number_of_shards' => 1,
+					'number_of_replicas' => 0
+				],
+		], true);
 	}
 
 	/**
@@ -229,7 +201,6 @@ class SearchElasticService {
 	 */
 	public function search($es_query) {
 		$search = new Search($this->client);
-		$search->addType($this->type);
 		$search->addIndex($this->index);
 		return $search->search($es_query);
 	}
@@ -308,7 +279,7 @@ class SearchElasticService {
 			['app' => 'search_elastic']
 		);
 
-		$doc = new Document($node->getId());
+		$doc = new Document((string)$node->getId());
 
 		// we do not index the path because it might be different for each user
 		// FIXME what about shared files? the recipient can rename them ...
@@ -337,7 +308,7 @@ class SearchElasticService {
 			// this is a workaround to acutally be able to use parameters when setting a document
 			// see: https://github.com/ruflin/Elastica/issues/1248
 			$bulk = new Bulk($this->index->getClient());
-			$bulk->setType($this->type);
+			$bulk->setIndex($this->index);
 			$bulk->setRequestParam('pipeline', $this->processorName);
 			$bulk->addDocuments([$doc]);
 			$bulk->send();
@@ -349,7 +320,7 @@ class SearchElasticService {
 			\json_encode($doc->getData()),
 			['app' => 'search_elastic']
 		);
-		$this->type->updateDocument($doc);
+		$this->index->updateDocument($doc);
 		return true;
 	}
 
@@ -413,7 +384,9 @@ class SearchElasticService {
 	 */
 	public function deleteFiles(array $fileIds) {
 		if (\count($fileIds) > 0) {
-			$result = $this->type->deleteIds($fileIds);
+			$result = \array_map(function ($fileId) {
+				return $this->index->deleteById($fileId);
+			}, $fileIds);
 			$count = 0;
 
 			// @phan-suppress-next-line PhanTypeNoAccessiblePropertiesForeach

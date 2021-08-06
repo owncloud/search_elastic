@@ -30,7 +30,7 @@ namespace OCA\Search_Elastic\Jobs;
 use OC\BackgroundJob\QueuedJob;
 use OCA\Encryption\Crypto\Encryption;
 use OCA\Encryption\KeyManager;
-use OCA\Search_Elastic\Application;
+use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\SearchElasticService;
 use OCP\AppFramework\IAppContainer;

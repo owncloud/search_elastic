@@ -58,7 +58,7 @@ config = {
             "databases": [
                 "mysql:8.0",
             ],
-            "esVersions": ["5.6"],
+            "esVersions": ["7.10"],
         },
     },
 }
@@ -1344,10 +1344,11 @@ def elasticSearchService(esVersion):
 
     return [{
         "name": "elasticsearch",
-        "image": "webhippie/elasticsearch:%s" % esVersion,
+        "image": "owncloudops/elasticsearch:%s" % esVersion,
         "pull": "always",
         "environment": {
-            "ELASTICSEARCH_PLUGINS_INSTALL": "ingest-attachment",
+            "ELASTICSEARCH_ROOT_LOG_LEVEL": "warn",
+            "ELASTICSEARCH_BOOTSTRAP_MEMORY_LOCK": "false",
         },
     }]
 

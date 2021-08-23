@@ -25,6 +25,7 @@
 
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use PHPUnit\Framework\Assert;
 use TestHelpers\SetupHelper;
 use Behat\Behat\Hook\Scope\AfterScenarioScope;
 use TestHelpers\AppConfigHelper;
@@ -93,7 +94,17 @@ class SearchElasticContext implements Context {
 	 * @return void
 	 */
 	public function updateIndex() {
-		SetupHelper::runOcc(["search:index:update"]);
+		$statusArray = SetupHelper::runOcc(["search:index:update"]);
+		$status = $statusArray["code"];
+		Assert::assertSame(
+			"0",
+			$status,
+			"search:index:update unexpectedly exited with status $status"
+		);
+		// see the messages from the command to know what is happening
+		$cmdOutput = $statusArray["stdOut"];
+		echo "search:index:update command output was:\n";
+		echo "$cmdOutput\n";
 		SetupHelper::resetOpcache(
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getAdminUsername(),

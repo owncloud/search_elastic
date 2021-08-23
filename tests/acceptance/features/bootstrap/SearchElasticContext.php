@@ -111,7 +111,7 @@ class SearchElasticContext implements Context {
 			$this->featureContext->getAdminPassword()
 		);
 		// wait to be more confident that the update has taken effect
-		\sleep(5);
+		\sleep(2);
 	}
 
 	/**

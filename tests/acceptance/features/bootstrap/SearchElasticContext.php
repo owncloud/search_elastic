@@ -99,6 +99,12 @@ class SearchElasticContext implements Context {
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword()
 		);
+		// https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-refresh.html
+		// Elasticsearch automatically refreshes shards that have changed every index.refresh_interval
+		// which defaults to one second.
+		// If we continue too quickly after updating then we could get search results
+		// that are based on stale data. So delay for 2 seconds to avoid intermittent test problems.
+		\sleep(2);
 	}
 
 	/**

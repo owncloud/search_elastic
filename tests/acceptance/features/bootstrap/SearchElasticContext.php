@@ -207,11 +207,9 @@ class SearchElasticContext implements Context {
 	/**
 	 * @AfterScenario
 	 *
-	 * @param AfterScenarioScope $scope
-	 *
 	 * @return void
 	 */
-	public function tearDownScenario(AfterScenarioScope $scope) {
+	public function tearDownScenario() {
 		$settings = [
 			"nocontent" => $this->originalNoContentSetting,
 			"group" => $this->originalGroupLimitSetting,

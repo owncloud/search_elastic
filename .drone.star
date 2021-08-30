@@ -603,7 +603,7 @@ def javascript(ctx, withCoverage):
                  [
                      {
                          "name": "js-tests",
-                         "image": "owncloudci/php:8.0",
+                         "image": "owncloudci/nodejs:%s" % getNodeJsVersion(),
                          "pull": "always",
                          "environment": params["extraEnvironment"],
                          "commands": params["extraCommandsBeforeTestRun"] + [
@@ -1516,6 +1516,13 @@ def getDbDatabase(db):
 
     return "owncloud"
 
+def getNodeJsVersion():
+    if "nodeJsVersion" not in config:
+        # We use nodejs 14 as the default
+        return "14"
+    else:
+        return config["nodeJsVersion"]
+
 def cacheRestore():
     return [{
         "name": "cache-restore",
@@ -1640,7 +1647,7 @@ def installApp(ctx, phpVersion):
     return [
         {
             "name": "install-app-js-%s" % config["app"],
-            "image": "owncloudci/nodejs:%s" % config["nodeVersion"],
+            "image": "owncloudci/nodejs:%s" % getNodeJsVersion(),
             "pull": "always",
             "commands": [
                 "cd /var/www/owncloud/server/apps/%s" % config["app"],
@@ -2016,7 +2023,7 @@ def phplint(ctx):
 def installNPM():
     return [{
         "name": "npm-install",
-        "image": "owncloudci/nodejs:12",
+        "image": "owncloudci/nodejs:%s" % getNodeJsVersion(),
         "pull": "always",
         "commands": [
             "yarn install --frozen-lockfile",

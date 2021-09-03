@@ -7,7 +7,7 @@
 	<author>ownCloud GmbH</author>
 	<dependencies>
 		<owncloud min-version="10.3" max-version="10" />
-		<php min-version="7.2" max-version="7.4"/>
+		<php min-version="7.3" max-version="7.4"/>
 	</dependencies>
 	<use-migrations>true</use-migrations>
 	<namespace>Search_Elastic</namespace>

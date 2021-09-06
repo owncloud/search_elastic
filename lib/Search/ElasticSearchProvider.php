@@ -157,6 +157,7 @@ class ElasticSearchProvider extends PagedProvider {
 	 */
 	public function fetchResults($query, $size, $page) {
 		$es_filter = new BoolQuery();
+		/* @phan-suppress-next-line PhanDeprecatedClass */
 		$es_filter->addShould(new Match('users', $this->user->getUID()));
 		$noContentGroups = $this->config->getGroupNoContentArray();
 		$searchContent = true;
@@ -165,6 +166,7 @@ class ElasticSearchProvider extends PagedProvider {
 		}
 		foreach ($this->groups as $group) {
 			$groupId = $group->getGID();
+			/* @phan-suppress-next-line PhanDeprecatedClass */
 			$es_filter->addShould(new Match('groups', $groupId));
 			if (\in_array($groupId, $noContentGroups)) {
 				$searchContent = false;

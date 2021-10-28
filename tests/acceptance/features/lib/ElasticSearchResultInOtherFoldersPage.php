@@ -41,7 +41,7 @@ class ElasticSearchResultInOtherFoldersPage extends SearchResultInOtherFoldersPa
 	 *
 	 * @return string
 	 */
-	public function getHighlightsText(Session $session, $fileName, $path) {
+	public function getHighlightsText(Session $session, string $fileName, string $path):string {
 		/**
 		 *
 		 * @var FileRow $fileRow

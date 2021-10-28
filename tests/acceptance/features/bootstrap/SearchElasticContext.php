@@ -26,7 +26,6 @@
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use TestHelpers\SetupHelper;
-use Behat\Behat\Hook\Scope\AfterScenarioScope;
 use TestHelpers\AppConfigHelper;
 
 require_once 'bootstrap.php';
@@ -57,11 +56,11 @@ class SearchElasticContext implements Context {
 	 * @Given the search index has been created
 	 * @Given the search index of user :user has been created
 	 *
-	 * @param string $user
+	 * @param string|null $user
 	 *
 	 * @return void
 	 */
-	public function createIndex($user = null) {
+	public function createIndex(?string $user = null):void {
 		if ($user === null) {
 			$user = '--all';
 		}
@@ -78,7 +77,7 @@ class SearchElasticContext implements Context {
 	 *
 	 * @return void
 	 */
-	public function resetIndex() {
+	public function resetIndex():void {
 		SetupHelper::runOcc(["search:index:reset --force"]);
 		SetupHelper::resetOpcache(
 			$this->featureContext->getBaseUrl(),
@@ -92,7 +91,7 @@ class SearchElasticContext implements Context {
 	 *
 	 * @return void
 	 */
-	public function updateIndex() {
+	public function updateIndex():void {
 		SetupHelper::runOcc(["search:index:update"]);
 		SetupHelper::resetOpcache(
 			$this->featureContext->getBaseUrl(),
@@ -112,7 +111,7 @@ class SearchElasticContext implements Context {
 	 *
 	 * @return void
 	 */
-	public function setAppToIndexOnlyMetadata() {
+	public function setAppToIndexOnlyMetadata():void {
 		if ($this->originalNoContentSetting === null) {
 			$this->originalNoContentSetting = AppConfigHelper::getAppConfig(
 				$this->featureContext->getBaseUrl(),
@@ -140,7 +139,7 @@ class SearchElasticContext implements Context {
 	 *
 	 * @return void
 	 */
-	public function limitAccessTo($group) {
+	public function limitAccessTo(string $group):void {
 		if ($this->originalGroupLimitSetting === null) {
 			$this->originalGroupLimitSetting = AppConfigHelper::getAppConfig(
 				$this->featureContext->getBaseUrl(),
@@ -168,7 +167,7 @@ class SearchElasticContext implements Context {
 	 *
 	 * @return void
 	 */
-	public function disableFullTextSearchFor($group) {
+	public function disableFullTextSearchFor(string $group):void {
 		if ($this->originalGroupNoContentSetting === null) {
 			$this->originalGroupNoContentSetting = AppConfigHelper::getAppConfig(
 				$this->featureContext->getBaseUrl(),
@@ -196,7 +195,7 @@ class SearchElasticContext implements Context {
 	 * @return void
 	 * @throws Exception
 	 */
-	public function setUpScenario(BeforeScenarioScope $scope) {
+	public function setUpScenario(BeforeScenarioScope $scope):void {
 		// Get the environment
 		$environment = $scope->getEnvironment();
 		// Get all the contexts you need in this context
@@ -215,7 +214,7 @@ class SearchElasticContext implements Context {
 	 *
 	 * @return void
 	 */
-	public function tearDownScenario() {
+	public function tearDownScenario():void {
 		$settings = [
 			"nocontent" => $this->originalNoContentSetting,
 			"group" => $this->originalGroupLimitSetting,

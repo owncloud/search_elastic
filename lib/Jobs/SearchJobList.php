@@ -98,10 +98,8 @@ class SearchJobList extends JobList {
 			);
 
 		$result = $query->execute();
-		/* @phan-suppress-next-line PhanDeprecatedFunction */
-		$row = $result->fetch();
-		/* @phan-suppress-next-line PhanDeprecatedFunction */
-		$result->closeCursor();
+		$row = $result->fetchAssociative();
+		$result->free();
 
 		if ($row) {
 			$update->setParameter('jobid', $row['id']);

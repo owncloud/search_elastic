@@ -29,7 +29,7 @@ namespace OCA\Search_Elastic\Search;
 
 use Elastica\Query;
 use Elastica\Query\BoolQuery;
-use Elastica\Query\Match;
+use Elastica\Query\MatchQuery;
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\SearchElasticService;
@@ -157,8 +157,7 @@ class ElasticSearchProvider extends PagedProvider {
 	 */
 	public function fetchResults($query, $size, $page) {
 		$es_filter = new BoolQuery();
-		/* @phan-suppress-next-line PhanDeprecatedClass */
-		$es_filter->addShould(new Match('users', $this->user->getUID()));
+		$es_filter->addShould(new MatchQuery('users', $this->user->getUID()));
 		$noContentGroups = $this->config->getGroupNoContentArray();
 		$searchContent = true;
 		if (!$this->config->shouldContentBeIncluded()) {
@@ -166,8 +165,7 @@ class ElasticSearchProvider extends PagedProvider {
 		}
 		foreach ($this->groups as $group) {
 			$groupId = $group->getGID();
-			/* @phan-suppress-next-line PhanDeprecatedClass */
-			$es_filter->addShould(new Match('groups', $groupId));
+			$es_filter->addShould(new MatchQuery('groups', $groupId));
 			if (\in_array($groupId, $noContentGroups)) {
 				$searchContent = false;
 			}

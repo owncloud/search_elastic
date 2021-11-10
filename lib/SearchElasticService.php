@@ -389,7 +389,6 @@ class SearchElasticService {
 			}, $fileIds);
 			$count = 0;
 
-			// @phan-suppress-next-line PhanTypeNoAccessiblePropertiesForeach
 			foreach ($result as $response) {
 				if ($response instanceof Response && $response->isOk()) {
 					$count++;

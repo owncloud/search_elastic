@@ -137,6 +137,7 @@ class UpdateContent extends QueuedJob implements IUserSession {
 			$encryption_manager->unregisterEncryptionModule(Encryption::ID);
 			$encryption->registerEncryptionModule();
 
+			// OCA\Encryption\KeyManager may not be available when running phan
 			/* @phan-suppress-next-line PhanUndeclaredClassReference */
 			$keyManager = $encryption->getContainer()->query(KeyManager::class);
 			$keyManager->init('', ''); // uid and password are overwritten in master key mode

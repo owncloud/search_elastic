@@ -30,7 +30,7 @@ namespace OCA\Search_Elastic\Search;
 use Elastica\Query;
 use Elastica\Query\BoolQuery;
 use Elastica\Query\MatchQuery;
-use Elastica\Query\SimpleQueryString;
+use Elastica\Query\QueryString;
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\SearchElasticService;
@@ -175,13 +175,14 @@ class ElasticSearchProvider extends PagedProvider {
 		$es_bool = new BoolQuery();
 		$es_bool->addFilter($es_filter);
 		if ($searchContent) {
-			$es_content_query = new SimpleQueryString($this->formatContentQuery($query));
+			$es_content_query = new QueryString($this->formatContentQuery($query));
 			$es_content_query->setFields(["file.content"]);
 			$es_content_query->setParam("analyze_wildcard", true);
 			$es_bool->addShould($es_content_query);
 		}
-		$es_metadata_query = new SimpleQueryString($query . "*");
+		$es_metadata_query = new QueryString($query . "*");
 		$es_metadata_query->setFields(["name"]);
+		$es_metadata_query->setParam("analyze_wildcard", true);
 		$es_bool->addShould($es_metadata_query);
 		$es_bool->setMinimumShouldMatch(1);
 

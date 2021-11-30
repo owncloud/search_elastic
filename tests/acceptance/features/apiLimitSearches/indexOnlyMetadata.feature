@@ -38,12 +38,12 @@ Feature: index only metadata
 
   Scenario Outline: search for filename
     Given using <dav_version> DAV path
-    When user "Alice" searches for "a-image.png" using the WebDAV API
+    When user "Alice" searches for "upload.txt" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result of user "Alice" should contain these files:
-      | /a-image.png               |
-      | /just-a-folder/a-image.png |
-      | /फन्नि näme/a-image.png    |
+      | /upload.txt               |
+      | /just-a-folder/upload.txt |
+      | /फन्नि näme/upload.txt      |
     Examples:
       | dav_version |
       | old         |
@@ -51,12 +51,12 @@ Feature: index only metadata
 
   Scenario Outline: search for filename (not exact case)
     Given using <dav_version> DAV path
-    When user "Alice" searches for "A-iMagE.png" using the WebDAV API
+    When user "Alice" searches for "UpLoAd.png" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result of user "Alice" should contain these files:
-      | /a-image.png               |
-      | /just-a-folder/a-image.png |
-      | /फन्नि näme/a-image.png    |
+      | /upload.txt               |
+      | /just-a-folder/upload.txt |
+      | /फन्नि näme/upload.txt      |
     Examples:
       | dav_version |
       | old         |

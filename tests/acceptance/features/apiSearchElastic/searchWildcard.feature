@@ -20,7 +20,7 @@ Feature: Search for content using wildcard in query
   Scenario Outline: search using wildcard pattern at the end of string
     Given using <dav_version> DAV path
     And the search index has been updated
-    When user "Alice" searches for "foo *" using the WebDAV API
+    When user "Alice" searches for "foo*" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result of user "Alice" should contain only these files:
       | /file1.txt |
@@ -53,7 +53,7 @@ Feature: Search for content using wildcard in query
   Scenario Outline: search using wildcard pattern in the beginning of string
     Given using <dav_version> DAV path
     And the search index has been updated
-    When user "Alice" searches for "* baz" using the WebDAV API
+    When user "Alice" searches for "*baz" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result of user "Alice" should contain only these files:
       | /file3.txt |
@@ -65,12 +65,17 @@ Feature: Search for content using wildcard in query
       | old         |
       | new         |
 
-  Scenario Outline: search using wildcard pattern in the middle of string
+
+  Scenario Outline: search using wildcard pattern only
     Given using <dav_version> DAV path
     And the search index has been updated
-    When user "Alice" searches for "foo * baz" using the WebDAV API
+    When user "Alice" searches for "*" using the WebDAV API
     Then the HTTP status code should be "207"
-    And the search result of user "Alice" should contain only these files:
+    And the search result of user "Alice" should contain these files:
+      | /file1.txt |
+      | /file2.txt |
+      | /file3.txt |
+      | /file4.txt |
       | /simple-folder/file5.txt |
       | /simple-folder/file6.txt |
       | /simple-search-folder/file7.txt |
@@ -79,26 +84,16 @@ Feature: Search for content using wildcard in query
       | old         |
       | new         |
 
-  Scenario Outline: search using wildcard pattern only
-    Given using <dav_version> DAV path
-    And the search index has been updated
-    When user "Alice" searches for "*" using the WebDAV API
-    Then the HTTP status code should be "207"
-    And the search result of user "Alice" should not contain any files
-      | dav_version |
-      | old         |
-      | new         |
-    Examples:
-      | dav_version |
-      | old         |
-      | new         |
 
   Scenario Outline: search using multiple wildcard patterns
     Given using <dav_version> DAV path
     And the search index has been updated
-    When user "Alice" searches for "*foo*baz*" using the WebDAV API
+    When user "Alice" searches for "*foo* *baz*" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result of user "Alice" should contain only these files:
+      | /file1.txt |
+      | /file3.txt |
+      | /file4.txt |
       | /simple-folder/file5.txt |
       | /simple-folder/file6.txt |
       | /simple-search-folder/file7.txt |

@@ -180,9 +180,9 @@ class ElasticSearchProvider extends PagedProvider {
 			$es_content_query->setParam("analyze_wildcard", true);
 			$es_bool->addShould($es_content_query);
 		}
+
 		$es_metadata_query = new QueryString($query . "*");
 		$es_metadata_query->setFields(["name"]);
-		$es_metadata_query->setParam("analyze_wildcard", true);
 		$es_bool->addShould($es_metadata_query);
 		$es_bool->setMinimumShouldMatch(1);
 
@@ -209,7 +209,7 @@ class ElasticSearchProvider extends PagedProvider {
 		// only add wildcards if no search syntax given
 		if (!\preg_match('/\+|-|\*|\?|\||Ñ|\(|\)|\"/u', $query)) {
 			foreach ($querySegments as $segment) {
-				$formattedQuery.= $segment . "* ";
+				$formattedQuery.= "$segment* ";
 			}
 			return \trim($formattedQuery, " ");
 		}

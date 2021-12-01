@@ -89,10 +89,10 @@ Feature: Search for content
       | old         |
       | new         |
 
-  @issue-38
+
   Scenario Outline: search for files by pattern (not full word - start of word missing)
     Given using <dav_version> DAV path
-    When user "Alice" searches for "Cloud" using the WebDAV API
+    When user "Alice" searches for "*Cloud" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result of user "Alice" should contain these files:
       | /textfile0.txt          |
@@ -116,10 +116,34 @@ Feature: Search for content
       | old         |
       | new         |
 
-  @issue-38
+
+  Scenario Outline: search for files with multiple words
+    Given using <dav_version> DAV path
+    When user "Alice" searches for "ownCloud text" using the WebDAV API
+    Then the HTTP status code should be "207"
+    And the search result of user "Alice" should contain these files:
+      | /textfile0.txt          |
+      | /textfile1.txt          |
+      | /textfile2.txt          |
+      | /textfile3.txt          |
+      | /textfile4.txt          |
+      | /PARENT/CHILD/child.txt |
+      | /PARENT/parent.txt      |
+    But the search result of user "Alice" should not contain these files:
+      | /a-image.png                  |
+      | /upload.txt                   |
+      | /just-a-folder/upload.txt     |
+      | /just-a-folder/uploadÜठिF.txt |
+      | /फन्नि näme/upload.txt        |
+    Examples:
+      | dav_version |
+      | old         |
+      | new         |
+
+
   Scenario Outline: search for files by pattern (not full word - only middle part of word given)
     Given using <dav_version> DAV path
-    When user "Alice" searches for "wnClo" using the WebDAV API
+    When user "Alice" searches for "*wnClo*" using the WebDAV API
     Then the HTTP status code should be "207"
     And the search result of user "Alice" should contain these files:
       | /textfile0.txt          |

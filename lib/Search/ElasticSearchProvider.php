@@ -30,6 +30,7 @@ namespace OCA\Search_Elastic\Search;
 use Elastica\Query;
 use Elastica\Query\BoolQuery;
 use Elastica\Query\MatchQuery;
+use Elastica\Query\QueryString;
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\SearchElasticService;
@@ -173,23 +174,45 @@ class ElasticSearchProvider extends PagedProvider {
 
 		$es_bool = new BoolQuery();
 		$es_bool->addFilter($es_filter);
-		// wildcard queries are not analyzed, so ignore case. See http://stackoverflow.com/a/17280591
-		$loweredQuery = \strtolower($query);
 		if ($searchContent) {
-			$es_bool->addShould(new Query\MatchPhrasePrefix('file.content', $loweredQuery));
+			$es_content_query = new QueryString($this->formatContentQuery($query));
+			$es_content_query->setFields(["file.content"]);
+			$es_content_query->setParam("analyze_wildcard", true);
+			$es_bool->addShould($es_content_query);
 		}
-		$es_bool->addShould(new Query\MatchPhrasePrefix('name', $loweredQuery));
+
+		$es_metadata_query = new QueryString($query . "*");
+		$es_metadata_query->setFields(["name"]);
+		$es_bool->addShould($es_metadata_query);
 		$es_bool->setMinimumShouldMatch(1);
 
 		$es_query = new Query($es_bool);
 		$es_query->setHighlight([
 			'fields' => [
-				'file.content' => new \stdClass,
+				'file.content' => new \stdClass
 			],
 		]);
 
 		$es_query->setSize($size);
 		$es_query->setFrom(($page - 1) * $size);
 		return $this->searchElasticService->search($es_query);
+	}
+
+	/**
+	 * @param string $query
+	 *
+	 * @return string
+	 */
+	public function formatContentQuery($query) {
+		$querySegments = \explode(" ", $query);
+		$formattedQuery = "";
+		// only add wildcards if no search syntax given
+		if (!\preg_match('/\+|-|\*|\?|\||Ñ|\(|\)|\"/u', $query)) {
+			foreach ($querySegments as $segment) {
+				$formattedQuery.= "$segment* ";
+			}
+			return \trim($formattedQuery, " ");
+		}
+		return $query;
 	}
 }

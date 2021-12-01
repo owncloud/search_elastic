@@ -274,7 +274,7 @@ Feature: Search for content
       | Carol    |
     And user "Alice" has shared folder "just-a-folder" with user "Brian"
     And user "Brian" has shared folder "just-a-folder" with user "Carol"
-    When user "Carol" uploads file with content "files with changed content" to "/just-a-folder/upload.txt" using the WebDAV API
+    When user "Carol" uploads file with content "files with a change of content" to "/just-a-folder/upload.txt" using the WebDAV API
     And the search index has been updated
     And user "Alice" searches for "change" using the WebDAV API
     Then the HTTP status code should be "207"

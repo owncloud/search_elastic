@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @author Artur Neumann <info@individual-it.net>
  * @author Phil Davis <phil@jankaritech.com>
@@ -84,10 +84,10 @@ class WebUIElasticSearchContext extends RawMinkContext implements Context {
 	 * @return void
 	 */
 	public function fileShouldBeListedSearchResultOtherFoldersWithHighlights(
-		$fileName,
-		$path,
+		string $fileName,
+		string $path,
 		PyStringNode $highlightsExpectations
-	) {
+	):void {
 		$fileName = \trim($fileName, $fileName[0]);
 		$path = \trim($path, $path[0]);
 		$this->webUIGeneralContext->setCurrentPageObject(
@@ -100,14 +100,14 @@ class WebUIElasticSearchContext extends RawMinkContext implements Context {
 			"",
 			$path
 		);
-		$highlights = $this->searchResultInOtherFoldersPage->getHighlightsText(
+		$highlightsText = $this->searchResultInOtherFoldersPage->getHighlightsText(
 			$this->getSession(),
 			$fileName,
 			$path
 		);
-		Assert::assertContains(
+		Assert::assertStringContainsString(
 			$highlightsExpectations->getRaw(),
-			$highlights
+			$highlightsText
 		);
 	}
 
@@ -121,7 +121,7 @@ class WebUIElasticSearchContext extends RawMinkContext implements Context {
 	 *
 	 * @return void
 	 */
-	public function before(BeforeScenarioScope $scope) {
+	public function before(BeforeScenarioScope $scope):void {
 		// Get the environment
 		$environment = $scope->getEnvironment();
 		// Get all the contexts you need in this context

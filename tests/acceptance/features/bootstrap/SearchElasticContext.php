@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @author Artur Neumann <info@individual-it.net>
  * @author Michael Barz <mbarz@owncloud.com>
@@ -26,7 +26,6 @@
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use TestHelpers\SetupHelper;
-use Behat\Behat\Hook\Scope\AfterScenarioScope;
 use TestHelpers\AppConfigHelper;
 
 require_once 'bootstrap.php';
@@ -57,11 +56,11 @@ class SearchElasticContext implements Context {
 	 * @Given the search index has been created
 	 * @Given the search index of user :user has been created
 	 *
-	 * @param string $user
+	 * @param string|null $user
 	 *
 	 * @return void
 	 */
-	public function createIndex($user = null) {
+	public function createIndex(?string $user = null):void {
 		if ($user === null) {
 			$user = '--all';
 		}
@@ -78,7 +77,7 @@ class SearchElasticContext implements Context {
 	 *
 	 * @return void
 	 */
-	public function resetIndex() {
+	public function resetIndex():void {
 		SetupHelper::runOcc(["search:index:reset --force"]);
 		SetupHelper::resetOpcache(
 			$this->featureContext->getBaseUrl(),
@@ -92,13 +91,19 @@ class SearchElasticContext implements Context {
 	 *
 	 * @return void
 	 */
-	public function updateIndex() {
+	public function updateIndex():void {
 		SetupHelper::runOcc(["search:index:update"]);
 		SetupHelper::resetOpcache(
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword()
 		);
+		// https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-refresh.html
+		// Elasticsearch automatically refreshes shards that have changed every index.refresh_interval
+		// which defaults to one second.
+		// If we continue too quickly after updating then we could get search results
+		// that are based on stale data. So delay for 2 seconds to avoid intermittent test problems.
+		\sleep(2);
 	}
 
 	/**
@@ -106,7 +111,7 @@ class SearchElasticContext implements Context {
 	 *
 	 * @return void
 	 */
-	public function setAppToIndexOnlyMetadata() {
+	public function setAppToIndexOnlyMetadata():void {
 		if ($this->originalNoContentSetting === null) {
 			$this->originalNoContentSetting = AppConfigHelper::getAppConfig(
 				$this->featureContext->getBaseUrl(),
@@ -134,7 +139,7 @@ class SearchElasticContext implements Context {
 	 *
 	 * @return void
 	 */
-	public function limitAccessTo($group) {
+	public function limitAccessTo(string $group):void {
 		if ($this->originalGroupLimitSetting === null) {
 			$this->originalGroupLimitSetting = AppConfigHelper::getAppConfig(
 				$this->featureContext->getBaseUrl(),
@@ -162,7 +167,7 @@ class SearchElasticContext implements Context {
 	 *
 	 * @return void
 	 */
-	public function disableFullTextSearchFor($group) {
+	public function disableFullTextSearchFor(string $group):void {
 		if ($this->originalGroupNoContentSetting === null) {
 			$this->originalGroupNoContentSetting = AppConfigHelper::getAppConfig(
 				$this->featureContext->getBaseUrl(),
@@ -190,7 +195,7 @@ class SearchElasticContext implements Context {
 	 * @return void
 	 * @throws Exception
 	 */
-	public function setUpScenario(BeforeScenarioScope $scope) {
+	public function setUpScenario(BeforeScenarioScope $scope):void {
 		// Get the environment
 		$environment = $scope->getEnvironment();
 		// Get all the contexts you need in this context
@@ -207,11 +212,9 @@ class SearchElasticContext implements Context {
 	/**
 	 * @AfterScenario
 	 *
-	 * @param AfterScenarioScope $scope
-	 *
 	 * @return void
 	 */
-	public function tearDownScenario(AfterScenarioScope $scope) {
+	public function tearDownScenario():void {
 		$settings = [
 			"nocontent" => $this->originalNoContentSetting,
 			"group" => $this->originalGroupLimitSetting,

@@ -4,10 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [2.0.0] - 2021-08-05
+## [2.0.0] - 2021-12-03
 
 ### Changed
 - Support ES7 [#215](https://github.com/owncloud/search_elastic/pull/215)
+- [Feature] make Search more greedy [#212](https://github.com/owncloud/search_elastic/pull/212)
 
 ### Fixed
 - Full Text Search 1.0 cannot connect to elasticsearch 1.0 [#197](https://github.com/owncloud/search_elastic/pull/197)

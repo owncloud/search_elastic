@@ -149,7 +149,7 @@ def codestyle(ctx):
         return pipelines
 
     default = {
-        "phpVersions": ["7.3"],
+        "phpVersions": ["7.4"],
     }
 
     if "defaults" in config:
@@ -314,7 +314,7 @@ def phpstan(ctx):
         return pipelines
 
     default = {
-        "phpVersions": ["7.3"],
+        "phpVersions": ["7.4"],
         "logLevel": "2",
         "extraApps": {},
         "enableApp": True,
@@ -391,7 +391,7 @@ def phan(ctx):
         return pipelines
 
     default = {
-        "phpVersions": ["7.3", "7.4"],
+        "phpVersions": ["7.4"],
     }
 
     if "defaults" in config:

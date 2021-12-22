@@ -12,9 +12,13 @@ code is [available on GitHub](https://github.com/owncloud/search_elastic)
 
 ## Installation of elasticsearch
 
+### Elasticsearch 7
+
+> Elasticsearch 7 is supported in `search_elastic-2.0.0`
+
 ### Elasticsearch 6
 
-> Elasticsearch 6 is not yet supported
+> Elasticsearch 6 is not supported
 
 ### Elasticsearch 5.6.x
 
@@ -46,7 +50,7 @@ It will build an image with the ingest-attachment plugin available and expose el
 
 ## Installation of search_elastic
 - install & enable the app
-- go to the admin settings, set up url and port, click "setup index"  
+- go to the admin settings, set up url and port, click "reset index"  
 
 To trigger indexing create, upload or change a file. The next cron.php will index all unindexed files for the user who did the change.
 

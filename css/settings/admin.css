@@ -5,6 +5,22 @@
 	border-radius: 8px;
 }
 
-#searchElasticSettings input[type="text"] {
+#searchElasticSettings input[type="text"], #searchElasticSettings input[type="password"] {
 	width: 200px;
+}
+
+#searchElasticSettings select {
+	width: 215px;
+}
+
+.hide {
+	display: none;
+}
+
+.show {
+	display: block;
+}
+
+.field-margin-left-16 {
+	margin-left: 16px;
 }

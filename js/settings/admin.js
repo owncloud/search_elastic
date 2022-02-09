@@ -1,14 +1,25 @@
 (function(){
 
 	$(document).ready(function() {
-
+        hideUserPassSettings();
 		var $searchElasticSettings = $('#searchElasticSettings');
 
 		function loadServers($element) {
 			$.get(
 				OC.generateUrl('apps/search_elastic/settings/servers')
 			).done(function( result ) {
-				$element.val(result.servers);
+				var host = result.servers;
+				if(host.includes('@')) {
+					showSelectedAutenticationSettings('userPassOption');
+					var sets = host.split('@');
+					var userAndPassword = sets[0].split(':');
+					$('#user').val(userAndPassword[0]);
+					$('#password').val(userAndPassword[1]);
+					$('select').val('userPassOption');
+					$element.val(sets[1]);
+				} else {
+					$element.val(host);
+				}
 			}).fail(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
 				OC.dialogs.alert(result.responseJSON.message, t('search_elastic', 'Could not load servers'));
@@ -59,12 +70,12 @@
 				OC.generateUrl('apps/search_elastic/settings/status')
 			).done(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('success').removeClass('error icon-loading-small');
-				$searchElasticSettings.find('button').text(t('search_elastic', 'Reset index'));
+				$('#rescan').text(t('search_elastic', 'Reset index'));
 				renderStatus(result.stats);
 			}).fail(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
 				$searchElasticSettings.find('.message').text(result.responseJSON.message);
-				$searchElasticSettings.find('button').text(t('search_elastic', 'Setup index'));
+				$('#rescan').text(t('search_elastic', 'Setup index'));
 			});
 		}
 		function setup() {
@@ -73,7 +84,7 @@
 				OC.generateUrl('apps/search_elastic/setup')
 			).done(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('success').removeClass('error icon-loading-small');
-				$searchElasticSettings.find('button').text(t('search_elastic', 'Reset index'));
+				$('#rescan').text(t('search_elastic', 'Reset index'));
 				renderStatus(result.stats);
 			}).fail(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
@@ -82,19 +93,33 @@
 			});
 		}
 
-		var timer;
-
-		$searchElasticSettings.on('keyup', 'input', function(e) {
-			clearTimeout(timer);
-			var that = this;
-			//highlightInput($(this));
-			timer = setTimeout(function() {
-				saveServers($(that).val());
-				checkStatus();
-			}, 1500);
+		$('#saveConfiguration').on('click', function(e) {
+			var host = $('#host').val();
+			var option = $('select').children("option:selected").val();
+			if (option == 'userPassOption') {
+				if(!userOrPasswordEmpty()) {
+					var user = $('#user').val();
+					var password = $('#password').val();
+					host = user + ':' + password + '@' + host;
+				} else {
+					return;
+				}
+			}
+			saveServers(host);
+			checkStatus();
 		});
 
-		$searchElasticSettings.on('click', 'button', function(e) {
+		function userOrPasswordEmpty() {
+			var user = $('#user').val();
+			var password = $('#password').val();
+			if (user == '' || password == '') {
+				OC.dialogs.alert('User or Password empty.', t('search_elastic', 'Invalid parameters'));
+				return true;				
+			}
+			return false;
+		}
+
+		$('#rescan').on('click', function(e) {
 			setup();
 		});
 
@@ -102,7 +127,33 @@
 			toggleScanExternalStorages($searchElasticSettings.find('input[type="checkbox"]'));
 		});
 
-		loadServers($searchElasticSettings.find('input[type="text"]'));
+		$('#authenticationSettings').change(function(){
+			var option = $(this).children("option:selected").val();
+			showSelectedAutenticationSettings(option);
+		  });
+		
+		function showUserPassSettings() {
+			var $userPassSettings = $('#userPassSettings');
+			$userPassSettings.removeClass('hide');
+			$userPassSettings.addClass('show');
+		}
+
+		function hideUserPassSettings() {
+			var $userPassSettings = $('#userPassSettings');
+			$userPassSettings.removeClass('show');
+			$userPassSettings.addClass('hide');
+		}
+
+		function showSelectedAutenticationSettings(option) {
+			if (option == 'userPassOption') {
+				showUserPassSettings();
+			}
+			else {
+				hideUserPassSettings();
+			}
+		}
+		
+		loadServers($searchElasticSettings.find('#host'));
 		getScanExternalStorages($searchElasticSettings.find('input[type="checkbox"]'));
 		checkStatus();
 

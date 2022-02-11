@@ -204,7 +204,7 @@ class SearchElasticConfigService {
 			if (str_contains($serverPart, '@')) {
 				$this->parseServerWithUserPassAuthentication($serverPart, $server);
 			} else {
-				$this->parseServerWithoutAuthentication($serverPart, $serve);
+				$this->parseServerWithoutAuthentication($serverPart, $server);
 			}
 			$results[] = $server;
 		}

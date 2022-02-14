@@ -201,7 +201,7 @@ class SearchElasticConfigService {
 				'host' => 'localhost',
 				'port' => 9200
 			];
-			if (str_contains($serverPart, '@')) {
+			if (\str_contains($serverPart, '@')) {
 				$this->parseServerWithUserPassAuthentication($serverPart, $server);
 			} else {
 				$this->parseServerWithoutAuthentication($serverPart, $server);
@@ -221,9 +221,9 @@ class SearchElasticConfigService {
 	 * @param array $server
 	 */
 	private function parseServerWithUserPassAuthentication($serverPart, &$server) {
-		$sets = explode('@', $serverPart);
-		$authenticationParameters = explode(':', $sets[0]);
-		$host = explode(':', $sets[1]);
+		$sets = \explode('@', $serverPart);
+		$authenticationParameters = \explode(':', $sets[0]);
+		$host = \explode(':', $sets[1]);
 		if (!empty($host[0])) {
 			$server['host'] = $host[0];
 		}

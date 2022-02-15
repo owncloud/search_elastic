@@ -32,6 +32,7 @@ use OCA\Encryption\Crypto\Encryption;
 use OCA\Encryption\KeyManager;
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\Db\StatusMapper;
+use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\SearchElasticService;
 use OCP\AppFramework\IAppContainer;
 use OCP\Files\Folder;
@@ -101,7 +102,11 @@ class UpdateContent extends QueuedJob implements IUserSession {
 					['app' => 'search_elastic']
 				);
 
-				$this->container->query(SearchElasticService::class)->indexNodes($userId, $fileIds);
+				$elasticServers = $this->container->query(SearchElasticConfigService::class)->getServers();
+
+				if ($elasticServers) {
+					$this->container->query(SearchElasticService::class)->indexNodes($userId, $fileIds);
+				}
 			} else {
 				$this->logger->debug(
 					'could not resolve user home: ' . \json_encode($arguments),

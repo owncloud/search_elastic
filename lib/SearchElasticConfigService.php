@@ -197,16 +197,14 @@ class SearchElasticConfigService {
 		$serverArr = \explode(',', $servers);
 		$results = [];
 		foreach ($serverArr as $serverPart) {
-			$hostAndPort = \explode(':', \trim($serverPart), 2);
 			$server = [
 				'host' => 'localhost',
 				'port' => 9200
 			];
-			if (!empty($hostAndPort[0])) {
-				$server['host'] = $hostAndPort[0];
-			}
-			if (!empty($hostAndPort[1])) {
-				$server['port'] = (int)$hostAndPort[1];
+			if (\str_contains($serverPart, '@')) {
+				$this->parseServerWithUserPassAuthentication($serverPart, $server);
+			} else {
+				$this->parseServerWithoutAuthentication($serverPart, $server);
 			}
 			$results[] = $server;
 		}
@@ -214,5 +212,41 @@ class SearchElasticConfigService {
 			return $results[0];
 		}
 		return ['servers' => $results];
+	}
+
+	/**
+	 * Parse server connection with user and password.
+	 *
+	 * @param string $serverPart
+	 * @param array $server
+	 */
+	private function parseServerWithUserPassAuthentication($serverPart, &$server) {
+		$sets = \explode('@', $serverPart);
+		$authenticationParameters = \explode(':', $sets[0]);
+		$host = \explode(':', $sets[1]);
+		if (!empty($host[0])) {
+			$server['host'] = $host[0];
+		}
+		if (!empty($host[1])) {
+			$server['port'] = $host[1];
+		}
+		$server['username'] = $authenticationParameters[0];
+		$server['password'] = $authenticationParameters[1];
+	}
+
+	/**
+	 * Parse server connection without authentication.
+	 *
+	 * @param string $serverPart
+	 * @param array $server
+	 */
+	private function parseServerWithoutAuthentication($serverPart, &$server) {
+		$hostAndPort = \explode(':', \trim($serverPart), 2);
+		if (!empty($hostAndPort[0])) {
+			$server['host'] = $hostAndPort[0];
+		}
+		if (!empty($hostAndPort[1])) {
+			$server['port'] = (int)$hostAndPort[1];
+		}
 	}
 }

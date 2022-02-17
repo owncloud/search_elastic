@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [2.1.0] - 2022-02-18
+
+### Changed
+
+- Validate if there are elastic search servers configured before indexing the nodes pending updates. - [#4944](https://github.com/owncloud/enterprise/issues/4944)
+- Add user and password authentication. - [#246](https://github.com/owncloud/search_elastic/issues/246)
 
 
 ## [2.0.0] - 2021-12-03
@@ -70,7 +75,8 @@ This release requires Elastic Search 5.6.x and the `ingest-attachment` processor
 ### Removed
 - Dropped support for Elastic Search 2.x
 
-[Unreleased]: https://github.com/owncloud/search_elastic/compare/v2.0.0...master
+[Unreleased]: https://github.com/owncloud/search_elastic/compare/v2.1.0...master
+[2.1.0]: https://github.com/owncloud/search_elastic/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/owncloud/search_elastic/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/owncloud/search_elastic/compare/v0.5.4...v1.0.0
 [0.5.4]: https://github.com/owncloud/search_elastic/compare/v0.5.2...v0.5.4

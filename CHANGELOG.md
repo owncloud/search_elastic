@@ -20,7 +20,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 - Full Text Search 1.0 cannot connect to elasticsearch 1.0 [#197](https://github.com/owncloud/search_elastic/pull/197)
-- ES7: The length of [file.content] field of [0] doc of [oc-ocu5gka0ocd4] index has exceeded [1000000] - maximum allowed to be analyzed for highlighting. [#194](https://github.com/owncloud/search_elastic/pull/194)
 
 
 ## [1.0.0] - 2019-11-21

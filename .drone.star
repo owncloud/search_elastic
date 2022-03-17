@@ -54,6 +54,9 @@ config = {
                 "apiLimitSearches",
                 "apiSearchElastic",
             ],
+            "extraApps": {
+                "files_external": "",
+            },
         },
     },
     "defaults": {

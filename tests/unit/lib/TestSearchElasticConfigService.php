@@ -63,7 +63,7 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 		$this->owncloudConfigService->expects($this->once())
 			->method('getAppValue')
 			->with(Application::APP_ID, $this->searchElasticConfigService::SCAN_EXTERNAL_STORAGE, true)
-			->willReturn(true);
+			->willReturn("1");
 		$this->assertTrue($this->searchElasticConfigService->getScanExternalStorageFlag());
 	}
 
@@ -71,7 +71,7 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 		$this->owncloudConfigService->expects($this->once())
 			->method('getAppValue')
 			->with(Application::APP_ID, $this->searchElasticConfigService::SCAN_EXTERNAL_STORAGE, true)
-			->willReturn('false');
+			->willReturn("");
 		$this->assertFalse($this->searchElasticConfigService->getScanExternalStorageFlag());
 	}
 

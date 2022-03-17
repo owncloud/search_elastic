@@ -11,7 +11,7 @@ style('search_elastic', 'settings/admin');
 	</div>
 	<div class="field-margin-left-16">
 		<select id="authenticationSettings">
-			<option value="none">Select Authentication</option>
+			<option value="none">No Authentication</option>
 			<option value="userPassOption">User and Password</option>
 		</select>
 	</div>

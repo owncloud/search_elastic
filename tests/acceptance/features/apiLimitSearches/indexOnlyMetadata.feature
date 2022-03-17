@@ -305,7 +305,7 @@ Feature: index only metadata
       | old         |
       | new         |
 
-  @local_storage
+  @local_storage @files_external-app-required
   Scenario Outline: search on local storage
     Given using <dav_version> DAV path
     And user "Alice" has moved file "/upload.txt" to "/local_storage/upload.txt"

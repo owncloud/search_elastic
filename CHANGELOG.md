@@ -4,12 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [2.1.0] - 2022-02-18
+## [2.1.0] - 2022-03-15
 
 ### Changed
 
 - Validate if there are elastic search servers configured before indexing the nodes pending updates. - [#4944](https://github.com/owncloud/enterprise/issues/4944)
 - Add user and password authentication. - [#246](https://github.com/owncloud/search_elastic/issues/246)
+
+### Fixed
+
+- [QA] Option 'Scan external storages' cannot be enabled in the web UI once disabled - [#260](https://github.com/owncloud/search_elastic/issues/246)
 
 
 ## [2.0.0] - 2021-12-03

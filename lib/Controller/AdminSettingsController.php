@@ -36,6 +36,7 @@ use OCP\IRequest;
 use OCP\AppFramework\ApiController;
 
 class AdminSettingsController extends ApiController {
+	private const DEFAULT_PASS = 'examplepass*123test';
 
 	/**
 	 * @var SearchElasticConfigService
@@ -66,12 +67,30 @@ class AdminSettingsController extends ApiController {
 
 	public function loadServers(): JSONResponse {
 		return new JSONResponse([
-			SearchElasticConfigService::SERVERS => $this->config->getServers()
+			SearchElasticConfigService::SERVERS => $this->config->getServers(),
+			SearchElasticConfigService::SERVER_USER => $this->config->getServerUser(),
+			SearchElasticConfigService::SERVER_PASSWORD => self::DEFAULT_PASS
 		]);
 	}
 
-	public function saveServers(string $servers): JSONResponse {
-		$this->config->setServers($servers);
+	public function saveServers(string $server, string $user, string $pass): JSONResponse {
+		$tmpserver = $server;
+		if (\strpos($server, 'http') !== 0 && \strpos($server, 'https') !== 0) {
+			$tmpserver = 'http://'	.	$tmpserver;
+		}
+		if (\filter_var($tmpserver, FILTER_VALIDATE_URL)=== false) {
+			return new JSONResponse(['message' => 'The url format is incorrect.'], Http::STATUS_EXPECTATION_FAILED);
+		}
+		$this->config->setServers($server);
+		if ($user !== '') {
+			$this->config->setServerUser($user);
+			if ($pass !== self::DEFAULT_PASS) {
+				$this->config->setServerPassword($pass);
+			}
+		} else {
+			$this->config->setServerUser('');
+			$this->config->setServerPassword('');
+		}
 		return new JSONResponse();
 	}
 

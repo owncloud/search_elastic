@@ -30,6 +30,8 @@ use OCP\IConfig;
 
 class SearchElasticConfigService {
 	public const SERVERS = 'servers';
+	public const SERVER_USER = 'server_user';
+	public const SERVER_PASSWORD = 'server_password';
 	public const SCAN_EXTERNAL_STORAGE = 'scanExternalStorages';
 	public const INDEX_MAX_FILE_SIZE = 'max_size';
 	public const INDEX_NO_CONTENT = 'nocontent';
@@ -103,11 +105,41 @@ class SearchElasticConfigService {
 	}
 
 	/**
+	 * @param string $user
+	 */
+	public function setServerUser($user) {
+		$this->setValue(self::SERVER_USER, $user);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getServerUser() {
+		return $this->getValue(self::SERVER_USER, '');
+	}
+
+	/**
+	 * @param string $password
+	 */
+	public function setServerPassword($password) {
+		$password = \OC::$server->getCrypto()->encrypt($password);
+		$this->setValue(self::SERVER_PASSWORD, $password);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getServerPassword() {
+		$password = $this->getValue(self::SERVER_PASSWORD, '');
+		return \OC::$server->getCrypto()->decrypt($password);
+	}
+
+	/**
 	 * Returns an array of servers
 	 * @return array
 	 */
 	public function getParsedServers() {
-		return $this->parseServers($this->getServers());
+		return $this->parseServers();
 	}
 
 	/**
@@ -190,63 +222,42 @@ class SearchElasticConfigService {
 	}
 
 	/**
-	 * @param string $servers
 	 * @return array
 	 */
-	public function parseServers($servers) {
-		$serverArr = \explode(',', $servers);
-		$results = [];
-		foreach ($serverArr as $serverPart) {
-			$server = [
-				'host' => 'localhost',
-				'port' => 9200
-			];
-			if (\str_contains($serverPart, '@')) {
-				$this->parseServerWithUserPassAuthentication($serverPart, $server);
-			} else {
-				$this->parseServerWithoutAuthentication($serverPart, $server);
+	public function parseServers() {
+		$server = [
+			'host' => 'localhost',
+			'port' => '9200',
+			'transport' => 'Http',
+			'path' => '',
+			'username' => '',
+			'password' => '',
+		];
+		$host = $this->getServers();
+		
+		if (\strpos($host, 'http:') !== false) {
+			$host = \str_replace('http://', '', $host);
+			$server['host'] = $host;
+		}
+		if (\strpos($host, 'https:') !== false) {
+			$server['transport'] = 'Https';
+			$host = \str_replace('https://', '', $host);
+			$server['host'] = $host;
+		}
+		if (\strpos($host, ':') !== false) {
+			$tmpHostPort = \explode(':', $host);
+			$server['host'] = $tmpHostPort[0];
+			$server['port'] = $tmpHostPort[1];
+			if (\strpos($tmpHostPort[1], '/') !== false) {
+				$tmpPortPath = \explode('/', $tmpHostPort[1]);
+				$server['port'] = $tmpPortPath[0];
+				$server['path'] = '/' . $tmpPortPath[1];
 			}
-			$results[] = $server;
 		}
-		if (\count($results) === 1) {
-			return $results[0];
+		if ($this->getServerUser() !== '') {
+			$server['password'] = $this->getServerPassword();
+			$server['username'] = $this->getServerUser();
 		}
-		return ['servers' => $results];
-	}
-
-	/**
-	 * Parse server connection with user and password.
-	 *
-	 * @param string $serverPart
-	 * @param array $server
-	 */
-	private function parseServerWithUserPassAuthentication($serverPart, &$server) {
-		$sets = \explode('@', $serverPart);
-		$authenticationParameters = \explode(':', $sets[0]);
-		$host = \explode(':', $sets[1]);
-		if (!empty($host[0])) {
-			$server['host'] = $host[0];
-		}
-		if (!empty($host[1])) {
-			$server['port'] = $host[1];
-		}
-		$server['username'] = $authenticationParameters[0];
-		$server['password'] = $authenticationParameters[1];
-	}
-
-	/**
-	 * Parse server connection without authentication.
-	 *
-	 * @param string $serverPart
-	 * @param array $server
-	 */
-	private function parseServerWithoutAuthentication($serverPart, &$server) {
-		$hostAndPort = \explode(':', \trim($serverPart), 2);
-		if (!empty($hostAndPort[0])) {
-			$server['host'] = $hostAndPort[0];
-		}
-		if (!empty($hostAndPort[1])) {
-			$server['port'] = (int)$hostAndPort[1];
-		}
+		return $server;
 	}
 }

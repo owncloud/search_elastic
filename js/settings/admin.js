@@ -9,26 +9,26 @@
 				OC.generateUrl('apps/search_elastic/settings/servers')
 			).done(function( result ) {
 				var host = result.servers;
-				if(host.includes('@')) {
+				var user = result.server_user;
+				var pass = result.server_password;				
+				$element.val(host); 
+				debugger;
+				if(user) {
 					showSelectedAutenticationSettings('userPassOption');
-					var sets = host.split('@');
-					var userAndPassword = sets[0].split(':');
-					$('#user').val(userAndPassword[0]);
-					$('#password').val(userAndPassword[1]);
+					$('#user').val(user);
+					$('#password').val(pass);
 					$('select').val('userPassOption');
-					$element.val(sets[1]);
-				} else {
-					$element.val(host);
 				}
+
 			}).fail(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
 				OC.dialogs.alert(result.responseJSON.message, t('search_elastic', 'Could not load servers'));
 			});
 		}
-		function saveServers(servers) {
+		function saveServers(server, user, pass) {
 			$.post(
 				OC.generateUrl('apps/search_elastic/settings/servers'),
-				{ servers: servers }
+				{ server: server,user: user,pass: pass }
 			).fail(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
 				OC.dialogs.alert(result.responseJSON.message, t('search_elastic', 'Could not save servers'));
@@ -94,18 +94,19 @@
 		}
 
 		$('#saveConfiguration').on('click', function(e) {
+			var user = "";
+			var pass = "";
 			var host = $('#host').val();
 			var option = $('select').children("option:selected").val();
 			if (option == 'userPassOption') {
 				if(!userOrPasswordEmpty()) {
-					var user = $('#user').val();
-					var password = $('#password').val();
-					host = user + ':' + password + '@' + host;
+					user = $('#user').val();
+					pass = $('#password').val();
 				} else {
 					return;
 				}
 			}
-			saveServers(host);
+			saveServers(host,user,pass);
 			checkStatus();
 		});
 

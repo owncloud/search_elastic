@@ -90,9 +90,10 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 	}
 
 	public function testParseServersWithEmptyStringReturnsValidArray() {
-		$parsedServers = $this->searchElasticConfigService->parseServers('');
+		$this->searchElasticConfigService->setServerPassword('test');
+		$parsedServers = $this->searchElasticConfigService->parseServers();
 		$this->assertIsArray($parsedServers);
-		$this->assertCount(2, $parsedServers);
+		$this->assertCount(6, $parsedServers);
 		$this->assertEquals('localhost', $parsedServers['host']);
 		$this->assertEquals(9200, $parsedServers['port']);
 	}

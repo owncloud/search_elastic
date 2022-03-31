@@ -72,7 +72,11 @@ class AdminSettingsControllerTest extends TestCase {
 			->method('getServers')
 			->willReturn('localhost:9200');
 		$response = $this->controller->loadServers();
-		$expected = new JSONResponse([SearchElasticConfigService::SERVERS => 'localhost:9200']);
+		$expected = new JSONResponse([
+			SearchElasticConfigService::SERVERS => 'localhost:9200',
+			SearchElasticConfigService::SERVER_USER => '',
+			SearchElasticConfigService::SERVER_PASSWORD => 'examplepass*123test'
+		]);
 		$this->assertEquals($expected, $response);
 	}
 
@@ -81,7 +85,7 @@ class AdminSettingsControllerTest extends TestCase {
 			->method('setServers')
 			->with('localhost:9200');
 		$expected = new JSONResponse();
-		$response = $this->controller->saveServers('localhost:9200');
+		$response = $this->controller->saveServers('localhost:9200', '', '');
 		$this->assertEquals($expected, $response);
 	}
 }

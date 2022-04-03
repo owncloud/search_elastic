@@ -24,14 +24,12 @@
  */
 namespace OCA\Search_Elastic\Tests\Unit\Lib;
 
-use OC\Security\Crypto;
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\IConfig;
 
 class TestSearchElasticConfigService extends \Test\TestCase {
 	private $owncloudConfigService;
-	private $crypto;
 
 	/**
 	 * @var SearchElasticConfigService
@@ -45,9 +43,6 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 		$this->searchElasticConfigService = new SearchElasticConfigService(
 			$this->owncloudConfigService
 		);
-		$this->crypt = $this->getMockBuilder(Crypto::class)
-			->disableOriginalConstructor()
-			->getMock();
 	}
 
 	public function testSetValueCallsOwncloudConfigServiceWithAppId() {
@@ -92,16 +87,5 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 			->method('getUserValue')
 			->with('1', Application::APP_ID, 'key', 'default');
 		$this->searchElasticConfigService->getUserValue('1', 'key', 'default');
-	}
-
-	public function testParseServersWithEmptyStringReturnsValidArray() {
-		$this->crypto->expects($this->once())
-			->method('decrypt')
-			->willReturn('testpassword');
-		$parsedServers = $this->searchElasticConfigService->parseServers();
-		$this->assertIsArray($parsedServers);
-		$this->assertCount(6, $parsedServers);
-		$this->assertEquals('localhost', $parsedServers['host']);
-		$this->assertEquals(9200, $parsedServers['port']);
 	}
 }

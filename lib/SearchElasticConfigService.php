@@ -234,6 +234,7 @@ class SearchElasticConfigService {
 			'password' => '',
 		];
 		$host = $this->getServers();
+		$server['host'] = $host;
 		
 		if (\strpos($host, 'http:') !== false) {
 			$host = \str_replace('http://', '', $host);

@@ -233,28 +233,27 @@ class SearchElasticConfigService {
 			'username' => '',
 			'password' => '',
 		];
-		$host = $this->getServers();
-		$server['host'] = $host;
-		
-		if (\strpos($host, 'http:') !== false) {
-			$host = \str_replace('http://', '', $host);
-			$server['host'] = $host;
+		$serverUri = $this->getServers();
+		if (\strpos($serverUri, 'http') === false) {
+			$serverUri = 'http://' . $serverUri;
 		}
-		if (\strpos($host, 'https:') !== false) {
+		$uri = \parse_url($serverUri);
+		if (isset($uri['host'])) {
+			$server['host'] = $uri['host'];
+		}
+
+		if (isset($uri['port'])) {
+			$server['port'] = $uri['port'];
+		}
+
+		if (isset($uri['scheme']) && \strtolower($uri['scheme']) === 'https') {
 			$server['transport'] = 'Https';
-			$host = \str_replace('https://', '', $host);
-			$server['host'] = $host;
 		}
-		if (\strpos($host, ':') !== false) {
-			$tmpHostPort = \explode(':', $host);
-			$server['host'] = $tmpHostPort[0];
-			$server['port'] = $tmpHostPort[1];
-			if (\strpos($tmpHostPort[1], '/') !== false) {
-				$tmpPortPath = \explode('/', $tmpHostPort[1]);
-				$server['port'] = $tmpPortPath[0];
-				$server['path'] = '/' . $tmpPortPath[1];
-			}
+
+		if (isset($uri['path'])) {
+			$server['path'] = $uri['path'];
 		}
+
 		if ($this->getServerUser() !== '') {
 			$server['password'] = $this->getServerPassword();
 			$server['username'] = $this->getServerUser();

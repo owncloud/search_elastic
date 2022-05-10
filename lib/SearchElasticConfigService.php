@@ -251,7 +251,7 @@ class SearchElasticConfigService {
 		}
 
 		if (isset($uri['path'])) {
-			$server['path'] = $uri['path'];
+			$server['path'] = \substr($uri['path'], 1);
 		}
 
 		if ($this->getServerUser() !== '') {

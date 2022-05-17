@@ -27,6 +27,7 @@ namespace OCA\Search_Elastic;
 
 use OCA\Search_Elastic\AppInfo\Application;
 use OCP\IConfig;
+use OCP\Security\ICredentialsManager;
 
 class SearchElasticConfigService {
 	public const SERVERS = 'servers';
@@ -40,18 +41,25 @@ class SearchElasticConfigService {
 	public const APP_MODE = 'mode';
 	public const ENABLED_GROUPS = 'group';
 
+	private const PASSWORD_KEY = 'search_elastic:pass';
+
 	/**
 	 * @var IConfig
 	 */
 	private $owncloudConfig;
+	/**
+	 * @var ICredentialsManager
+	 */
+	private $credentialsManager;
 
 	/**
 	 * SearchElasticConfigService constructor.
 	 *
 	 * @param IConfig $config
 	 */
-	public function __construct(IConfig $config) {
+	public function __construct(IConfig $config, ICredentialsManager $credentialsManager) {
 		$this->owncloudConfig = $config;
+		$this->credentialsManager = $credentialsManager;
 	}
 
 	/**
@@ -122,16 +130,18 @@ class SearchElasticConfigService {
 	 * @param string $password
 	 */
 	public function setServerPassword($password) {
-		$password = \OC::$server->getCrypto()->encrypt($password);
-		$this->setValue(self::SERVER_PASSWORD, $password);
+		$this->credentialsManager->store('', self::PASSWORD_KEY, $password);
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getServerPassword() {
-		$password = $this->getValue(self::SERVER_PASSWORD, '');
-		return \OC::$server->getCrypto()->decrypt($password);
+		$password = $this->credentialsManager->retrieve('', self::PASSWORD_KEY);
+		if ($password === null) {
+			$password = '';
+		}
+		return $password;
 	}
 
 	/**
@@ -225,39 +235,45 @@ class SearchElasticConfigService {
 	 * @return array
 	 */
 	public function parseServers() {
-		$server = [
-			'host' => 'localhost',
-			'port' => '9200',
-			'transport' => 'Http',
-			'path' => '',
-			'username' => '',
-			'password' => '',
-		];
-		$serverUri = $this->getServers();
-		if (\strpos($serverUri, 'http') === false) {
-			$serverUri = 'http://' . $serverUri;
-		}
-		$uri = \parse_url($serverUri);
-		if (isset($uri['host'])) {
-			$server['host'] = $uri['host'];
-		}
-
-		if (isset($uri['port'])) {
-			$server['port'] = $uri['port'];
-		}
-
-		if (isset($uri['scheme']) && \strtolower($uri['scheme']) === 'https') {
-			$server['transport'] = 'Https';
-		}
-
-		if (isset($uri['path'])) {
-			$server['path'] = \substr($uri['path'], 1);
-		}
+		$servers = $this->getServers();
+		$serverList = \explode(',', $servers);
 
 		if ($this->getServerUser() !== '') {
-			$server['password'] = $this->getServerPassword();
-			$server['username'] = $this->getServerUser();
+			$username = $this->getServerUser();
+			$password = $this->getServerPassword();
 		}
-		return $server;
+
+		$results = [];
+		foreach ($serverList as $server) {
+			$parsedServer = \parse_url($server);
+
+			$serverData = [];
+
+			if (isset($parsedServer['host'])) {
+				$serverData['host'] = $parsedServer['host'];
+			}
+
+			if (isset($parsedServer['port'])) {
+				$serverData['port'] = $parsedServer['port'];
+			}
+
+			if (isset($parsedServer['scheme'])) {
+				$serverData['transport'] = $parsedServer['scheme'];
+			} else {
+				$serverData['transport'] = 'http';
+			}
+
+			if (isset($parsedServer['path'])) {
+				$serverData['path'] = \ltrim($parsedServer['path'], '/');
+			}
+
+			if (isset($username, $password)) {
+				$serverData['username'] = $username;
+				$serverData['password'] = $password;
+			}
+
+			$results[] = $serverData;
+		}
+		return ['servers' => $results];
 	}
 }

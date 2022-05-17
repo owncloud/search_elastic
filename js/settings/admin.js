@@ -5,14 +5,13 @@
 		var $searchElasticSettings = $('#searchElasticSettings');
 
 		function loadServers($element) {
-			$.get(
+			return $.get(
 				OC.generateUrl('apps/search_elastic/settings/servers')
 			).done(function( result ) {
 				var host = result.servers;
 				var user = result.server_user;
-				var pass = result.server_password;				
-				$element.val(host); 
-				debugger;
+				var pass = result.server_password;
+				$element.val(host);
 				if(user) {
 					showSelectedAutenticationSettings('userPassOption');
 					$('#user').val(user);
@@ -25,17 +24,17 @@
 				OC.dialogs.alert(result.responseJSON.message, t('search_elastic', 'Could not load servers'));
 			});
 		}
-		function saveServers(server, user, pass) {
-			$.post(
+		function saveServers(servers, user, pass) {
+			return $.post(
 				OC.generateUrl('apps/search_elastic/settings/servers'),
-				{ server: server,user: user,pass: pass }
+				{ servers: servers, user: user, pass: pass }
 			).fail(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
 				OC.dialogs.alert(result.responseJSON.message, t('search_elastic', 'Could not save servers'));
 			});
 		}
 		function getScanExternalStorages($element) {
-			$.get(
+			return $.get(
 				OC.generateUrl('apps/search_elastic/settings/scanExternalStorages')
 			).done(function( result ) {
 				$element.prop('checked', result.scanExternalStorages);
@@ -45,7 +44,7 @@
 			});
 		}
 		function toggleScanExternalStorages($element) {
-			$.post(
+			return $.post(
 				OC.generateUrl('apps/search_elastic/settings/scanExternalStorages'),
 				{ scanExternalStorages: $element.prop('checked') }
 			).done(function( result ) {
@@ -66,7 +65,7 @@
 		}
 		function checkStatus() {
 			$searchElasticSettings.find('.icon').addClass('icon-loading-small').removeClass('error success');
-			$.get(
+			return $.get(
 				OC.generateUrl('apps/search_elastic/settings/status')
 			).done(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('success').removeClass('error icon-loading-small');
@@ -106,8 +105,10 @@
 					return;
 				}
 			}
-			saveServers(host,user,pass);
-			checkStatus();
+			saveServers(host, user, pass)
+			.done(function() {
+				checkStatus();
+			});
 		});
 
 		function userOrPasswordEmpty() {

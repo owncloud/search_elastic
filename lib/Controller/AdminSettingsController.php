@@ -73,15 +73,47 @@ class AdminSettingsController extends ApiController {
 		]);
 	}
 
-	public function saveServers(string $server, string $user, string $pass): JSONResponse {
-		$tmpserver = $server;
-		if (\strpos($server, 'http') !== 0 && \strpos($server, 'https') !== 0) {
-			$tmpserver = 'http://'	.	$tmpserver;
+	public function saveServers(string $servers, string $user, string $pass): JSONResponse {
+		$serverList = \explode(',', $servers);
+		$sanitizedServerList = [];
+		foreach ($serverList as $server) {
+			// validation
+			$parsedServer = \parse_url($server);
+			if ($parsedServer === false) {
+				return new JSONResponse(['message' => 'The url format is incorrect.'], Http::STATUS_EXPECTATION_FAILED);
+			}
+
+			$mustNotBePresentKeys = ['user', 'pass', 'query', 'fragment'];
+			foreach ($mustNotBePresentKeys as $key) {
+				if (isset($parsedServer[$key])) {
+					return new JSONResponse(['message' => 'The url contains components that won\'t be used.'], Http::STATUS_EXPECTATION_FAILED);
+				}
+			}
+			if (!isset($parsedServer['host'])) {
+				return new JSONResponse(['message' => 'The url must contains at least a host.'], Http::STATUS_EXPECTATION_FAILED);
+			}
+
+			if (!isset($parsedServer['scheme'])) {
+				// assume HTTP
+				$parsedServer['scheme'] = 'http';
+			}
+			if ($parsedServer['scheme'] !== 'http' && $parsedServer['scheme'] !== 'https') {
+				return new JSONResponse(['message' => 'The url contains invalid scheme.'], Http::STATUS_EXPECTATION_FAILED);
+			}
+
+			// build sanitized url
+			$sanitizedServer = "{$parsedServer['scheme']}://{$parsedServer['host']}";
+			if (isset($parsedServer['port'])) {
+				$sanitizedServer .= ":{$parsedServer['port']}";
+			}
+			if (isset($parsedServer['path'])) {
+				$sanitizedServer .= $parsedServer['path'];
+			}
+			$sanitizedServerList[] = $sanitizedServer;
 		}
-		if (\filter_var($tmpserver, FILTER_VALIDATE_URL)=== false) {
-			return new JSONResponse(['message' => 'The url format is incorrect.'], Http::STATUS_EXPECTATION_FAILED);
-		}
-		$this->config->setServers($server);
+		$sanitizedServers = \implode(',', $sanitizedServerList);
+
+		$this->config->setServers($sanitizedServers);
 		if ($user !== '') {
 			$this->config->setServerUser($user);
 			if ($pass !== self::DEFAULT_PASS) {

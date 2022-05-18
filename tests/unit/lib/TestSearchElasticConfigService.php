@@ -27,9 +27,11 @@ namespace OCA\Search_Elastic\Tests\Unit\Lib;
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\IConfig;
+use OCP\Security\ICredentialsManager;
 
 class TestSearchElasticConfigService extends \Test\TestCase {
 	private $owncloudConfigService;
+	private $credentialsManager;
 
 	/**
 	 * @var SearchElasticConfigService
@@ -40,8 +42,10 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 		$this->owncloudConfigService = $this->getMockBuilder(IConfig::class)
 			->disableOriginalConstructor()
 			->getMock();
+		$this->credentialsManager = $this->createMock(ICredentialsManager::class);
 		$this->searchElasticConfigService = new SearchElasticConfigService(
-			$this->owncloudConfigService
+			$this->owncloudConfigService,
+			$this->credentialsManager
 		);
 	}
 
@@ -87,5 +91,189 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 			->method('getUserValue')
 			->with('1', Application::APP_ID, 'key', 'default');
 		$this->searchElasticConfigService->getUserValue('1', 'key', 'default');
+	}
+
+	public function testSetServerUser() {
+		$this->owncloudConfigService->expects($this->once())
+			->method('setAppValue')
+			->with(Application::APP_ID, SearchElasticConfigService::SERVER_USER, 'testUser');
+		$this->searchElasticConfigService->setServerUser('testUser');
+	}
+
+	public function testGetServerUser() {
+		$this->owncloudConfigService->expects($this->once())
+			->method('getAppValue')
+			->with(Application::APP_ID, SearchElasticConfigService::SERVER_USER, '')
+			->willReturn('testUser0001');
+		$this->assertSame('testUser0001', $this->searchElasticConfigService->getServerUser());
+	}
+
+	public function testSetServerPassword() {
+		$this->credentialsManager->expects($this->once())
+			->method('store')
+			->with('', $this->anything(), 'MyPassÖrd123');
+		$this->searchElasticConfigService->setServerPassword('MyPassÖrd123');
+	}
+
+	public function testGetServerPassword() {
+		$this->credentialsManager->expects($this->once())
+			->method('retrieve')
+			->with('', $this->anything())
+			->willReturn('MyPassÖrd123');
+		$this->assertSame('MyPassÖrd123', $this->searchElasticConfigService->getServerPassword());
+	}
+
+	public function testGetServerPasswordMissing() {
+		$this->credentialsManager->expects($this->once())
+			->method('retrieve')
+			->with('', $this->anything())
+			->willReturn(null);
+		$this->assertSame('', $this->searchElasticConfigService->getServerPassword());
+	}
+
+	public function parseServersProvider() {
+		return [
+			[
+				'10.10.10.10', '', '',
+				[
+					'servers' => [
+						[
+							'path' => '10.10.10.10',
+							'transport' => 'http',
+						],
+					],
+				],
+			],
+			[
+				'10.10.10.10:9999', '', '',
+				[
+					'servers' => [
+						[
+							'host' => '10.10.10.10',
+							'port' => 9999,
+							'transport' => 'http',
+						],
+					],
+				],
+			],
+			[
+				'10.10.10.10:9999/mypath', '', '',
+				[
+					'servers' => [
+						[
+							'host' => '10.10.10.10',
+							'port' => 9999,
+							'transport' => 'http',
+							'path' => 'mypath',
+						],
+					],
+				],
+			],
+			[
+				'10.10.10.10:9999/mypath', 'usertest1', '',
+				[
+					'servers' => [
+						[
+							'host' => '10.10.10.10',
+							'port' => 9999,
+							'transport' => 'http',
+							'path' => 'mypath',
+							'username' => 'usertest1',
+							'password' => '',
+						],
+					],
+				],
+			],
+			[
+				'10.10.10.10:9999/mypath', 'usertest1', 'testPassword',
+				[
+					'servers' => [
+						[
+							'host' => '10.10.10.10',
+							'port' => 9999,
+							'transport' => 'http',
+							'path' => 'mypath',
+							'username' => 'usertest1',
+							'password' => 'testPassword',
+						],
+					],
+				],
+			],
+			[
+				'10.10.10.10:9999/mypath', '', 'testPassword',
+				[
+					'servers' => [
+						[
+							'host' => '10.10.10.10',
+							'port' => 9999,
+							'transport' => 'http',
+							'path' => 'mypath',
+						],
+					],
+				],
+			],
+			[
+				'http://10.10.10.10', '', '',
+				[
+					'servers' => [
+						[
+							'host' => '10.10.10.10',
+							'transport' => 'http',
+						],
+					],
+				],
+			],
+			[
+				'https://10.10.10.10', '', '',
+				[
+					'servers' => [
+						[
+							'host' => '10.10.10.10',
+							'transport' => 'https',
+						],
+					],
+				],
+			],
+			[
+				'https://10.10.10.10:8888', '', '',
+				[
+					'servers' => [
+						[
+							'host' => '10.10.10.10',
+							'port' => 8888,
+							'transport' => 'https',
+						],
+					],
+				],
+			],
+			[
+				'https://10.10.10.10:8888/my/path/', '', '',
+				[
+					'servers' => [
+						[
+							'host' => '10.10.10.10',
+							'port' => 8888,
+							'transport' => 'https',
+							'path' => 'my/path/',
+						],
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider parseServersProvider
+	 */
+	public function testParseServers($servers, $username, $password, $expected) {
+		$this->owncloudConfigService->method('getAppValue')
+			->will($this->returnValueMap([
+				[Application::APP_ID, SearchElasticConfigService::SERVERS, 'localhost:9200', $servers],
+				[Application::APP_ID, SearchElasticConfigService::SERVER_USER, '', $username],
+			]));
+		$this->credentialsManager->method('retrieve')
+			->with('', $this->anything())
+			->willReturn($password);
+		$this->assertEquals($expected, $this->searchElasticConfigService->parseServers());
 	}
 }

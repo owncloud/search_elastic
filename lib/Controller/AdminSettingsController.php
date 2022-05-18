@@ -36,7 +36,7 @@ use OCP\IRequest;
 use OCP\AppFramework\ApiController;
 
 class AdminSettingsController extends ApiController {
-	private const DEFAULT_PASS = 'examplepass*123test';
+	public const DEFAULT_PASS = 'examplepass*123test';
 
 	/**
 	 * @var SearchElasticConfigService

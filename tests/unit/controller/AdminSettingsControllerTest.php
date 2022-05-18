@@ -83,9 +83,47 @@ class AdminSettingsControllerTest extends TestCase {
 	public function testSaveServers() {
 		$this->configService->expects($this->once())
 			->method('setServers')
-			->with('localhost:9200');
+			->with('http://localhost:9200');  // http is added
+		$this->configService->expects($this->once())
+			->method('setServerUser')
+			->with('');
+		$this->configService->expects($this->once())
+			->method('setServerPassword')
+			->with('');
 		$expected = new JSONResponse();
 		$response = $this->controller->saveServers('localhost:9200', '', '');
+		$this->assertEquals($expected, $response);
+	}
+
+	public function testSaveServersWithUsernameAndPassword() {
+		$username = 'ñusername';
+		$password = 'abcDEF987!"·$%&/()=,-.-;:_<>';
+		$this->configService->expects($this->once())
+			->method('setServers')
+			->with('http://localhost:9200');  // http is added
+		$this->configService->expects($this->once())
+			->method('setServerUser')
+			->with($username);
+		$this->configService->expects($this->once())
+			->method('setServerPassword')
+			->with($password);
+		$expected = new JSONResponse();
+		$response = $this->controller->saveServers('localhost:9200', $username, $password);
+		$this->assertEquals($expected, $response);
+	}
+
+	public function testSaveServersWithUsernameAndDefaultPassword() {
+		$username = 'ñusername';
+		$this->configService->expects($this->once())
+			->method('setServers')
+			->with('http://localhost:9200');  // http is added
+		$this->configService->expects($this->once())
+			->method('setServerUser')
+			->with($username);
+		$this->configService->expects($this->never())
+			->method('setServerPassword');
+		$expected = new JSONResponse();
+		$response = $this->controller->saveServers('localhost:9200', $username, AdminSettingsController::DEFAULT_PASS);
 		$this->assertEquals($expected, $response);
 	}
 }

@@ -229,6 +229,7 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 					'servers' => [
 						[
 							'host' => '10.10.10.10',
+							'port' => 443,
 							'transport' => 'https',
 						],
 					],

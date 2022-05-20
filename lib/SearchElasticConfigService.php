@@ -272,6 +272,11 @@ class SearchElasticConfigService {
 				$serverData['password'] = $password;
 			}
 
+			// if it's https but not explicit port is set, use port 443
+			if ($serverData['transport'] === 'https' && !isset($serverData['port'])) {
+				$serverData['port'] = 443;
+			}
+
 			$results[] = $serverData;
 		}
 		return ['servers' => $results];

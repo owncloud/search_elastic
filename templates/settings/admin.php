@@ -10,17 +10,25 @@ style('search_elastic', 'settings/admin');
 		<input id="host" type="text" placeholder="localhost:9200" />
 	</div>
 	<div class="field-margin-left-16">
-		<select id="authenticationSettings">
+		<select id="authType">
 			<option value="none">No Authentication</option>
-			<option value="userPassOption">User and Password</option>
+			<option value="userPass">Username and Password</option>
+			<option value="apiKey">API Key</option>
 		</select>
 	</div>
-	<div id="userPassSettings" class="field-margin-left-16">
-		<div>
-			<input id="user" type="text" placeholder="User">
+	<div id="authParams" class="field-margin-left-16">
+		<div id="userPassAuthParams" class="hide">
+			<div>
+				<input name="username" type="text" placeholder="User">
+			</div>
+			<div>
+				<input name="password" type="password" placeholder="Password">
+			</div>
 		</div>
-		<div>
-			<input id="password" type="password" placeholder="Password">
+		<div id="apiKeyAuthParams" class="hide">
+			<div>
+				<input name="apiKey" type="password" placeholder="API Key">
+			</div>
 		</div>
 	</div>
 	<div class="field-margin-left-16">

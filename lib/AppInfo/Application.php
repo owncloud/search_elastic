@@ -29,6 +29,10 @@
 namespace OCA\Search_Elastic\AppInfo;
 
 use Elastica\Client as ElasticaClient;
+use OCA\Search_Elastic\Auth\AuthManager;
+use OCA\Search_Elastic\Auth\NullAuth;
+use OCA\Search_Elastic\Auth\ApiKeyAuth;
+use OCA\Search_Elastic\Auth\UserPassAuth;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\Hooks\Files;
 use OCA\Search_Elastic\Jobs\DeleteJob;
@@ -86,6 +90,16 @@ class Application extends App {
 				return $c->query('ServerContainer')->getUserSession()->getUser()->getUID();
 			}
 			return false;
+		});
+
+		$container->registerService(AuthManager::class, function (IAppContainer $c) {
+			$server = $c->getServer();
+
+			$authManager = new AuthManager();
+			$authManager->registerAuthMech('none', new NullAuth());
+			$authManager->registerAuthMech('userPass', new UserPassAuth($server->getCredentialsManager(), $server->getConfig()));
+			$authManager->registerAuthMech('apiKey', new ApiKeyAuth($server->getCredentialsManager()));
+			return $authManager;
 		});
 	}
 

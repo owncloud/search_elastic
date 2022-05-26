@@ -26,13 +26,13 @@
 namespace OCA\Search_Elastic;
 
 use OCA\Search_Elastic\AppInfo\Application;
+use OCA\Search_Elastic\Auth\AuthManager;
 use OCP\IConfig;
 use OCP\Security\ICredentialsManager;
 
 class SearchElasticConfigService {
 	public const SERVERS = 'servers';
-	public const SERVER_USER = 'server_user';
-	public const SERVER_PASSWORD = 'server_password';
+	public const SERVER_AUTH = 'server_auth';
 	public const SCAN_EXTERNAL_STORAGE = 'scanExternalStorages';
 	public const INDEX_MAX_FILE_SIZE = 'max_size';
 	public const INDEX_NO_CONTENT = 'nocontent';
@@ -40,8 +40,6 @@ class SearchElasticConfigService {
 	public const NO_CONTENT_GROUP = 'group.nocontent';
 	public const APP_MODE = 'mode';
 	public const ENABLED_GROUPS = 'group';
-
-	private const PASSWORD_KEY = 'search_elastic:pass';
 
 	/**
 	 * @var IConfig
@@ -51,15 +49,17 @@ class SearchElasticConfigService {
 	 * @var ICredentialsManager
 	 */
 	private $credentialsManager;
+	private $authManager;
 
 	/**
 	 * SearchElasticConfigService constructor.
 	 *
 	 * @param IConfig $config
 	 */
-	public function __construct(IConfig $config, ICredentialsManager $credentialsManager) {
+	public function __construct(IConfig $config, ICredentialsManager $credentialsManager, AuthManager $authManager) {
 		$this->owncloudConfig = $config;
 		$this->credentialsManager = $credentialsManager;
+		$this->authManager = $authManager;
 	}
 
 	/**
@@ -113,35 +113,51 @@ class SearchElasticConfigService {
 	}
 
 	/**
-	 * @param string $user
+	 * @param string $auth
+	 * @param array $authParams
 	 */
-	public function setServerUser($user) {
-		$this->setValue(self::SERVER_USER, $user);
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getServerUser() {
-		return $this->getValue(self::SERVER_USER, '');
-	}
-
-	/**
-	 * @param string $password
-	 */
-	public function setServerPassword($password) {
-		$this->credentialsManager->store('', self::PASSWORD_KEY, $password);
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getServerPassword() {
-		$password = $this->credentialsManager->retrieve('', self::PASSWORD_KEY);
-		if ($password === null) {
-			$password = '';
+	public function setServerAuth(string $auth, array $authParams) {
+		$oldAuth = $this->getValue(self::SERVER_AUTH, '');
+		if ($oldAuth !== $auth) {
+			$oldAuthObj = $this->authManager->getAuthByName($oldAuth);
+			if ($oldAuthObj) {
+				$oldAuthObj->clearAuthParams();
+			}
 		}
-		return $password;
+
+		$this->setValue(self::SERVER_AUTH, $auth);
+		$authObj = $this->authManager->getAuthByName($auth);
+		if ($authObj) {
+			$authObj->saveAuthParams($authParams);
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getServerAuth() {
+		$authData = [
+			'auth' => $this->getValue(self::SERVER_AUTH, ''),
+			'authParams' => [],
+		];
+
+		if ($authData['auth'] === '') {
+			return $authData;
+		}
+
+		$authObj = $this->authManager->getAuthByName($authData['auth']);
+		if ($authObj) {
+			$authData['authParams'] = $authObj->getAuthParams();
+		}
+		return $authData;
+	}
+
+	public function maskServerAuthData(array $authData) {
+		$authObj = $this->authManager->getAuthByName($authData['auth']);
+		if ($authObj) {
+			$authData['authParams'] = $authObj->maskAuthParams($authData['authParams']);
+		}
+		return $authData;
 	}
 
 	/**
@@ -238,11 +254,6 @@ class SearchElasticConfigService {
 		$servers = $this->getServers();
 		$serverList = \explode(',', $servers);
 
-		if ($this->getServerUser() !== '') {
-			$username = $this->getServerUser();
-			$password = $this->getServerPassword();
-		}
-
 		$results = [];
 		foreach ($serverList as $server) {
 			$parsedServer = \parse_url($server);
@@ -267,14 +278,25 @@ class SearchElasticConfigService {
 				$serverData['path'] = \ltrim($parsedServer['path'], '/');
 			}
 
-			if (isset($username, $password)) {
-				$serverData['username'] = $username;
-				$serverData['password'] = $password;
-			}
-
 			// if it's https but not explicit port is set, use port 443
 			if ($serverData['transport'] === 'https' && !isset($serverData['port'])) {
 				$serverData['port'] = 443;
+			}
+
+			$serverAuthData = $this->getServerAuth();
+			switch ($serverAuthData['auth']) {
+				case '':
+				case 'none':
+					break;  // no auth -> don't do anything
+				case 'userPass':
+					$serverData['username'] = $serverAuthData['authParams']['username'];
+					$serverData['password'] = $serverAuthData['authParams']['password'];
+					break;
+				case 'apiKey':
+					$serverData['headers'] = [
+						'Authorization' => "ApiKey {$serverAuthData['authParams']['apiKey']}",
+					];
+					break;
 			}
 
 			$results[] = $serverData;

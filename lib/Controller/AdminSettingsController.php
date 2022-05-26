@@ -36,8 +36,6 @@ use OCP\IRequest;
 use OCP\AppFramework\ApiController;
 
 class AdminSettingsController extends ApiController {
-	public const DEFAULT_PASS = 'examplepass*123test';
-
 	/**
 	 * @var SearchElasticConfigService
 	 */
@@ -66,14 +64,15 @@ class AdminSettingsController extends ApiController {
 	}
 
 	public function loadServers(): JSONResponse {
+		$authData = $this->config->getServerAuth();
+		$authData = $this->config->maskServerAuthData($authData);
 		return new JSONResponse([
 			SearchElasticConfigService::SERVERS => $this->config->getServers(),
-			SearchElasticConfigService::SERVER_USER => $this->config->getServerUser(),
-			SearchElasticConfigService::SERVER_PASSWORD => self::DEFAULT_PASS
+			SearchElasticConfigService::SERVER_AUTH => $authData,
 		]);
 	}
 
-	public function saveServers(string $servers, string $user, string $pass): JSONResponse {
+	public function saveServers(string $servers, string $authType, array $authParams = []): JSONResponse {
 		$serverList = \explode(',', $servers);
 		$sanitizedServerList = [];
 		foreach ($serverList as $server) {
@@ -114,15 +113,7 @@ class AdminSettingsController extends ApiController {
 		$sanitizedServers = \implode(',', $sanitizedServerList);
 
 		$this->config->setServers($sanitizedServers);
-		if ($user !== '') {
-			$this->config->setServerUser($user);
-			if ($pass !== self::DEFAULT_PASS) {
-				$this->config->setServerPassword($pass);
-			}
-		} else {
-			$this->config->setServerUser('');
-			$this->config->setServerPassword('');
-		}
+		$this->config->setServerAuth($authType, $authParams);
 		return new JSONResponse();
 	}
 

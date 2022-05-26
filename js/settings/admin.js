@@ -1,7 +1,6 @@
 (function(){
 
 	$(document).ready(function() {
-        hideUserPassSettings();
 		var $searchElasticSettings = $('#searchElasticSettings');
 
 		function loadServers($element) {
@@ -9,26 +8,35 @@
 				OC.generateUrl('apps/search_elastic/settings/servers')
 			).done(function( result ) {
 				var host = result.servers;
-				var user = result.server_user;
-				var pass = result.server_password;
-				$element.val(host);
-				if(user) {
-					showSelectedAutenticationSettings('userPassOption');
-					$('#user').val(user);
-					$('#password').val(pass);
-					$('select').val('userPassOption');
+				var authType = result.server_auth.auth;
+
+				if (authType === '') {
+					authType = 'none';
 				}
 
+				$element.find('#host').val(host);
+				$element.find('#authType').val(authType);
+				showSelectedAutenticationSettings(authType);
+
+				var authParams = result.server_auth.authParams;
+				var $authParamsElem = $element.find('#' + getTargetAuthParamsDivId(authType));
+				$.each(authParams, function(key, value) {
+					$authParamsElem.find('input[name="' + key + '"]').val(value);
+				});
 			}).fail(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
 				OC.dialogs.alert(result.responseJSON.message, t('search_elastic', 'Could not load servers'));
 			});
 		}
-		function saveServers(servers, user, pass) {
+		function saveServers(servers, authType, authParams) {
 			return $.post(
 				OC.generateUrl('apps/search_elastic/settings/servers'),
-				{ servers: servers, user: user, pass: pass }
-			).fail(function( result ) {
+				{ servers: servers, authType: authType, authParams: authParams }
+			).done(function() {
+				var authTypeDivId = getTargetAuthParamsDivId(authType);
+				// clear all the other inputs from other authTypes
+				$('#authParams > div:not(#' + authTypeDivId + ') input').val('');
+			}).fail(function( result ) {
 				$searchElasticSettings.find('.icon').addClass('error').removeClass('success icon-loading-small');
 				OC.dialogs.alert(result.responseJSON.message, t('search_elastic', 'Could not save servers'));
 			});
@@ -93,33 +101,19 @@
 		}
 
 		$('#saveConfiguration').on('click', function(e) {
-			var user = "";
-			var pass = "";
 			var host = $('#host').val();
-			var option = $('select').children("option:selected").val();
-			if (option == 'userPassOption') {
-				if(!userOrPasswordEmpty()) {
-					user = $('#user').val();
-					pass = $('#password').val();
-				} else {
-					return;
-				}
-			}
-			saveServers(host, user, pass)
+			var auth = $('#authType').val();
+			var authParams = {};
+
+			$('#' + getTargetAuthParamsDivId(auth) + ' input').each(function () {
+				var $currentElement = $(this);
+				authParams[$currentElement.attr('name')] = $currentElement.val();
+			});
+			saveServers(host, auth, authParams)
 			.done(function() {
 				checkStatus();
 			});
 		});
-
-		function userOrPasswordEmpty() {
-			var user = $('#user').val();
-			var password = $('#password').val();
-			if (user == '' || password == '') {
-				OC.dialogs.alert('User or Password empty.', t('search_elastic', 'Invalid parameters'));
-				return true;				
-			}
-			return false;
-		}
 
 		$('#rescan').on('click', function(e) {
 			setup();
@@ -129,33 +123,20 @@
 			toggleScanExternalStorages($searchElasticSettings.find('input[type="checkbox"]'));
 		});
 
-		$('#authenticationSettings').change(function(){
-			var option = $(this).children("option:selected").val();
-			showSelectedAutenticationSettings(option);
-		  });
-		
-		function showUserPassSettings() {
-			var $userPassSettings = $('#userPassSettings');
-			$userPassSettings.removeClass('hide');
-			$userPassSettings.addClass('show');
-		}
+		$('#authType').change(function(){
+			showSelectedAutenticationSettings($(this).val());
+		});
 
-		function hideUserPassSettings() {
-			var $userPassSettings = $('#userPassSettings');
-			$userPassSettings.removeClass('show');
-			$userPassSettings.addClass('hide');
+		function getTargetAuthParamsDivId(authOption) {
+			return authOption + 'AuthParams';
 		}
 
 		function showSelectedAutenticationSettings(option) {
-			if (option == 'userPassOption') {
-				showUserPassSettings();
-			}
-			else {
-				hideUserPassSettings();
-			}
+			$('#authParams > div').hide();
+			$('#authParams > div#' + getTargetAuthParamsDivId(option)).show();
 		}
-		
-		loadServers($searchElasticSettings.find('#host'));
+
+		loadServers($searchElasticSettings);
 		getScanExternalStorages($searchElasticSettings.find('input[type="checkbox"]'));
 		checkStatus();
 

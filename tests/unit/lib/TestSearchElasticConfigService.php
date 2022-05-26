@@ -26,12 +26,15 @@ namespace OCA\Search_Elastic\Tests\Unit\Lib;
 
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\SearchElasticConfigService;
+use OCA\Search_Elastic\Auth\AuthManager;
+use OCA\Search_Elastic\Auth\IAuth;
 use OCP\IConfig;
 use OCP\Security\ICredentialsManager;
 
 class TestSearchElasticConfigService extends \Test\TestCase {
 	private $owncloudConfigService;
 	private $credentialsManager;
+	private $authManager;
 
 	/**
 	 * @var SearchElasticConfigService
@@ -43,9 +46,12 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 			->disableOriginalConstructor()
 			->getMock();
 		$this->credentialsManager = $this->createMock(ICredentialsManager::class);
+		$this->authManager = $this->createMock(AuthManager::class);
+
 		$this->searchElasticConfigService = new SearchElasticConfigService(
 			$this->owncloudConfigService,
-			$this->credentialsManager
+			$this->credentialsManager,
+			$this->authManager
 		);
 	}
 
@@ -93,48 +99,95 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 		$this->searchElasticConfigService->getUserValue('1', 'key', 'default');
 	}
 
-	public function testSetServerUser() {
-		$this->owncloudConfigService->expects($this->once())
-			->method('setAppValue')
-			->with(Application::APP_ID, SearchElasticConfigService::SERVER_USER, 'testUser');
-		$this->searchElasticConfigService->setServerUser('testUser');
-	}
+	public function testSetServerAuth() {
+		$authParams = [
+			'name' => 'randomString',
+			'magic' => '123abc',
+		];
 
-	public function testGetServerUser() {
 		$this->owncloudConfigService->expects($this->once())
 			->method('getAppValue')
-			->with(Application::APP_ID, SearchElasticConfigService::SERVER_USER, '')
-			->willReturn('testUser0001');
-		$this->assertSame('testUser0001', $this->searchElasticConfigService->getServerUser());
+			->with(Application::APP_ID, SearchElasticConfigService::SERVER_AUTH, '')
+			->willReturn('');
+
+		$namedAuthMock = $this->createMock(IAuth::class);
+		$this->authManager->method('getAuthByName')
+			->will($this->returnValueMap([
+				['', null],
+				['named', $namedAuthMock],
+			]));
+
+		$this->owncloudConfigService->expects($this->once())
+			->method('setAppValue')
+			->with(Application::APP_ID, SearchElasticConfigService::SERVER_AUTH, 'named');
+
+		$namedAuthMock->expects($this->once())
+		->method('saveAuthParams')
+		->with($authParams);
+
+		$this->searchElasticConfigService->setServerAuth('named', $authParams);
 	}
 
-	public function testSetServerPassword() {
-		$this->credentialsManager->expects($this->once())
-			->method('store')
-			->with('', $this->anything(), 'MyPassÖrd123');
-		$this->searchElasticConfigService->setServerPassword('MyPassÖrd123');
+	public function testSetServerAuthWithOld() {
+		$authParams = [
+			'name' => 'randomString',
+			'magic' => '123abc',
+		];
+
+		$this->owncloudConfigService->expects($this->once())
+			->method('getAppValue')
+			->with(Application::APP_ID, SearchElasticConfigService::SERVER_AUTH, '')
+			->willReturn('old');
+
+		$oldAuthMock = $this->createMock(IAuth::class);
+		$namedAuthMock = $this->createMock(IAuth::class);
+		$this->authManager->method('getAuthByName')
+			->will($this->returnValueMap([
+				['old', $oldAuthMock],
+				['named', $namedAuthMock],
+			]));
+
+		$this->owncloudConfigService->expects($this->once())
+			->method('setAppValue')
+			->with(Application::APP_ID, SearchElasticConfigService::SERVER_AUTH, 'named');
+
+		$oldAuthMock->expects($this->once())
+			->method('clearAuthParams');
+
+		$namedAuthMock->expects($this->once())
+		->method('saveAuthParams')
+		->with($authParams);
+
+		$this->searchElasticConfigService->setServerAuth('named', $authParams);
 	}
 
-	public function testGetServerPassword() {
-		$this->credentialsManager->expects($this->once())
-			->method('retrieve')
-			->with('', $this->anything())
-			->willReturn('MyPassÖrd123');
-		$this->assertSame('MyPassÖrd123', $this->searchElasticConfigService->getServerPassword());
-	}
+	public function testGetServerAuth() {
+		$this->owncloudConfigService->expects($this->once())
+			->method('getAppValue')
+			->with(Application::APP_ID, SearchElasticConfigService::SERVER_AUTH, '')
+			->willReturn('named');
 
-	public function testGetServerPasswordMissing() {
-		$this->credentialsManager->expects($this->once())
-			->method('retrieve')
-			->with('', $this->anything())
-			->willReturn(null);
-		$this->assertSame('', $this->searchElasticConfigService->getServerPassword());
+		$namedAuthMock = $this->createMock(IAuth::class);
+		$this->authManager->method('getAuthByName')
+			->will($this->returnValueMap([
+				['named', $namedAuthMock],
+			]));
+
+		$namedAuthMock->expects($this->once())
+			->method('getAuthParams')
+			->willReturn(['name' => 'ooo', 'magic' => '123abc']);
+
+		$expected = [
+			'auth' => 'named',
+			'authParams' => ['name' => 'ooo', 'magic' => '123abc'],
+		];
+		$this->assertSame($expected, $this->searchElasticConfigService->getServerAuth());
 	}
 
 	public function parseServersProvider() {
 		return [
 			[
-				'10.10.10.10', '', '',
+				'10.10.10.10', '', [],
 				[
 					'servers' => [
 						[
@@ -145,7 +198,7 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 				],
 			],
 			[
-				'10.10.10.10:9999', '', '',
+				'10.10.10.10:9999', '', [],
 				[
 					'servers' => [
 						[
@@ -157,7 +210,7 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 				],
 			],
 			[
-				'10.10.10.10:9999/mypath', '', '',
+				'10.10.10.10:9999/mypath', '', [],
 				[
 					'servers' => [
 						[
@@ -170,7 +223,7 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 				],
 			],
 			[
-				'10.10.10.10:9999/mypath', 'usertest1', '',
+				'10.10.10.10:9999/mypath', 'userPass', ['username' => 'usertest1', 'password' => ''],
 				[
 					'servers' => [
 						[
@@ -185,7 +238,7 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 				],
 			],
 			[
-				'10.10.10.10:9999/mypath', 'usertest1', 'testPassword',
+				'10.10.10.10:9999/mypath', 'userPass', ['username' => 'usertest1', 'password' => 'testPassword'],
 				[
 					'servers' => [
 						[
@@ -200,7 +253,7 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 				],
 			],
 			[
-				'10.10.10.10:9999/mypath', '', 'testPassword',
+				'10.10.10.10:9999/mypath', 'apiKey', ['apiKey' => 'aRandomApiKey007'],
 				[
 					'servers' => [
 						[
@@ -208,12 +261,15 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 							'port' => 9999,
 							'transport' => 'http',
 							'path' => 'mypath',
+							'headers' => [
+								'Authorization' => 'ApiKey aRandomApiKey007',
+							],
 						],
 					],
 				],
 			],
 			[
-				'http://10.10.10.10', '', '',
+				'http://10.10.10.10', '', [],
 				[
 					'servers' => [
 						[
@@ -224,7 +280,7 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 				],
 			],
 			[
-				'https://10.10.10.10', '', '',
+				'https://10.10.10.10', '', [],
 				[
 					'servers' => [
 						[
@@ -236,7 +292,7 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 				],
 			],
 			[
-				'https://10.10.10.10:8888', '', '',
+				'https://10.10.10.10:8888', '', [],
 				[
 					'servers' => [
 						[
@@ -248,7 +304,7 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 				],
 			],
 			[
-				'https://10.10.10.10:8888/my/path/', '', '',
+				'https://10.10.10.10:8888/my/path/', '', [],
 				[
 					'servers' => [
 						[
@@ -266,15 +322,20 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 	/**
 	 * @dataProvider parseServersProvider
 	 */
-	public function testParseServers($servers, $username, $password, $expected) {
+	public function testParseServers($servers, $auth, $authParams, $expected) {
+		$authMock = $this->createMock(IAuth::class);
+		$authMock->method('getAuthParams')
+			->willReturn($authParams);
+
 		$this->owncloudConfigService->method('getAppValue')
 			->will($this->returnValueMap([
 				[Application::APP_ID, SearchElasticConfigService::SERVERS, 'localhost:9200', $servers],
-				[Application::APP_ID, SearchElasticConfigService::SERVER_USER, '', $username],
+				[Application::APP_ID, SearchElasticConfigService::SERVER_AUTH, '', $auth],
 			]));
-		$this->credentialsManager->method('retrieve')
-			->with('', $this->anything())
-			->willReturn($password);
+
+		$this->authManager->method('getAuthByName')
+			->with($auth)
+			->willReturn($authMock);
 		$this->assertEquals($expected, $this->searchElasticConfigService->parseServers());
 	}
 }

@@ -113,8 +113,11 @@ class SearchElasticConfigService {
 	}
 
 	/**
-	 * @param string $auth
-	 * @param array $authParams
+	 * Set the server authentication to be used
+	 * @param string $auth the name of any authentication method registered
+	 * in the \OCA\Search_Elastic\Auth\AuthManager
+	 * @param array<string, string> $authParams the parameters for the chosen
+	 * authentication method
 	 */
 	public function setServerAuth(string $auth, array $authParams) {
 		$oldAuth = $this->getValue(self::SERVER_AUTH, '');
@@ -133,7 +136,19 @@ class SearchElasticConfigService {
 	}
 
 	/**
-	 * @return array
+	 * Get the server authentication method saved. It will return an array containing
+	 * the chosen authentication method and the parameters saved along with it.
+	 * ```
+	 * $serverAuth = [
+	 *   'auth' => 'chosenAuthMethod',
+	 *   'authParams' => [
+	 *     'param1' => 'value1',
+	 *     'param2' => 'value2',
+	 *   ],
+	 * ];
+	 * ```
+	 * If the chosen auth is empty or it doesn't exists, the 'authParams' map will be empty
+	 * @return array the formatted data as explained
 	 */
 	public function getServerAuth() {
 		$authData = [
@@ -152,6 +167,22 @@ class SearchElasticConfigService {
 		return $authData;
 	}
 
+	/**
+	 * Mask the authData according to the rules set by the chosen auth mechanism.
+	 * This method is intended to be used before sending the data to the outside
+	 * in order to hide critical information.
+	 * The $authData needs to have the same format as the one returned by the
+	 * `getServerAuth` method.
+	 * ```
+	 * $maskedData = $this->maskServerAuthData($this->getServerAuth());
+	 * ```
+	 * Note that the masking process is performed by the specific auth mechanism.
+	 * You shouldn't need to modify the data by yourself.
+	 * @param array $authData the authentication data coming from the `getServerAuth`
+	 * method.
+	 * @return array the masked auth data. The format will be the same of the
+	 * `getServerAuth` method, but with masked information.
+	 */
 	public function maskServerAuthData(array $authData) {
 		$authObj = $this->authManager->getAuthByName($authData['auth']);
 		if ($authObj) {
@@ -285,9 +316,6 @@ class SearchElasticConfigService {
 
 			$serverAuthData = $this->getServerAuth();
 			switch ($serverAuthData['auth']) {
-				case '':
-				case 'none':
-					break;  // no auth -> don't do anything
 				case 'userPass':
 					$serverData['username'] = $serverAuthData['authParams']['username'];
 					$serverData['password'] = $serverAuthData['authParams']['password'];
@@ -296,6 +324,10 @@ class SearchElasticConfigService {
 					$serverData['headers'] = [
 						'Authorization' => "ApiKey {$serverAuthData['authParams']['apiKey']}",
 					];
+					break;
+				default:
+					// this covers the cases '' and 'none'
+					// do nothing by default
 					break;
 			}
 

@@ -25,19 +25,34 @@ namespace OCA\Search_Elastic\Auth;
 
 use OCP\Security\ICredentialsManager;
 
+/**
+ * Class to handle API key. The API key is considered critical and will
+ * be saved in the credentials manager.
+ * Only the "apiKey" key will be handled
+ */
 class ApiKeyAuth implements IAuth {
+	/** @var ICredentialsManager */
 	private $credentialsManager;
 
 	private $requiredAuthKeys = ['apiKey'];
 
+	/**
+	 * @params ICredentialsManager $credentialsManager
+	 */
 	public function __construct(ICredentialsManager $credentialsManager) {
 		$this->credentialsManager = $credentialsManager;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function getRequiredAuthKeys(): array {
 		return $this->requiredAuthKeys;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function saveAuthParams(array $authParams): bool {
 		// validation
 		if (!isset($authParams['apiKey']) || !\is_string($authParams['apiKey'])) {
@@ -48,6 +63,9 @@ class ApiKeyAuth implements IAuth {
 		return true;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function getAuthParams(): array {
 		$authParams = [];
 
@@ -59,10 +77,16 @@ class ApiKeyAuth implements IAuth {
 		return $authParams;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function clearAuthParams(): void {
 		$this->credentialsManager->delete('', IAuth::CRED_KEY_PREFIX . 'apiKey');
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function maskAuthParams(array $authParams): array {
 		$maskedParams = [];
 		if (isset($authParams['apiKey'])) {

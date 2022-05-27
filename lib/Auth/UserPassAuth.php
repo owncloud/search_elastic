@@ -27,21 +27,38 @@ use OCA\Search_Elastic\AppInfo\Application;
 use OCP\Security\ICredentialsManager;
 use OCP\IConfig;
 
+/**
+ * Class to handle username + password. The password is considered critical,
+ * it will be saved in the credentials manager and will be masked.
+ * Only "username" and "password" keys will be handled. The rest will be ignored.
+ */
 class UserPassAuth implements IAuth {
+	/** @var ICredentialsManager */
 	private $credentialsManager;
+	/** @var IConfig */
 	private $config;
 
 	private $requiredAuthKeys = ['username', 'password'];
 
+	/**
+	 * @params ICredentialsManager $credentialsManager
+	 * @params IConfig $config
+	 */
 	public function __construct(ICredentialsManager $credentialsManager, IConfig $config) {
 		$this->credentialsManager = $credentialsManager;
 		$this->config = $config;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function getRequiredAuthKeys(): array {
 		return $this->requiredAuthKeys;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function saveAuthParams(array $authParams): bool {
 		// validation
 		foreach ($this->requiredAuthKeys as $requiredKey) {
@@ -61,6 +78,9 @@ class UserPassAuth implements IAuth {
 		return true;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function getAuthParams(): array {
 		$authParams = [];
 		foreach ($this->requiredAuthKeys as $requiredKey) {
@@ -78,6 +98,9 @@ class UserPassAuth implements IAuth {
 		return $authParams;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function clearAuthParams(): void {
 		foreach ($this->requiredAuthKeys as $requiredKey) {
 			if ($requiredKey === 'password') {
@@ -89,6 +112,9 @@ class UserPassAuth implements IAuth {
 		}
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function maskAuthParams(array $authParams): array {
 		$maskedParams = [];
 		foreach ($this->requiredAuthKeys as $requiredKey) {

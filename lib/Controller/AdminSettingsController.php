@@ -78,43 +78,67 @@ class AdminSettingsController extends ApiController {
 		foreach ($serverList as $server) {
 			// validation
 			$parsedServer = \parse_url($server);
-			if ($parsedServer === false) {
-				return new JSONResponse(['message' => 'The url format is incorrect.'], Http::STATUS_EXPECTATION_FAILED);
-			}
-
-			$mustNotBePresentKeys = ['user', 'pass', 'query', 'fragment'];
-			foreach ($mustNotBePresentKeys as $key) {
-				if (isset($parsedServer[$key])) {
-					return new JSONResponse(['message' => 'The url contains components that won\'t be used.'], Http::STATUS_EXPECTATION_FAILED);
-				}
-			}
-			if (!isset($parsedServer['host'])) {
-				return new JSONResponse(['message' => 'The url must contains at least a host.'], Http::STATUS_EXPECTATION_FAILED);
-			}
 
 			if (!isset($parsedServer['scheme'])) {
 				// assume HTTP
 				$parsedServer['scheme'] = 'http';
 			}
-			if ($parsedServer['scheme'] !== 'http' && $parsedServer['scheme'] !== 'https') {
-				return new JSONResponse(['message' => 'The url contains invalid scheme.'], Http::STATUS_EXPECTATION_FAILED);
+
+			$errorMessage = $this->verifyParsedServer($parsedServer);
+			if ($errorMessage) {
+				return new JSONResponse(['message' => $errorMessage], Http::STATUS_EXPECTATION_FAILED);
 			}
 
 			// build sanitized url
-			$sanitizedServer = "{$parsedServer['scheme']}://{$parsedServer['host']}";
-			if (isset($parsedServer['port'])) {
-				$sanitizedServer .= ":{$parsedServer['port']}";
-			}
-			if (isset($parsedServer['path'])) {
-				$sanitizedServer .= $parsedServer['path'];
-			}
-			$sanitizedServerList[] = $sanitizedServer;
+			$sanitizedServerList[] = $this->buildFromParsedUrl($parsedServer);
 		}
 		$sanitizedServers = \implode(',', $sanitizedServerList);
 
 		$this->config->setServers($sanitizedServers);
 		$this->config->setServerAuth($authType, $authParams);
 		return new JSONResponse();
+	}
+
+	/**
+	 * The $parsedServer var is the result of a `parse_url` call. This method will return
+	 * a string containing the error message or null if there is no error.
+	 */
+	private function verifyParsedServer($parsedServer) {
+		if ($parsedServer === false) {
+			return 'The url format is incorrect.';
+		}
+
+		$mustNotBePresentKeys = ['user', 'pass', 'query', 'fragment'];
+		foreach ($mustNotBePresentKeys as $key) {
+			if (isset($parsedServer[$key])) {
+				return 'The url contains components that won\'t be used.';
+			}
+		}
+		if (!isset($parsedServer['host'])) {
+			return 'The url must contains at least a host.';
+		}
+
+		if ($parsedServer['scheme'] !== 'http' && $parsedServer['scheme'] !== 'https') {
+			return 'The url contains invalid scheme.';
+		}
+		return null;
+	}
+
+	/**
+	 * The $parsedServer var is the result of a `parse_url` call. Only "scheme",
+	 * "host", "port" and "path" components will be used, the rest will be ignored.
+	 * Note tha "scheme" and "host" are expected to be always present.
+	 */
+	private function buildFromParsedUrl($parsedServer) {
+		// build sanitized url
+		$sanitizedServer = "{$parsedServer['scheme']}://{$parsedServer['host']}";
+		if (isset($parsedServer['port'])) {
+			$sanitizedServer .= ":{$parsedServer['port']}";
+		}
+		if (isset($parsedServer['path'])) {
+			$sanitizedServer .= $parsedServer['path'];
+		}
+		return $sanitizedServer;
 	}
 
 	public function getScanExternalStorages(): JSONResponse {

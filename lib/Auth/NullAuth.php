@@ -23,26 +23,42 @@
 
 namespace OCA\Search_Elastic\Auth;
 
+/**
+ * Class implementing a "no authentication needed" mechanism
+ * No authentication parameters will be saved, and masking won't do anything
+ */
 class NullAuth implements IAuth {
-	public function __construct() {
-	}
-
+	/**
+	 * @inheritDoc
+	 */
 	public function getRequiredAuthKeys(): array {
 		return [];
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function saveAuthParams(array $authParams): bool {
 		return true;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function getAuthParams(): array {
 		return [];
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function clearAuthParams(): void {
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function maskAuthParams(array $authParams): array {
-		return $authParams;
+		return [];
 	}
 }

@@ -23,14 +23,34 @@
 
 namespace OCA\Search_Elastic\Auth;
 
+/**
+ * Class to provide a simple registration mechanism for the IAuth classes
+ * The registration is expected to happen in the
+ * \OCA\Search_Elastic\AppInfo\Application class to be easier to inject all
+ * the dependencies. Registering additional class out of the app initialization
+ * is possible, but might become problematic
+ */
 class AuthManager {
+	/** @var array<string, IAuth> */
 	private $authMap = [];
 
+	/**
+	 * Register the IAuth class under the given name.
+	 * If the name is being used, the new IAuth will override the previous one
+	 * @param string $name the name that will be used to get the IAuth
+	 * @param IAuth $auth the IAuth to be registered
+	 */
 	public function registerAuthMech(string $name, IAuth $auth) {
 		$this->authMap[$name] = $auth;
 	}
 
-	public function getAuthByName(string $name) {
+	/**
+	 * Get the IAuth object registered under the specified name, or null otherwise.
+	 * @params string $name the name under the IAuth object has been registered
+	 * @return IAuth|null the IAuth object or null if there is no IAuth object registered
+	 * under that name.
+	 */
+	public function getAuthByName(string $name): ?IAuth {
 		if (!isset($this->authMap[$name])) {
 			return null;
 		}

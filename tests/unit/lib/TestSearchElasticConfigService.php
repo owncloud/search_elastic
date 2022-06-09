@@ -161,6 +161,15 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 		$this->searchElasticConfigService->setServerAuth('named', $authParams);
 	}
 
+	public function testGetServerAuthEmpty() {
+		$this->owncloudConfigService->expects($this->once())
+			->method('getAppValue')
+			->with(Application::APP_ID, SearchElasticConfigService::SERVER_AUTH, '')
+			->willReturn('');
+
+		$this->assertEquals(['auth' => '', 'authParams' => []], $this->searchElasticConfigService->getServerAuth());
+	}
+
 	public function testGetServerAuth() {
 		$this->owncloudConfigService->expects($this->once())
 			->method('getAppValue')
@@ -182,6 +191,63 @@ class TestSearchElasticConfigService extends \Test\TestCase {
 			'authParams' => ['name' => 'ooo', 'magic' => '123abc'],
 		];
 		$this->assertSame($expected, $this->searchElasticConfigService->getServerAuth());
+	}
+
+	public function testMaskServerAuthData() {
+		$authObj = $this->createMock(IAuth::class);
+		$authObj->expects($this->once())
+			->method('maskAuthParams')
+			->will($this->returnCallback(function ($params) {
+				return \array_map(function ($elem) {
+					return "_{$elem}_";
+				}, $params);
+			}));
+
+		$this->authManager->expects($this->once())
+			->method('getAuthByName')
+			->with('named')
+			->willReturn($authObj);
+
+		$authData = [
+			'auth' => 'named',
+			'authParams' => [
+				'username' => 'user001',
+				'password' => 'pass009',
+			],
+		];
+		$expectedResult = [
+			'auth' => 'named',
+			'authParams' => [
+				'username' => '_user001_',
+				'password' => '_pass009_',
+			],
+		];
+
+		$this->assertEquals($expectedResult, $this->searchElasticConfigService->maskServerAuthData($authData));
+	}
+
+	public function testMaskServerAuthDataMissingAuth() {
+		$this->authManager->expects($this->once())
+			->method('getAuthByName')
+			->with('missing')
+			->willReturn(null);
+
+		$authData = [
+			'auth' => 'missing',
+			'authParams' => [
+				'username' => 'user001',
+				'password' => 'pass009',
+			],
+		];
+		$expectedResult = [
+			'auth' => 'missing',
+			'authParams' => [
+				'username' => 'user001',
+				'password' => 'pass009',
+			],
+		];
+
+		$this->assertEquals($expectedResult, $this->searchElasticConfigService->maskServerAuthData($authData));
 	}
 
 	public function parseServersProvider() {

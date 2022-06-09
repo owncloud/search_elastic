@@ -79,14 +79,14 @@ class AdminSettingsController extends ApiController {
 			// validation
 			$parsedServer = \parse_url($server);
 
-			if (!isset($parsedServer['scheme'])) {
-				// assume HTTP
-				$parsedServer['scheme'] = 'http';
-			}
-
 			$errorMessage = $this->verifyParsedServer($parsedServer);
 			if ($errorMessage) {
 				return new JSONResponse(['message' => $errorMessage], Http::STATUS_EXPECTATION_FAILED);
+			}
+
+			if (!isset($parsedServer['scheme'])) {
+				// assume HTTP
+				$parsedServer['scheme'] = 'http';
 			}
 
 			// build sanitized url
@@ -118,7 +118,7 @@ class AdminSettingsController extends ApiController {
 			return 'The url must contains at least a host.';
 		}
 
-		if ($parsedServer['scheme'] !== 'http' && $parsedServer['scheme'] !== 'https') {
+		if (isset($parsedServer['scheme']) && ($parsedServer['scheme'] !== 'http' && $parsedServer['scheme'] !== 'https')) {
 			return 'The url contains invalid scheme.';
 		}
 		return null;

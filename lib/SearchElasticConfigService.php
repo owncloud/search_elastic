@@ -147,7 +147,7 @@ class SearchElasticConfigService {
 	 *   ],
 	 * ];
 	 * ```
-	 * If the chosen auth is empty or it doesn't exists, the 'authParams' map will be empty
+	 * If the chosen auth is empty or it doesn't exist, the 'authParams' map will be empty
 	 * @return array the formatted data as explained
 	 */
 	public function getServerAuth() {
@@ -180,7 +180,7 @@ class SearchElasticConfigService {
 	 * You shouldn't need to modify the data by yourself.
 	 * @param array $authData the authentication data coming from the `getServerAuth`
 	 * method.
-	 * @return array the masked auth data. The format will be the same of the
+	 * @return array the masked auth data. The format will be the same as the
 	 * `getServerAuth` method, but with masked information.
 	 */
 	public function maskServerAuthData(array $authData) {
@@ -309,7 +309,7 @@ class SearchElasticConfigService {
 				$serverData['path'] = \ltrim($parsedServer['path'], '/');
 			}
 
-			// if it's https but not explicit port is set, use port 443
+			// if it's https but no explicit port is set, use port 443
 			if ($serverData['transport'] === 'https' && !isset($serverData['port'])) {
 				$serverData['port'] = 443;
 			}

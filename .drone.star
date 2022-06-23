@@ -1839,7 +1839,7 @@ def setupElasticSearch(esVersion):
             "image": OC_CI_PHP % DEFAULT_PHP_VERSION,
             "commands": [
                 "cd %s" % dir["server"],
-                "php occ config:app:set search_elastic servers --value elasticsearch",
+                "php occ config:app:set search_elastic servers --value http://elasticsearch:9200",
                 "php occ search:index:reset --force",
             ],
         },

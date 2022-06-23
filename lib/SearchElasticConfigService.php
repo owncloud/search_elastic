@@ -26,10 +26,13 @@
 namespace OCA\Search_Elastic;
 
 use OCA\Search_Elastic\AppInfo\Application;
+use OCA\Search_Elastic\Auth\AuthManager;
 use OCP\IConfig;
+use OCP\Security\ICredentialsManager;
 
 class SearchElasticConfigService {
 	public const SERVERS = 'servers';
+	public const SERVER_AUTH = 'server_auth';
 	public const SCAN_EXTERNAL_STORAGE = 'scanExternalStorages';
 	public const INDEX_MAX_FILE_SIZE = 'max_size';
 	public const INDEX_NO_CONTENT = 'nocontent';
@@ -42,14 +45,21 @@ class SearchElasticConfigService {
 	 * @var IConfig
 	 */
 	private $owncloudConfig;
+	/**
+	 * @var ICredentialsManager
+	 */
+	private $credentialsManager;
+	private $authManager;
 
 	/**
 	 * SearchElasticConfigService constructor.
 	 *
 	 * @param IConfig $config
 	 */
-	public function __construct(IConfig $config) {
+	public function __construct(IConfig $config, ICredentialsManager $credentialsManager, AuthManager $authManager) {
 		$this->owncloudConfig = $config;
+		$this->credentialsManager = $credentialsManager;
+		$this->authManager = $authManager;
 	}
 
 	/**
@@ -103,11 +113,90 @@ class SearchElasticConfigService {
 	}
 
 	/**
+	 * Set the server authentication to be used
+	 * @param string $auth the name of any authentication method registered
+	 * in the \OCA\Search_Elastic\Auth\AuthManager
+	 * @param array<string, string> $authParams the parameters for the chosen
+	 * authentication method
+	 */
+	public function setServerAuth(string $auth, array $authParams) {
+		$oldAuth = $this->getValue(self::SERVER_AUTH, '');
+		if ($oldAuth !== $auth) {
+			$oldAuthObj = $this->authManager->getAuthByName($oldAuth);
+			if ($oldAuthObj) {
+				$oldAuthObj->clearAuthParams();
+			}
+		}
+
+		$this->setValue(self::SERVER_AUTH, $auth);
+		$authObj = $this->authManager->getAuthByName($auth);
+		if ($authObj) {
+			$authObj->saveAuthParams($authParams);
+		}
+	}
+
+	/**
+	 * Get the server authentication method saved. It will return an array containing
+	 * the chosen authentication method and the parameters saved along with it.
+	 * ```
+	 * $serverAuth = [
+	 *   'auth' => 'chosenAuthMethod',
+	 *   'authParams' => [
+	 *     'param1' => 'value1',
+	 *     'param2' => 'value2',
+	 *   ],
+	 * ];
+	 * ```
+	 * If the chosen auth is empty or it doesn't exist, the 'authParams' map will be empty
+	 * @return array the formatted data as explained
+	 */
+	public function getServerAuth() {
+		$authData = [
+			'auth' => $this->getValue(self::SERVER_AUTH, ''),
+			'authParams' => [],
+		];
+
+		if ($authData['auth'] === '') {
+			return $authData;
+		}
+
+		$authObj = $this->authManager->getAuthByName($authData['auth']);
+		if ($authObj) {
+			$authData['authParams'] = $authObj->getAuthParams();
+		}
+		return $authData;
+	}
+
+	/**
+	 * Mask the authData according to the rules set by the chosen auth mechanism.
+	 * This method is intended to be used before sending the data to the outside
+	 * in order to hide critical information.
+	 * The $authData needs to have the same format as the one returned by the
+	 * `getServerAuth` method.
+	 * ```
+	 * $maskedData = $this->maskServerAuthData($this->getServerAuth());
+	 * ```
+	 * Note that the masking process is performed by the specific auth mechanism.
+	 * You shouldn't need to modify the data by yourself.
+	 * @param array $authData the authentication data coming from the `getServerAuth`
+	 * method.
+	 * @return array the masked auth data. The format will be the same as the
+	 * `getServerAuth` method, but with masked information.
+	 */
+	public function maskServerAuthData(array $authData) {
+		$authObj = $this->authManager->getAuthByName($authData['auth']);
+		if ($authObj) {
+			$authData['authParams'] = $authObj->maskAuthParams($authData['authParams']);
+		}
+		return $authData;
+	}
+
+	/**
 	 * Returns an array of servers
 	 * @return array
 	 */
 	public function getParsedServers() {
-		return $this->parseServers($this->getServers());
+		return $this->parseServers();
 	}
 
 	/**
@@ -190,63 +279,60 @@ class SearchElasticConfigService {
 	}
 
 	/**
-	 * @param string $servers
 	 * @return array
 	 */
-	public function parseServers($servers) {
-		$serverArr = \explode(',', $servers);
+	public function parseServers() {
+		$servers = $this->getServers();
+		$serverList = \explode(',', $servers);
+
 		$results = [];
-		foreach ($serverArr as $serverPart) {
-			$server = [
-				'host' => 'localhost',
-				'port' => 9200
-			];
-			if (\str_contains($serverPart, '@')) {
-				$this->parseServerWithUserPassAuthentication($serverPart, $server);
-			} else {
-				$this->parseServerWithoutAuthentication($serverPart, $server);
+		foreach ($serverList as $server) {
+			$parsedServer = \parse_url($server);
+
+			$serverData = [];
+
+			if (isset($parsedServer['host'])) {
+				$serverData['host'] = $parsedServer['host'];
 			}
-			$results[] = $server;
-		}
-		if (\count($results) === 1) {
-			return $results[0];
+
+			if (isset($parsedServer['port'])) {
+				$serverData['port'] = $parsedServer['port'];
+			}
+
+			if (isset($parsedServer['scheme'])) {
+				$serverData['transport'] = $parsedServer['scheme'];
+			} else {
+				$serverData['transport'] = 'http';
+			}
+
+			if (isset($parsedServer['path'])) {
+				$serverData['path'] = \ltrim($parsedServer['path'], '/');
+			}
+
+			// if it's https but no explicit port is set, use port 443
+			if ($serverData['transport'] === 'https' && !isset($serverData['port'])) {
+				$serverData['port'] = 443;
+			}
+
+			$serverAuthData = $this->getServerAuth();
+			switch ($serverAuthData['auth']) {
+				case 'userPass':
+					$serverData['username'] = $serverAuthData['authParams']['username'];
+					$serverData['password'] = $serverAuthData['authParams']['password'];
+					break;
+				case 'apiKey':
+					$serverData['headers'] = [
+						'Authorization' => "ApiKey {$serverAuthData['authParams']['apiKey']}",
+					];
+					break;
+				default:
+					// this covers the cases '' and 'none'
+					// do nothing by default
+					break;
+			}
+
+			$results[] = $serverData;
 		}
 		return ['servers' => $results];
-	}
-
-	/**
-	 * Parse server connection with user and password.
-	 *
-	 * @param string $serverPart
-	 * @param array $server
-	 */
-	private function parseServerWithUserPassAuthentication($serverPart, &$server) {
-		$sets = \explode('@', $serverPart);
-		$authenticationParameters = \explode(':', $sets[0]);
-		$host = \explode(':', $sets[1]);
-		if (!empty($host[0])) {
-			$server['host'] = $host[0];
-		}
-		if (!empty($host[1])) {
-			$server['port'] = $host[1];
-		}
-		$server['username'] = $authenticationParameters[0];
-		$server['password'] = $authenticationParameters[1];
-	}
-
-	/**
-	 * Parse server connection without authentication.
-	 *
-	 * @param string $serverPart
-	 * @param array $server
-	 */
-	private function parseServerWithoutAuthentication($serverPart, &$server) {
-		$hostAndPort = \explode(':', \trim($serverPart), 2);
-		if (!empty($hostAndPort[0])) {
-			$server['host'] = $hostAndPort[0];
-		}
-		if (!empty($hostAndPort[1])) {
-			$server['port'] = (int)$hostAndPort[1];
-		}
 	}
 }

@@ -36,7 +36,6 @@ use OCP\IRequest;
 use OCP\AppFramework\ApiController;
 
 class AdminSettingsController extends ApiController {
-
 	/**
 	 * @var SearchElasticConfigService
 	 */
@@ -65,14 +64,81 @@ class AdminSettingsController extends ApiController {
 	}
 
 	public function loadServers(): JSONResponse {
+		$authData = $this->config->getServerAuth();
+		$authData = $this->config->maskServerAuthData($authData);
 		return new JSONResponse([
-			SearchElasticConfigService::SERVERS => $this->config->getServers()
+			SearchElasticConfigService::SERVERS => $this->config->getServers(),
+			SearchElasticConfigService::SERVER_AUTH => $authData,
 		]);
 	}
 
-	public function saveServers(string $servers): JSONResponse {
-		$this->config->setServers($servers);
+	public function saveServers(string $servers, string $authType, array $authParams = []): JSONResponse {
+		$serverList = \explode(',', $servers);
+		$sanitizedServerList = [];
+		foreach ($serverList as $server) {
+			// validation
+			$parsedServer = \parse_url($server);
+
+			$errorMessage = $this->verifyParsedServer($parsedServer);
+			if ($errorMessage) {
+				return new JSONResponse(['message' => $errorMessage], Http::STATUS_EXPECTATION_FAILED);
+			}
+
+			if (!isset($parsedServer['scheme'])) {
+				// assume HTTP
+				$parsedServer['scheme'] = 'http';
+			}
+
+			// build sanitized url
+			$sanitizedServerList[] = $this->buildFromParsedUrl($parsedServer);
+		}
+		$sanitizedServers = \implode(',', $sanitizedServerList);
+
+		$this->config->setServers($sanitizedServers);
+		$this->config->setServerAuth($authType, $authParams);
 		return new JSONResponse();
+	}
+
+	/**
+	 * The $parsedServer var is the result of a `parse_url` call. This method will return
+	 * a string containing the error message or null if there is no error.
+	 */
+	private function verifyParsedServer($parsedServer) {
+		if ($parsedServer === false) {
+			return 'The url format is incorrect.';
+		}
+
+		$mustNotBePresentKeys = ['user', 'pass', 'query', 'fragment'];
+		foreach ($mustNotBePresentKeys as $key) {
+			if (isset($parsedServer[$key])) {
+				return 'The url contains components that won\'t be used.';
+			}
+		}
+		if (!isset($parsedServer['host'])) {
+			return 'The url must contains at least a host.';
+		}
+
+		if (isset($parsedServer['scheme']) && ($parsedServer['scheme'] !== 'http' && $parsedServer['scheme'] !== 'https')) {
+			return 'The url contains invalid scheme.';
+		}
+		return null;
+	}
+
+	/**
+	 * The $parsedServer var is the result of a `parse_url` call. Only "scheme",
+	 * "host", "port" and "path" components will be used, the rest will be ignored.
+	 * Note tha "scheme" and "host" are expected to be always present.
+	 */
+	private function buildFromParsedUrl($parsedServer) {
+		// build sanitized url
+		$sanitizedServer = "{$parsedServer['scheme']}://{$parsedServer['host']}";
+		if (isset($parsedServer['port'])) {
+			$sanitizedServer .= ":{$parsedServer['port']}";
+		}
+		if (isset($parsedServer['path'])) {
+			$sanitizedServer .= $parsedServer['path'];
+		}
+		return $sanitizedServer;
 	}
 
 	public function getScanExternalStorages(): JSONResponse {

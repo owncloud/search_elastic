@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 * [QA] connection error exposes credentials - [#5080](https://github.com/owncloud/enterprise/issues/5080)
 * [QA] UI maps credentials to a malformed URL, when protocol is specified. - [#258](https://github.com/owncloud/search_elastic/issues/258)
+* [QA] Adjust documentation link
 
 
 ## [2.1.0] - 2022-03-15

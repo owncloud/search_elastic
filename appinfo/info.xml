@@ -18,7 +18,7 @@
 	<summary>Find files based on their content</summary>
 	<description>The Full Text Search extension integrates the [Elasticsearch](https://www.elastic.co/products/elasticsearch) search engine with ownCloud Server. The integration enables files stored in ownCloud to be indexed by Elasticsearch. Thereby it allows users to find files by their content (instead of just by file names) using the ownCloud search bar or Search API. For more information on requirements, usage and limitations, administrators can check the ownCloud Documentation.</description>
 	<documentation>
-    		<admin>https://doc.owncloud.com/server/admin_manual/configuration/search/index.html</admin>
+    		<admin>https://doc.owncloud.com/server/admin_manual/configuration/general_topics/search.html</admin>
     	</documentation>
 	<screenshot>https://raw.githubusercontent.com/owncloud/screenshots/master/search_elastic/ownCloud-app-full-text-search.jpg</screenshot>
 	<settings>

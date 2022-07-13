@@ -1,4 +1,4 @@
-# Elasticsearch
+# Elasticsearch - This is outdated please go to https://doc.owncloud.com/server/10.10/admin_manual/configuration/general_topics/search.html
 
 [![Build Status](https://drone.owncloud.com/api/badges/owncloud/search_elastic/status.svg?branch=master)](https://drone.owncloud.com/owncloud/search_elastic)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=owncloud_search_elastic&metric=alert_status)](https://sonarcloud.io/dashboard?id=owncloud_search_elastic)

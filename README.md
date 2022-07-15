@@ -30,8 +30,9 @@ The search_elastic app adds a full text search for files stored in ownCloud. It 
   - [x] descend subdirs when updating
   - [x] check permissions again on search and remove results if no longer accessible
     - [ ] compensate for removed entries in search results, too many will confuse the paging logic
-- [-] --index in batches (make batch size configurable, 0 = unlimited)--
-  CLI cron.php executes all jobs - [ ] limit number of files to 250? per job?
+- [ ] --index in batches (make batch size configurable, 0 = unlimited)
+  - CLI cron.php executes all jobs
+    - [ ] limit number of files to 250? per job?
 - add occ commands
   - [x] index all files or only those of a specific user
   - [x] enable / disable automatic background scanning via cron
@@ -53,7 +54,7 @@ The search_elastic app adds a full text search for files stored in ownCloud. It 
 - [x] resolve path for shared files
 - [x] files with empty content extraction are reindexed indefinitely? e.g., empty text file
 - [x] more debug logging
-- [x] wildcard search ... but there is a bug in core js code preventing wildcard search, see https://github.com/owncloud/core/pull/23531
-  - well partly. \* and ? are no longer supported. Instead, we now mimic core, which is called a "match phrase prefix" type query: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html#query-dsl-match-query-phrase-prefix
+- [x] wildcard search ... but there is a [bug](https://github.com/owncloud/core/pull/23531) in core js code preventing wildcard search
+  - well partly. \* and ? are no longer supported. Instead, we now mimic core, which is called a [match phrase prefix](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html#query-dsl-match-query-phrase-prefix) type query
 - [ ] to find out why a node cannot be found by its contents mark it as "NO CONTENT EXTRACTED"?
 - [ ] how should we handle files in userhome/files_versions/ or userhome/thumbnails/ ... currently a 'vanished' message will be logged ... annoying

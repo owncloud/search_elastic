@@ -27,7 +27,7 @@ style('search_elastic', 'settings/admin');
 		</div>
 		<div id="apiKeyAuthParams" class="hide">
 			<div>
-				<input name="apiKey" type="password" placeholder="API Key">
+				<input name="apiKey" type="password" placeholder="Encoded API Key">
 			</div>
 		</div>
 	</div>

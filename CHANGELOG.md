@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased] - 
 
+## [2.2.0] - 2022-06-22
+
+### Added
+
+* Include support for API key against elasticsearch - [#277](https://github.com/owncloud/search_elastic/issues/277)
+
+### Fixed
+
+* [QA] connection error exposes credentials - [#5080](https://github.com/owncloud/enterprise/issues/5080)
+* [QA] UI maps credentials to a malformed URL, when protocol is specified. - [#258](https://github.com/owncloud/search_elastic/issues/258)
+* [QA] Adjust documentation link
 
 
 ## [2.1.0] - 2022-03-15
@@ -82,7 +93,8 @@ This release requires Elastic Search 5.6.x and the `ingest-attachment` processor
 ### Removed
 - Dropped support for Elastic Search 2.x
 
-[Unreleased]: https://github.com/owncloud/search_elastic/compare/v2.1.0...master
+[Unreleased]: https://github.com/owncloud/search_elastic/compare/v2.2.0...master
+[2.2.0]: https://github.com/owncloud/search_elastic/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/owncloud/search_elastic/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/owncloud/search_elastic/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/owncloud/search_elastic/compare/v0.5.4...v1.0.0

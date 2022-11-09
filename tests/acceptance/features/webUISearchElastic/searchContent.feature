@@ -13,6 +13,7 @@ Feature: Search
     And the user has browsed to the login page
     And the user has logged in with username "Brian" and password "1234" using the webUI
 
+
   Scenario: Simple search
     When the user searches for "lorem" using the webUI
     Then file "lorem.txt" should be listed on the webUI
@@ -23,12 +24,14 @@ Feature: Search
     And file "lorem.txt" with path "/strängé नेपाली folder" should be listed in the search results in the other folders section on the webUI
     And file "lorem-big.txt" with path "/strängé नेपाली folder" should be listed in the search results in the other folders section on the webUI
 
+
   Scenario: Search content only
     When the user searches for "ipsum" using the webUI
     Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
       """
       Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
       """
+
 
   Scenario: Search content only more than one word
     When the user searches for "lorem ipsum sit" using the webUI
@@ -37,12 +40,14 @@ Feature: Search
       Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
       """
 
+
   Scenario: Search content only (not exact case)
     When the user searches for "iPsUM" using the webUI
     Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
       """
       Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
       """
+
 
   Scenario: Search content only (not full word)
     When the user searches for "ipsu" using the webUI
@@ -51,6 +56,7 @@ Feature: Search
       Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
       """
 
+
   Scenario: Search content only (not full word - start of word missing)
     When the user searches for "*psum" using the webUI
     Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
@@ -58,12 +64,14 @@ Feature: Search
       Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
       """
 
+
   Scenario: Search content only (not full word - only middle part of word given)
     When the user searches for "*psu*" using the webUI
     Then file "lorem.txt" with path "/simple-folder" should be listed in the search results in the other folders section on the webUI with highlights containing:
       """
       Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
       """
+
 
   Scenario: Search pattern matches filename of one file and content of others
     Given user "Brian" has uploaded file with content "content to search for" to "/new-file.txt"
@@ -77,6 +85,7 @@ Feature: Search
       content to search for
       """
     But file "lorem.txt" should not be listed on the webUI
+
 
   Scenario: search for files by UTF pattern
     Given user "Brian" has uploaded file with content "मेरो नेपालि content" to "/utf-upload.txt"
@@ -99,11 +108,13 @@ Feature: Search
     And file "lorem-big.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
     But file "aaa-lorem.txt" with path "/" should be listed in the search results in the other folders section on the webUI
 
+
   Scenario: search for new content in a overwritten file
     When the user uploads overwriting file "lorem-big.txt" using the webUI
     And the search index has been updated
     And the user searches for "file" using the webUI
     Then file "lorem-big.txt" with path "/" should be listed in the search results in the other folders section on the webUI
+
 
   Scenario: search for overwritten file, search for content that was in the original file, but not in the new file
     When the user uploads overwriting file "lorem-big.txt" using the webUI
@@ -111,6 +122,7 @@ Feature: Search
     And the user searches for "suspendisse" using the webUI
     Then file "block-aligned.txt" with path "/" should be listed in the search results in the other folders section on the webUI
     But file "lorem-big.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
+
 
   Scenario: user should not be able to search in files of other users
     Given user "Carol" has been created with default attributes and without skeleton files

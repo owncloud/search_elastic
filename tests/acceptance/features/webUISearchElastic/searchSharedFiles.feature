@@ -13,6 +13,7 @@ Feature: Search
     And the user has browsed to the login page
     And the user has logged in with username "Brian" and password "1234" using the webUI
 
+
   Scenario: user searches for files shared to him as a single user
     Given user "Carol" has been created with default attributes and without skeleton files
     And user "Carol" has created folder "/just-a-folder"
@@ -27,6 +28,7 @@ Feature: Search
     Then file "upload.txt" with path "/" should be listed in the search results in the other folders section on the webUI
     And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
 
+
   Scenario: user searches for files shared to him as a single user (files have been indexed only after sharing)
     Given user "Carol" has been created with default attributes and without skeleton files
     And user "Carol" has created folder "/just-a-folder"
@@ -39,6 +41,7 @@ Feature: Search
     When the user searches for "content" using the webUI
     Then file "upload.txt" with path "/" should be listed in the search results in the other folders section on the webUI
     And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
+
 
   Scenario: user searches for files shared to him as a member of a group
     Given user "Carol" has been created with default attributes and without skeleton files
@@ -56,6 +59,7 @@ Feature: Search
     Then file "upload.txt" with path "/" should be listed in the search results in the other folders section on the webUI
     And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
 
+
   Scenario: user searches for files shared to him as a member of a group (files have been indexed only after sharing)
     Given user "Carol" has been created with default attributes and without skeleton files
     And group "grp1" has been created
@@ -70,6 +74,7 @@ Feature: Search
     When the user searches for "content" using the webUI
     Then file "upload.txt" with path "/" should be listed in the search results in the other folders section on the webUI
     And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
+
 
   Scenario: unshared files should not be searched
     Given user "Carol" has been created with default attributes and without skeleton files
@@ -91,6 +96,7 @@ Feature: Search
     And file "upload.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
     But file "upload.txt" with path "/just-a-folder" should not be listed in the search results in the other folders section on the webUI
 
+
   Scenario: unshared files should not be searched (files have been indexed only after sharing)
     Given user "Carol" has been created with default attributes and without skeleton files
     And user "Carol" has created folder "/just-a-folder"
@@ -110,6 +116,7 @@ Feature: Search
     And file "upload.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
     But file "upload.txt" with path "/just-a-folder" should not be listed in the search results in the other folders section on the webUI
 
+
   Scenario: unshared files should not be searched (files have been indexed only after unsharing)
     Given user "Carol" has been created with default attributes and without skeleton files
     And user "Carol" has created folder "/just-a-folder"
@@ -128,6 +135,7 @@ Feature: Search
     And file "upload.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
     But file "upload.txt" with path "/just-a-folder" should not be listed in the search results in the other folders section on the webUI
 
+
   Scenario: user searches for files re-shared to him
     Given user "Carol" has been created with default attributes and without skeleton files
     And user "David" has been created with default attributes and without skeleton files
@@ -144,6 +152,7 @@ Feature: Search
     When the user searches for "content" using the webUI
     Then file "upload.txt" with path "/" should be listed in the search results in the other folders section on the webUI
     And file "upload.txt" with path "/just-a-folder" should be listed in the search results in the other folders section on the webUI
+
 
   Scenario: user searches for files re-shared to him (files have been indexed only after second sharing)
     Given user "Carol" has been created with default attributes and without skeleton files

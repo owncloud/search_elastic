@@ -20,6 +20,7 @@ Feature: index only metadata
     And the administrator has configured the search_elastic app to index only metadata
     And the search index has been created
 
+
   Scenario Outline: search for content
     Given using <dav_version> DAV path
     When user "Alice" searches for "content" using the WebDAV API
@@ -36,6 +37,7 @@ Feature: index only metadata
       | old         |
       | new         |
 
+
   Scenario Outline: search for filename
     Given using <dav_version> DAV path
     When user "Alice" searches for "upload.txt" using the WebDAV API
@@ -49,6 +51,7 @@ Feature: index only metadata
       | old         |
       | new         |
 
+
   Scenario Outline: search for filename (not exact case)
     Given using <dav_version> DAV path
     When user "Alice" searches for "UpLoAd.txt" using the WebDAV API
@@ -61,6 +64,7 @@ Feature: index only metadata
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: search for filename (not full word - end of filename missing)
     Given using <dav_version> DAV path
@@ -125,6 +129,7 @@ Feature: index only metadata
       | old         |
       | new         |
 
+
   Scenario Outline: search for filename (edge case)
     Given using <dav_version> DAV path
     And user "Alice" has uploaded file with content "does not matter" to "<filename>"
@@ -143,6 +148,7 @@ Feature: index only metadata
       | new         | /false     | "false" |
       | old         | /null      | "null"  |
       | new         | /null      | "null"  |
+
 
   Scenario Outline: search for filename - pattern matches filename and content
     Given using <dav_version> DAV path
@@ -164,6 +170,7 @@ Feature: index only metadata
       | old         |
       | new         |
 
+
   Scenario Outline: search for filename by UTF pattern
     Given using <dav_version> DAV path
     And user "Alice" has uploaded file with content "मेरो नेपालि content" to "/uploadÜठिF.txt"
@@ -182,6 +189,7 @@ Feature: index only metadata
       | old         |
       | new         |
 
+
   Scenario Outline: search for deleted files should not work
     Given using <dav_version> DAV path
     When user "Alice" deletes file "/upload.txt" using the WebDAV API
@@ -198,6 +206,7 @@ Feature: index only metadata
       | old         |
       | new         |
 
+
   Scenario Outline: search for renamed file
     Given using <dav_version> DAV path
     When user "Alice" moves file "/upload.txt" to "/renamed_textfile0.txt" using the WebDAV API
@@ -210,6 +219,7 @@ Feature: index only metadata
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: search for changed filenames, search for part of the name that was in the original file, but not in the new file
     Given using <dav_version> DAV path
@@ -227,6 +237,7 @@ Feature: index only metadata
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: user should not be able to search in files of other users
     Given using <dav_version> DAV path
@@ -247,6 +258,7 @@ Feature: index only metadata
       | old         |
       | new         |
 
+
   Scenario Outline: user searches for files shared to him as a single user
     Given using <dav_version> DAV path
     And user "Brian" has been created with default attributes and small skeleton files
@@ -263,6 +275,7 @@ Feature: index only metadata
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline:  user searches for files shared to him as a member of a group
     Given using <dav_version> DAV path
@@ -282,6 +295,7 @@ Feature: index only metadata
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: Unshared files should not be searched
     Given using <dav_version> DAV path

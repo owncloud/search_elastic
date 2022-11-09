@@ -19,6 +19,7 @@ Feature: Search for content
     And user "Alice" has uploaded file "filesForUpload/simple.pdf" to "/simple.pdf"
     And the search index has been created
 
+
   Scenario Outline: search for files by pattern
     Given using <dav_version> DAV path
     When user "Alice" searches for "content" using the WebDAV API
@@ -36,6 +37,7 @@ Feature: Search for content
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: search for files by pattern (not exact case)
     Given using <dav_version> DAV path
@@ -62,6 +64,7 @@ Feature: Search for content
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: search for files by pattern (not full word - end of word missing)
     Given using <dav_version> DAV path
@@ -167,6 +170,7 @@ Feature: Search for content
       | old         |
       | new         |
 
+
   Scenario Outline: search for files by pattern (edge case)
     Given using <dav_version> DAV path
     And user "Alice" has uploaded file with content <file-content> to "/upload-edge-case.txt"
@@ -188,6 +192,7 @@ Feature: Search for content
       | old         | "null"       | "null"  |
       | new         | "null"       | "null"  |
 
+
   Scenario Outline: search for files by pattern - pattern matches filename and content
     Given using <dav_version> DAV path
     And user "Alice" has uploaded file with content "this file is uploaded to oC" to "/upload.txt"
@@ -203,6 +208,7 @@ Feature: Search for content
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: search for files by pattern - pattern matches filename of one file and content of others
     Given using <dav_version> DAV path
@@ -221,6 +227,7 @@ Feature: Search for content
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: search for files by UTF pattern
     Given using <dav_version> DAV path
@@ -242,6 +249,7 @@ Feature: Search for content
       | old         |
       | new         |
 
+
   Scenario Outline: search for deleted files should not work
     Given using <dav_version> DAV path
     When user "Alice" deletes file "/upload.txt" using the WebDAV API
@@ -257,6 +265,7 @@ Feature: Search for content
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: search for renamed file
     Given using <dav_version> DAV path
@@ -276,6 +285,7 @@ Feature: Search for content
       | old         |
       | new         |
 
+
   Scenario Outline: search for changed files
     Given using <dav_version> DAV path
     When user "Alice" uploads file with content "files with changed content" to "/upload.txt" using the WebDAV API
@@ -293,6 +303,7 @@ Feature: Search for content
       | old         |
       | new         |
 
+
   Scenario Outline: search for changed files, search for content that was in the original file, but not in the new file
     Given using <dav_version> DAV path
     When user "Alice" uploads file with content "files with changed content" to "/just-a-folder/uploadÜठिF.txt" using the WebDAV API
@@ -307,6 +318,7 @@ Feature: Search for content
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: user should not be able to search in files of other users
     Given using <dav_version> DAV path

@@ -15,6 +15,7 @@ Feature: Limit access to groups
     And user "Alice" has been added to group "grp1"
     And the search index has been created
 
+
   Scenario Outline: limit search_elastic access to a group
     Given using <dav_version> DAV path
     When the administrator limits the access to search_elastic to "grp1"
@@ -43,6 +44,7 @@ Feature: Limit access to groups
       | old         |
       | new         |
 
+
   Scenario Outline: limit a group to only search in metadata
     Given using <dav_version> DAV path
     When the administrator disables the full text search for "grp1"
@@ -69,6 +71,7 @@ Feature: Limit access to groups
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: limit a group to only search in metadata (reindex after limitation is set)
     Given using <dav_version> DAV path
@@ -97,6 +100,7 @@ Feature: Limit access to groups
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: limit multiple groups to only search in metadata
     Given using <dav_version> DAV path
@@ -139,6 +143,7 @@ Feature: Limit access to groups
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: limit a group to only search in metadata, the searching user is member in a limited and also in an unlimited group
     Given using <dav_version> DAV path

@@ -19,6 +19,7 @@ Feature: Search for content
     And user "Alice" has uploaded file "filesForUpload/simple.pdf" to "/simple.pdf"
     And the search index has been created
 
+
   Scenario Outline: user searches for files shared to him as a single user
     Given using <dav_version> DAV path
     And user "Brian" has been created with default attributes and small skeleton files
@@ -35,6 +36,7 @@ Feature: Search for content
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: user searches for files shared to him as a single user (files have been indexed only after sharing)
     Given using <dav_version> DAV path
@@ -57,6 +59,7 @@ Feature: Search for content
       | old         |
       | new         |
 
+
   Scenario Outline: user searches for files shared to him as a member of a group
     Given using <dav_version> DAV path
     And user "Brian" has been created with default attributes and small skeleton files
@@ -75,6 +78,7 @@ Feature: Search for content
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: user searches for files shared to him as a member of a group (files have been indexed only after sharing)
     Given using <dav_version> DAV path
@@ -98,6 +102,7 @@ Feature: Search for content
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: Unshared files should not be searched
     Given using <dav_version> DAV path
@@ -123,6 +128,7 @@ Feature: Search for content
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: Unshared files should not be searched (files have been indexed only after sharing)
     Given using <dav_version> DAV path
@@ -154,6 +160,7 @@ Feature: Search for content
       | old         |
       | new         |
 
+
   Scenario Outline: Unshared files should not be searched (files have been indexed only after unsharing)
     Given using <dav_version> DAV path
     And user "Brian" has been created with default attributes and small skeleton files
@@ -183,6 +190,7 @@ Feature: Search for content
       | old         |
       | new         |
 
+
   Scenario Outline: users searches for files re-shared to him
     Given using <dav_version> DAV path
     And these users have been created with default attributes and small skeleton files:
@@ -204,6 +212,7 @@ Feature: Search for content
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: users searches for files re-shared to him (files have been indexed only after second sharing)
     Given using <dav_version> DAV path
@@ -230,6 +239,7 @@ Feature: Search for content
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: new files in a shared folder get indexed for all users
     Given using <dav_version> DAV path
@@ -265,6 +275,7 @@ Feature: Search for content
       | dav_version |
       | old         |
       | new         |
+
 
   Scenario Outline: changed files in a shared folder get indexed for all users
     Given using <dav_version> DAV path

@@ -1,17 +1,26 @@
 parameters:
   bootstrapFiles:
     - %currentWorkingDirectory%/../../lib/base.php
-  excludes_analyse:
+  excludePaths:
     - %currentWorkingDirectory%/appinfo/Migrations
     - %currentWorkingDirectory%/appinfo/routes.php
   ignoreErrors:
     - '#Call to an undefined method OCP\\AppFramework\\Db\\Entity::getFileId\(\)#'
     - '#Call to an undefined method OCP\\Files\\Node::getContent\(\)#'
-    - message: '#Method .* should return .* but returns.*#'
-      path: %currentWorkingDirectory%/lib/Db/StatusMapper.php
-    - message: '#OCA\\Encryption#'
-      path: %currentWorkingDirectory%/lib/Jobs/UpdateContent.php
-    - message: '#Else branch is unreachable because previous condition is always true#'
-      path: %currentWorkingDirectory%/lib/Hooks/Files.php
-    - message: '#Else branch is unreachable because previous condition is always true#'
-      path: %currentWorkingDirectory%/lib/Search/ElasticSearchProvider.php
+    -
+      messages:
+          - '#Method .* should return .* but returns.*#'
+          - '#Property OCA\\Search_Elastic\\Db\\StatusMapper::\$logger is never read, only written.#'
+      path: lib/Db/StatusMapper.php
+    -
+      message: '#OCA\\Encryption#'
+      path: lib/Jobs/UpdateContent.php
+    -
+      message: '#Else branch is unreachable because previous condition is always true#'
+      path: lib/Hooks/Files.php
+    -
+      message: '#Else branch is unreachable because previous condition is always true#'
+      path: lib/Search/ElasticSearchProvider.php
+    -
+      message: '#OCA\\Search_Elastic\\SearchElasticConfigService::\$credentialsManager is never read, only written.#'
+      path: lib/SearchElasticConfigService.php

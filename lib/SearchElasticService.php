@@ -338,7 +338,7 @@ class SearchElasticService {
 
 		if (!$this->config->shouldContentBeIncluded()) {
 			$this->logger->debug(
-				"indexNode: folder, skipping content extraction",
+				"indexNode: content should not be included, skipping content extraction",
 				['app' => 'search_elastic']
 			);
 			$extractContent = false;

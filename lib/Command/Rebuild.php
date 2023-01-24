@@ -93,7 +93,7 @@ class Rebuild extends Command {
 	protected function configure() {
 		$this
 			->setName('search:index:rebuild')
-			->setDescription('Rebuild the search index for a given User. If you want to rebuild the whole index, run "search:index:reset" and then "search:index:build --all"')
+			->setDescription('Rebuild the search index for a given User. If you want to rebuild the whole index, run "search:index:reset" and then "search:index:rebuild --all"')
 			->addArgument(
 				'user_id',
 				InputArgument::REQUIRED | InputArgument::IS_ARRAY,

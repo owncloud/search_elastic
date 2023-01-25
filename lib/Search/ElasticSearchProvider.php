@@ -193,6 +193,8 @@ class ElasticSearchProvider extends PagedProvider {
 			],
 		]);
 
+		// only the "mtime" field is being used at the moment
+		$es_query->setSource(['includes' => ['mtime']]);
 		$es_query->setSize($size);
 		$es_query->setFrom(($page - 1) * $size);
 		return $this->searchElasticService->search($es_query);

@@ -537,7 +537,7 @@ class SearchElasticService {
 		// Include owner in list of users
 		$users[] = $ownerUser;
 
-		$result = ['users' => \array_unique($users), 'groups' => \array_unique($groups)];
+		$result = ['users' => \array_values(\array_unique($users)), 'groups' => \array_values(\array_unique($groups))];
 		$this->logger->debug(
 			"access to $path:" . \json_encode($result),
 			['app' => 'search_elastic']

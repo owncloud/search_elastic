@@ -4,7 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased] - 
+## [2.3.0] - 2022-03-02
+
+### Fixed
+
+* [#314](https://github.com/owncloud/search_elastic/pull/314) - Ensure the users and groups are interpreted as a list
+* [#311](https://github.com/owncloud/search_elastic/pull/311) - Retrieve only the mtime from elasticsearch
+* [#310](https://github.com/owncloud/search_elastic/pull/310) - Fixed command suggestion
+* [#309](https://github.com/owncloud/search_elastic/pull/309) - [Fix] fixed debug message if nocontent is set
+* Documentation updates
+* Dependency updates
+
 
 ## [2.2.0] - 2022-06-22
 

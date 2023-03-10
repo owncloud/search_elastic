@@ -47,8 +47,9 @@ interface IConnector {
 	 * @param Node $node the node to be indexed
 	 * @param bool $extractContent whether the content of the node should be
 	 * extracted and indexed (content might be ignored)
+	 * @return bool
 	 */
-	public function indexNode(string $userId, Node $node, bool $extractContent = true);
+	public function indexNode(string $userId, Node $node, bool $extractContent = true): bool;
 
 	/**
 	 * Send the query and fetch the results for the userId.
@@ -71,6 +72,18 @@ interface IConnector {
 	 * the result will have that field, but ownCloud only knows about 'mtime'
 	 */
 	public function findInResult(Result $result, string $key);
+
+	/**
+	 * The delete the indexed document by the ownCloud's fileid.
+	 * Usually, the fileid should be indexed as document id, but this
+	 * might differ
+	 */
+	public function deleteByFileId($fileId): bool;
+
+	/**
+	 * Get the stats for the attached index, as reported by elasticsearch
+	 */
+	public function getStats(): array;
 
 	/**
 	 * Get the name of the connector, for identification.

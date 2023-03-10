@@ -1,9 +1,6 @@
 <?php
 /**
- * @author Michael Barz <mbarz@owncloud.com>
- * @author Sujith H <sharidasan@owncloud.com>
- *
- * @copyright Copyright (c) 2019, ownCloud GmbH
+ * @copyright Copyright (c) 2023, ownCloud GmbH
  * @license GPL-2.0
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -24,7 +21,6 @@
 
 namespace OCA\Search_Elastic\Command;
 
-use OCA\Search_Elastic\Jobs\UpdateContent;
 use OCA\Search_Elastic\SearchElasticService;
 use OCP\Files\InvalidPathException;
 use OCP\Files\IRootFolder;
@@ -43,7 +39,7 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
  *
  * @package OCA\Search_Elastic\Command
  */
-class Rebuild extends Command {
+class FillSecondary extends Command {
 	/**
 	 * @var SearchElasticService
 	 */
@@ -60,11 +56,6 @@ class Rebuild extends Command {
 	private $rootFolder;
 
 	/**
-	 * @var UpdateContent
-	 */
-	private $job;
-
-	/**
 	 * Rebuild constructor.
 	 *
 	 * @param SearchElasticService $searchElasticService
@@ -75,14 +66,12 @@ class Rebuild extends Command {
 	public function __construct(
 		SearchElasticService $searchElasticService,
 		IUserManager $userManager,
-		IRootFolder $rootFolder,
-		UpdateContent $job
+		IRootFolder $rootFolder
 	) {
 		parent::__construct();
 		$this->searchelasticservice = $searchElasticService;
 		$this->userManager = $userManager;
 		$this->rootFolder = $rootFolder;
-		$this->job = $job;
 	}
 
 	/**
@@ -92,13 +81,18 @@ class Rebuild extends Command {
 	 */
 	protected function configure() {
 		$this
-			->setName('search:index:rebuild')
+			->setName('search:index:fill_secondary')
 			->setDescription(
-				'Rebuild the indexes for a given User.'.
-				' All the indexes associated with the configured connectors will be rebuilt.'.
-				' This won\'t apply any change to the configuration of the index if it\'s already setup'.
-				' but it will setup any index that hasn\'t been setup yet'.
-				' Check "search:index:reset" to reset all the indexes associated to the configured connectors')
+				'Fill a secondary index based on the indexed data we have.'.
+				' Files not matching the "indexed" status will be ignored'.
+				' This is intended to be used in data migrations, so the connector for this'.
+				' secondary index should have been configured as "write connector"'
+			)
+			->addArgument(
+				'connector_name',
+				InputArgument::REQUIRED,
+				'The name of the connector.'
+			)
 			->addArgument(
 				'user_id',
 				InputArgument::REQUIRED | InputArgument::IS_ARRAY,
@@ -129,18 +123,20 @@ class Rebuild extends Command {
 	 *
 	 * @return int
 	 */
-	public function execute(InputInterface $input, OutputInterface $output): int {
+	public function execute(InputInterface $input, OutputInterface $output) {
 		$users = $input->getArgument('user_id');
+		$connectorName = $input->getArgument('connector_name');
 		$quiet = $input->getOption('quiet');
 
+		$this->searchelasticservice->partialSetup();
 		foreach ($users as $user) {
 			$userObject = $this->userManager->get($user);
 			if ($userObject !== null) {
 				if ($this->shouldAbort($input, $output)) {
 					$output->writeln('Aborting.');
-					return 1;
+					return -1;
 				}
-				$this->rebuildIndex($userObject, $quiet, $output);
+				$this->fillSecondary($connectorName, $userObject, $quiet, $output);
 			} else {
 				$output->writeln("<error>Unknown user $user</error>");
 			}
@@ -194,13 +190,12 @@ class Rebuild extends Command {
 	 *
 	 * @return void
 	 */
-	protected function rebuildIndex($user, $quiet, $output) {
+	protected function fillSecondary($connectorName, $user, $quiet, $output) {
 		$uid = $user->getUID();
 		if (!$quiet) {
 			$output->writeln("Rebuilding Search Index for <info>$uid</info>");
 		}
 		$home = $this->rootFolder->getUserFolder($uid);
-		$this->searchelasticservice->resetUserIndex($home);
-		$this->job->run(['userId' => $uid]);
+		$this->searchelasticservice->fillSecondaryIndex($uid, $home, $connectorName);
 	}
 }

@@ -234,6 +234,18 @@ class StatusMapper extends Mapper {
 		";
 		return $this->findNodesWithStatus($home, $sql, Status::STATUS_NEW);
 	}
+	public function findFilesIndexed(Folder $home, $limit, $offset) {
+		$sql = "
+			SELECT `*PREFIX*filecache`.`fileid`
+			FROM `*PREFIX*filecache`
+			LEFT JOIN `{$this->tableName}`
+			ON `*PREFIX*filecache`.`fileid` = `{$this->tableName}`.`fileid`
+			WHERE `storage` = ?
+			AND `status` = ?
+			ORDER BY `*PREFIX*filecache`.`fileid`
+		";
+		return $this->findNodesWithStatus($home, $sql, Status::STATUS_INDEXED, $limit, $offset);
+	}
 	/**
 	 * get the list of all unindexed files for the user
 	 * @param Folder $home the home folder used to deduce the storages
@@ -242,7 +254,7 @@ class StatusMapper extends Mapper {
 	 *
 	 * @return array
 	 */
-	public function findNodesWithStatus(Folder $home, $sql, $status) {
+	public function findNodesWithStatus(Folder $home, $sql, $status, $limit = null, $offset = null) {
 		$home->getMountPoint();
 		$mounts = \OC::$server->getMountManager()->findIn($home->getPath());
 		$mount = $home->getMountPoint();
@@ -254,7 +266,7 @@ class StatusMapper extends Mapper {
 		// should we ORDER BY `mtime` DESC to index recent files first?
 		// how will they affect query time for large filecaches?
 
-		$query = $this->db->prepareQuery($sql);
+		$query = $this->db->prepareQuery($sql, $limit, $offset);
 
 		foreach ($mounts as $mount) {
 			$storage = $mount->getStorage();

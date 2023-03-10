@@ -111,54 +111,110 @@ class Hub {
 	}
 
 	/**
+	 * We cache whether the connector has been checked or not in the current
+	 * request. This method will clear that cache so the check can be performed
+	 * again.
+	 */
+	public function clearConnectorsCheckedCache() {
+		$this->connectorsChecked = [];
+	}
+
+	/**
 	 * Each of the "write" connectors will have their attached indexes
 	 * prepared to be used. If the indexes are already setup, nothing
 	 * will be done to the index, otherwise the index will be setup
 	 * accordingly to the connector.
+	 *
+	 * The cached status of the connector will still take precedence
+	 * even with the $force parameter. If you want to use the $force
+	 * parameter, use `clearConnectorsCheckedCache` method first to
+	 * clear the cache.
+	 *
+	 * Expected usage with the $force parameter:
+	 * ```
+	 * $hub->clearConnectorsCheckedCache();
+	 * $hub->prepareWriteIndexes(true);
+	 * $hub->prepareSearchIndex(true);
+	 * .....
+	 * ```
 	 */
-	public function prepareWriteIndexes() {
+	public function prepareWriteIndexes($force = false) {
+		$allConnectorsOk = true;
+
 		$writeConnectors = $this->getWriteConnectors();
 		foreach ($writeConnectors as $connector) {
 			$connectorName = $connector->getConnectorName();
 			if (isset($this->connectorsChecked[$connectorName])) {
+				$allConnectorsOk = $allConnectorsOk && $this->connectorsChecked[$connectorName];
 				continue;
 			}
 
-			$connectorState = $connector->isSetup();
-			if ($connectorState === false) {
+			if ($force === true) {
 				$connector->prepareIndex();
-				// recheck again
-				$connectorState = $connectorState->isSetup();
+				$connectorState = $connector->isSetup();
+			} else {
+				$connectorState = $connector->isSetup();
+				if ($connectorState === false) {
+					$connector->prepareIndex();
+					// recheck again
+					$connectorState = $connector->isSetup();
+				}
 			}
 			$this->connectorsChecked[$connectorName] = $connectorState;
+			$allConnectorsOk = $allConnectorsOk && $this->connectorsChecked[$connectorName];
 		}
+		return $allConnectorsOk;
 	}
 
 	/**
 	 * Use the search connector to prepare it attached index. If the
 	 * index is already setup, nothing will be done, otherwise the
 	 * index will be setup accordingly to the connector.
+	 *
+	 * The cached status of the connector will still take precedence
+	 * even with the $force parameter. If you want to use the $force
+	 * parameter, use `clearConnectorsCheckedCache` method first to
+	 * clear the cache.
+	 *
+	 * Expected usage with the $force parameter:
+	 * ```
+	 * $hub->clearConnectorsCheckedCache();
+	 * $hub->prepareWriteIndexes(true);
+	 * $hub->prepareSearchIndex(true);
+	 * .....
+	 * ```
 	 */
-	public function prepareSearchIndex() {
+	public function prepareSearchIndex($force = false) {
 		$connector = $this->getSearchConnector();
 		$connectorName = $connector->getConnectorName();
 		if (isset($this->connectorsChecked[$connectorName])) {
-			return;
+			return $this->connectorsChecked[$connectorName];
 		}
 
-		$connectorState = $connector->isSetup();
-		if ($connectorState === false) {
+		if ($force === true) {
 			$connector->prepareIndex();
-			// recheck again
-			$connectorState = $connectorState->isSetup();
+			$connectorState = $connector->isSetup();
+		} else {
+			$connectorState = $connector->isSetup();
+			if ($connectorState === false) {
+				$connector->prepareIndex();
+				// recheck again
+				$connectorState = $connector->isSetup();
+			}
 		}
 		$this->connectorsChecked[$connectorName] = $connectorState;
+		return $this->connectorsChecked[$connectorName];
+	}
+
+	public function hubIsSetup() {
+		return $this->prepareWriteIndexes() && $this->prepareSearchIndex();
 	}
 
 	/**
 	 * Index the target node using all the configured write connectors.
 	 */
 	public function hubIndexNode(string $userId, Node $node, bool $extractContent = true) {
+		$result = true;
 		$writeConnectors = $this->getWriteConnectors();
 		foreach ($writeConnectors as $connector) {
 			$connectorName = $connector->getConnectorName();
@@ -170,8 +226,10 @@ class Hub {
 				continue;
 			}
 
-			$connector->indexNode($userId, $node, $extractContent);
+			$conResult = $connector->indexNode($userId, $node, $extractContent);
+			$result = $result && $conResult;
 		}
+		return $conResult;
 	}
 
 	/**
@@ -208,5 +266,39 @@ class Hub {
 			'resultSet' => $resultSet,
 			'connector' => $connector,
 		];
+	}
+
+	/**
+	 * Delete the indexed document by ownCloud's fileid.
+	 * The deletion will happen on all the configured write connectors
+	 */
+	public function hubDeleteByFileId($fileId) {
+		$deleted = true;
+		$writeConnectors = $this->getWriteConnectors();
+		foreach ($writeConnectors as $connector) {
+			$deleted = $connector->deleteByFileId($fileId) && $deleted;
+		}
+		return $deleted;
+	}
+
+	/**
+	 * Get the stats of the indexes attached to all the connectors configured
+	 * in the hub.
+	 * The search connector will be retrieved first.
+	 */
+	public function hubGetStats() {
+		$stats = [];
+
+		$searchConnector = $this->getSearchConnector();
+		$stats[$searchConnector->getConnectorName()] = $searchConnector->getStats();
+
+		$writeConnectors = $this->getWriteConnectors();
+		foreach ($writeConnectors as $writeConnector) {
+			$writeConnectorName = $writeConnector->getConnectorName();
+			if (!isset($stats[$writeConnectorName])) {
+				$stats[$writeConnectorName] = $writeConnector->getStats();
+			}
+		}
+		return $stats;
 	}
 }

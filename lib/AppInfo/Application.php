@@ -98,6 +98,8 @@ class Application extends App {
 			$server = $c->getServer();
 			$hub = new Hub($server->getConfig(), $server->getLogger());
 			$hub->registerConnector($c->query(ConnectorLegacy::class));
+			// TODO: Delete test connector
+			$hub->registerConnector($c->query(\OCA\Search_Elastic\Connectors\ConnectorTest::class));
 			return $hub;
 		});
 

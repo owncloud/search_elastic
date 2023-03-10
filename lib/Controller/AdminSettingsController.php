@@ -168,7 +168,7 @@ class AdminSettingsController extends ApiController {
 
 	public function setup(): JSONResponse {
 		try {
-			$this->searchElasticService->setup();
+			$this->searchElasticService->fullSetup();
 		} catch (\Exception $e) {
 			$this->logger->logException($e);
 			return new JSONResponse(['message' => $e->getMessage()], Http::STATUS_SERVICE_UNAVAILABLE);

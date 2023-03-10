@@ -38,6 +38,8 @@ use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OC\Share\Constants;
 use OCP\Files\Node;
+use OCP\Files\File;
+use OCP\Files\Folder;
 use OCP\IGroupManager;
 use OCP\IConfig;
 use OCP\ILogger;
@@ -227,7 +229,7 @@ abstract class BaseConnector implements IConnector {
 		];
 	}
 
-	public final function indexNode(string $userId, Node $node, bool $extractContent = true) {
+	public final function indexNode(string $userId, Node $node, bool $extractContent = true): bool {
 		$this->logger->debug(
 			"indexNode {$node->getPath()} ({$node->getId()}) for $userId",
 			['app' => 'search_elastic']
@@ -410,6 +412,26 @@ abstract class BaseConnector implements IConnector {
 				$data = $result->getData();
 				return $data[$key] ?? null;
 		}
+	}
+
+	/**
+	 * Regardless of the indexed fields, the base connector will
+	 * always set the document's id to the fileid, so there is no need
+	 * for subclasses to overwrite this method.
+	 */
+	public final function deleteByFileId($fileId): bool {
+		$index = $this->getIndex();
+		$response = $index->deleteById($fileId);
+		return $response->isOk();
+	}
+
+	/**
+	 * Get the index stats as reported by elasticsearch
+	 */
+	public final function getStats(): array {
+		$index = $this->getIndex();
+		$stats = $index->getStats()->getData();
+		return $stats;
 	}
 
 	/**

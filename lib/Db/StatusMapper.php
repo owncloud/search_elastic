@@ -234,18 +234,124 @@ class StatusMapper extends Mapper {
 		";
 		return $this->findNodesWithStatus($home, $sql, Status::STATUS_NEW);
 	}
-	public function findFilesIndexed(Folder $home, $limit, $offset) {
+
+	/**
+	 * Find files marked as indexes inside the home folder.
+	 * The returned files will be limited to $limit results and the
+	 * fileids will be greater than the $minId. This should be more
+	 * stable because files that has been processed could be removed,
+	 * which could be a problem with the usual limit + offset approach.
+	 *
+	 * The current approach should be better in case something happens
+	 * and we need to restart the processing. We don't know when a
+	 * second call to this will happen, and the filecache could have been
+	 * modified.
+	 *
+	 * The returned ids will be in ascending order
+	 */
+	public function findFilesIndexed(Folder $home, $limit, $minId) {
+		$mount = $home->getMountPoint();
+		$mounts = \OC::$server->getMountManager()->findIn($home->getPath());
+		if (!\in_array($mount, $mounts)) {
+			$mounts[] = $mount;
+		}
+
+		$storageIds = [];
+		foreach ($mounts as $mount) {
+			$storage = $mount->getStorage();
+
+			// skip shared storages, they must be indexed in the context of
+			// their owner to prevent marking files as vanished
+			// Files_Sharing\SharedStorage might not be available when phan runs
+			/* @phan-suppress-next-line PhanUndeclaredClassReference */
+			if ($storage->instanceOfStorage(SharedStorage::class)) {
+				continue;
+			}
+
+			//only index external files if the admin enabled it
+
+			if ($this->config->getScanExternalStorageFlag() || $storage->isLocal()) {
+				$cache = $storage->getCache();
+				$numericId = $cache->getNumericStorageId();
+				$storageIds[] = $numericId;
+			}
+		}
+
+		$placeholders = \array_fill(0, \count($storageIds), '?');
+		$placeholdersString = \implode(',', $placeholders);
 		$sql = "
 			SELECT `*PREFIX*filecache`.`fileid`
 			FROM `*PREFIX*filecache`
-			LEFT JOIN `{$this->tableName}`
+			JOIN `{$this->tableName}`
 			ON `*PREFIX*filecache`.`fileid` = `{$this->tableName}`.`fileid`
-			WHERE `storage` = ?
+			WHERE `storage` in ({$placeholdersString})
+			AND `*PREFIX*filecache`.`fileid` > ?
 			AND `status` = ?
-			ORDER BY `*PREFIX*filecache`.`fileid`
+			ORDER BY `*PREFIX*filecache`.`fileid` ASC
 		";
-		return $this->findNodesWithStatus($home, $sql, Status::STATUS_INDEXED, $limit, $offset);
+		$query = $this->db->prepareQuery($sql, $limit);
+		$params = $storageIds;
+		\array_push($params, $minId, Status::STATUS_INDEXED);
+		$result = $query->execute($params);
+
+		$ids = [];
+		while (($row = $result->fetchRow()) !== false) {
+			$ids[] = $row['fileid'];
+		}
+		$result->closeCursor();
+		return $ids;
 	}
+
+	public function countFilesIndexed(Folder $home, $minId) {
+		$mount = $home->getMountPoint();
+		$mounts = \OC::$server->getMountManager()->findIn($home->getPath());
+		if (!\in_array($mount, $mounts)) {
+			$mounts[] = $mount;
+		}
+
+		$storageIds = [];
+		foreach ($mounts as $mount) {
+			$storage = $mount->getStorage();
+
+			// skip shared storages, they must be indexed in the context of
+			// their owner to prevent marking files as vanished
+			// Files_Sharing\SharedStorage might not be available when phan runs
+			/* @phan-suppress-next-line PhanUndeclaredClassReference */
+			if ($storage->instanceOfStorage(SharedStorage::class)) {
+				continue;
+			}
+
+			//only index external files if the admin enabled it
+
+			if ($this->config->getScanExternalStorageFlag() || $storage->isLocal()) {
+				$cache = $storage->getCache();
+				$numericId = $cache->getNumericStorageId();
+				$storageIds[] = $numericId;
+			}
+		}
+
+		$placeholders = \array_fill(0, \count($storageIds), '?');
+		$placeholdersString = \implode(',', $placeholders);
+		$sql = "
+			SELECT count(`*PREFIX*filecache`.`fileid`) AS nIds
+			FROM `*PREFIX*filecache`
+			JOIN `{$this->tableName}`
+			ON `*PREFIX*filecache`.`fileid` = `{$this->tableName}`.`fileid`
+			WHERE `storage` in ({$placeholdersString})
+			AND `*PREFIX*filecache`.`fileid` > ?
+			AND `status` = ?
+		";
+		$query = $this->db->prepareQuery($sql);
+		$params = $storageIds;
+		\array_push($params, $minId, Status::STATUS_INDEXED);
+		$result = $query->execute($params);
+
+		$row = $result->fetchRow();
+		$nIds = $row['nIds'];
+		$result->closeCursor();
+		return $nIds;
+	}
+
 	/**
 	 * get the list of all unindexed files for the user
 	 * @param Folder $home the home folder used to deduce the storages

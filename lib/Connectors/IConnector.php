@@ -87,6 +87,8 @@ interface IConnector {
 
 	/**
 	 * Get the name of the connector, for identification.
+	 * The connector's name will be used as a part of app configuration
+	 * keys, so they need to be under 30 chars.
 	 * @return string the name of the connector
 	 */
 	public function getConnectorName(): string;

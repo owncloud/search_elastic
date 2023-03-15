@@ -33,6 +33,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Helper\ProgressBar;
 
 /**
  * Class Rebuild
@@ -43,7 +44,7 @@ class FillSecondary extends Command {
 	/**
 	 * @var SearchElasticService
 	 */
-	private $searchelasticservice;
+	private $searchElasticService;
 
 	/**
 	 * @var IUserManager
@@ -69,7 +70,7 @@ class FillSecondary extends Command {
 		IRootFolder $rootFolder
 	) {
 		parent::__construct();
-		$this->searchelasticservice = $searchElasticService;
+		$this->searchElasticService = $searchElasticService;
 		$this->userManager = $userManager;
 		$this->rootFolder = $rootFolder;
 	}
@@ -81,7 +82,7 @@ class FillSecondary extends Command {
 	 */
 	protected function configure() {
 		$this
-			->setName('search:index:fill_secondary')
+			->setName('search:index:fillSecondary')
 			->setDescription(
 				'Fill a secondary index based on the indexed data we have.'.
 				' Files not matching the "indexed" status will be ignored'.
@@ -109,6 +110,19 @@ class FillSecondary extends Command {
 				'f',
 				InputOption::VALUE_NONE,
 				'Use this option to rebuild the search index without further questions.'
+			)
+			->addOption(
+				'startOver',
+				null,
+				InputOption::VALUE_NONE,
+				'Start indexing from the beginning, not from a previous savepoint.'
+			)
+			->addOption(
+				'chunkSize',
+				null,
+				InputOption::VALUE_REQUIRED,
+				'The savepoint will be updated after processing this number of files.',
+				'100'
 			);
 	}
 
@@ -127,8 +141,15 @@ class FillSecondary extends Command {
 		$users = $input->getArgument('user_id');
 		$connectorName = $input->getArgument('connector_name');
 		$quiet = $input->getOption('quiet');
+		$startOver = $input->getOption('startOver');
+		$chunkSize = (int)$input->getOption('chunkSize');
 
-		$this->searchelasticservice->partialSetup();
+		$params = [
+			'startOver' => $startOver,
+			'chunkSize' => $chunkSize,
+		];
+
+		$this->searchElasticService->partialSetup();
 		foreach ($users as $user) {
 			$userObject = $this->userManager->get($user);
 			if ($userObject !== null) {
@@ -136,7 +157,7 @@ class FillSecondary extends Command {
 					$output->writeln('Aborting.');
 					return -1;
 				}
-				$this->fillSecondary($connectorName, $userObject, $quiet, $output);
+				$this->fillSecondary($connectorName, $userObject, $quiet, $output, $params);
 			} else {
 				$output->writeln("<error>Unknown user $user</error>");
 			}
@@ -190,12 +211,26 @@ class FillSecondary extends Command {
 	 *
 	 * @return void
 	 */
-	protected function fillSecondary($connectorName, $user, $quiet, $output) {
+	protected function fillSecondary($connectorName, $user, $quiet, $output, $params) {
 		$uid = $user->getUID();
 		if (!$quiet) {
 			$output->writeln("Rebuilding Search Index for <info>$uid</info>");
 		}
 		$home = $this->rootFolder->getUserFolder($uid);
-		$this->searchelasticservice->fillSecondaryIndex($uid, $home, $connectorName);
+
+		$countParams = [
+			'startOver' => $params['startOver'],
+		];
+		$indexedCount = $this->searchElasticService->getCountFillSecondaryIndex($uid, $home, $connectorName, $countParams);
+
+		$progressBar = new ProgressBar($output);
+		$progressBar->start($indexedCount);
+
+		$fillParams = $params;
+		$fillParams['callback'] = function ($fileIds) use ($progressBar) {
+			$progressBar->advance(\count($fileIds));
+		};
+		$this->searchElasticService->fillSecondaryIndex($uid, $home, $connectorName, $fillParams);
+		$progressBar->finish();
 	}
 }

@@ -130,6 +130,10 @@ class Hub {
 	 * parameter, use `clearConnectorsCheckedCache` method first to
 	 * clear the cache.
 	 *
+	 * Note that all the configured write indexes should be prepared,
+	 * otherwise there could be problems because some documents might
+	 * be indexed in one place but not in others.
+	 *
 	 * Expected usage with the $force parameter:
 	 * ```
 	 * $hub->clearConnectorsCheckedCache();
@@ -137,8 +141,11 @@ class Hub {
 	 * $hub->prepareSearchIndex(true);
 	 * .....
 	 * ```
+	 *
+	 * @return bool true if ALL the write indexes have been prepared, false
+	 * if any of them failed.
 	 */
-	public function prepareWriteIndexes($force = false) {
+	public function prepareWriteIndexes($force = false): bool {
 		$allConnectorsOk = true;
 
 		$writeConnectors = $this->getWriteConnectors();
@@ -183,8 +190,11 @@ class Hub {
 	 * $hub->prepareSearchIndex(true);
 	 * .....
 	 * ```
+	 *
+	 * @return bool true if the search index is prepared, false
+	 * otherwise
 	 */
-	public function prepareSearchIndex($force = false) {
+	public function prepareSearchIndex($force = false): bool {
 		$connector = $this->getSearchConnector();
 		$connectorName = $connector->getConnectorName();
 		if (isset($this->connectorsChecked[$connectorName])) {
@@ -206,30 +216,35 @@ class Hub {
 		return $this->connectorsChecked[$connectorName];
 	}
 
-	public function hubIsSetup() {
+	/**
+	 * Return whether the hub is setup or not. The hub is setup
+	 * if all the write indexes and the search index are prepared
+	 * @return bool
+	 */
+	public function hubIsSetup(): bool {
 		return $this->prepareWriteIndexes() && $this->prepareSearchIndex();
 	}
 
 	/**
 	 * Index the target node using all the configured write connectors.
+	 * To keep consistence among all the configured write connectors, this
+	 * method will only return true if the node has been indexed in all the
+	 * connectors. If any of them fails, the node should be considered as not
+	 * indexed in order to retry it later.
+	 * @return bool true if the node has been indexed in all the connectors,
+	 * false if any of them failed.
 	 */
-	public function hubIndexNode(string $userId, Node $node, bool $extractContent = true) {
+	public function hubIndexNode(string $userId, Node $node, bool $extractContent = true): bool {
+		if (!$this->prepareWriteIndexes()) {
+			return false;
+		}
+
 		$result = true;
 		$writeConnectors = $this->getWriteConnectors();
 		foreach ($writeConnectors as $connector) {
-			$connectorName = $connector->getConnectorName();
-			if (!isset($this->connectorsChecked[$connectorName])) {
-				$this->prepareWriteIndexes();
-			}
-
-			if ($this->connectorsChecked[$connectorName] !== true) {
-				continue;
-			}
-
-			$conResult = $connector->indexNode($userId, $node, $extractContent);
-			$result = $result && $conResult;
+			$result = $connector->indexNode($userId, $node, $extractContent) && $result;
 		}
-		return $conResult;
+		return $result;
 	}
 
 	/**
@@ -249,17 +264,18 @@ class Hub {
 	 *
 	 * Note that accessing directly to the resultSet is discoraged
 	 * because the data could be indexed in a different way
+	 *
+	 * @return bool|array false if the search connector
+	 * isn't prepared, or an array containing the elastica's result set
+	 * and the connector associated as shown in the example above
 	 */
 	public function hubFetchResults(string $userId, string $query, int $limit, int $offset) {
-		$connector = $this->getSearchConnector();
-		$connectorName = $connector->getConnectorName();
-		if (!isset($this->connectorsChecked[$connectorName])) {
-			$this->prepareSearchIndex();
-		}
-
-		if ($this->connectorsChecked[$connectorName] !== true) {
+		if (!$this->prepareSearchIndex()) {
 			return false;
 		}
+
+		$connector = $this->getSearchConnector();
+		$connectorName = $connector->getConnectorName();
 
 		$resultSet = $connector->fetchResults($userId, $query, $limit, $offset);
 		return [
@@ -270,9 +286,17 @@ class Hub {
 
 	/**
 	 * Delete the indexed document by ownCloud's fileid.
-	 * The deletion will happen on all the configured write connectors
+	 * The deletion will happen on all the configured write connectors.
+	 * This method will return true if all the connectors have deleted
+	 * the target document, false if any of them failed.
+	 * @return bool true if the document has been deleted from all the
+	 * connected indexes, false if any of them fails to be deleted
 	 */
-	public function hubDeleteByFileId($fileId) {
+	public function hubDeleteByFileId($fileId): bool {
+		if (!$this->prepareWriteIndexes()) {
+			return false;
+		}
+
 		$deleted = true;
 		$writeConnectors = $this->getWriteConnectors();
 		foreach ($writeConnectors as $connector) {
@@ -285,6 +309,15 @@ class Hub {
 	 * Get the stats of the indexes attached to all the connectors configured
 	 * in the hub.
 	 * The search connector will be retrieved first.
+	 * This method will return a map with the connector's name as key and the
+	 * stat data as value.
+	 * ```
+	 * [
+	 *   'Legacy' => [.....],
+	 *   'CTest' => [.....],
+	 * ]
+	 * ```
+	 * @return array
 	 */
 	public function hubGetStats() {
 		$stats = [];

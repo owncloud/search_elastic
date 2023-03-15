@@ -44,6 +44,7 @@ use OC\Share\Constants;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\Node;
+use OCP\Files\NotFoundException;
 use OCP\IConfig;
 use OCP\ILogger;
 
@@ -108,6 +109,8 @@ class SearchElasticService {
 	}
 
 	/**
+	 * Get whether the connector hub is setup or not. This implies
+	 * checking all the configured write and search connectors.
 	 * @return bool
 	 */
 	public function isSetup() {
@@ -115,6 +118,21 @@ class SearchElasticService {
 	}
 
 	/**
+	 * Get the stats coming from the hub. An array will be returned
+	 * contaning all the information.
+	 * ```
+	 * [
+	 *   'connectors' => [
+	 *     'Legacy' => [.....],
+	 *     'CTest' => [.....],
+	 *   ],
+	 *   'oc_index' => [.....],
+	 *   'countIndexed' => 1234,
+	 * ]
+	 * ```
+	 * The oc_index key is kept for backwards-compatibility.
+	 * The countIndexed returns the number if indexed files we have
+	 * tracked in our DB, it also there for backwards-compatibility
 	 * @return array
 	 */
 	public function getStats() {
@@ -168,6 +186,8 @@ class SearchElasticService {
 
 				if ($this->hub->hubIndexNode($userId, $node, $extractContent)) {
 					$this->mapper->markIndexed($fileStatus);
+				} else {
+					$this->mapper->markError($fileStatus, 'Index failed');
 				}
 			} catch (VanishedException $e) {
 				$this->logger->debug("indexFiles: ($id) Vanished", ['app' => 'search_elastic']);
@@ -280,23 +300,115 @@ class SearchElasticService {
 		}
 	}
 
-	public function fillSecondaryIndex($userId, $home, $connectorName) {
-		$offset = 0;
-		$limit = 500;
+	/**
+	 * Count the number of indexed nodes that will be used to fill the secondary index.
+	 * Since filling the index can take a lot of time, savepoints are used so we can
+	 * continue from a previous savepoint if something goes wrong. By default, we'll
+	 * count from the latest known savepoint.
+	 *
+	 * The $params parameter can contain the following options:
+	 * - 'startOver' (optional, default false) -> bool whether this method should count
+	 * from the beginning (true) or should start from a previous savepoint (false)
+	 *
+	 * @param string $userId the userId of the owner of the home
+	 * @param Folder $home the home folder to be indexed
+	 * @param string $connectorName the name of the connector to use
+	 * @param array $params a map of options for this method, as explained above
+	 */
+	public function getCountFillSecondaryIndex($userId, $home, $connectorName, $params = []) {
+		$minId = 0;
+		$startOver = $params['startOver'] ?? false;
+		$adlerUser = \hash('adler32', $userId); // hash the user to ensure it fits in the config key
+
+		if (!$startOver) {
+			$minId = (int)$this->config->getValue("es_fillsec_{$connectorName}_{$adlerUser}", '0');
+		}
+
+		return $this->mapper->countFilesIndexed($home, $minId);
+	}
+
+	/**
+	 * Fill a secondary index by indexing the data from the home directory using the
+	 * connector provided by name.
+	 *
+	 * The $params parameter can contain the following options:
+	 * - 'startOver' (optional, default false) -> bool, whether this method should count
+	 * from the beginning (true) or should start from a previous savepoint (false)
+	 * - 'chunkSize' (optional, default 100) -> int, the chunk size of the list of files.
+	 * After processing those files, the savepoint will be updated and more files will
+	 * be requested to be indexed. The callback (if any) will be called after each chunk
+	 * has been fully processed.
+	 * - 'callback' (optional, default null) -> callback(array $fileIds), a callback to
+	 * be called after a chunk of files has been processed. This is intended to provide
+	 * a way to show progress.
+	 *
+	 * Filling the secondary index is expected to take a lot of time. We'll use savepoints
+	 * in order to continue from that point if something goes wrong, and avoid having to
+	 * re-index everything from the beginning.
+	 *
+	 * By default, it will start indexing from the previously savepoint (if any).
+	 * Note that this doesn't guarantee the files will be indexed only once. If the app
+	 * crashes, some of the files of the last chunk might have been indexed before the
+	 * crash, so those will be re-indexed when we resume the operation.
+	 * What it does guarantee is that not all the chunks will be re-indexed, just the
+	 * last one.
+	 *
+	 * @param string $userId the userId of the owner of the home
+	 * @param Folder $home the home folder to be indexed
+	 * @param string $connectorName the name of the connector to use
+	 * @param array $params a map of options for this method, as explained above
+	 */
+	public function fillSecondaryIndex($userId, $home, $connectorName, $params = []) {
+		$minId = 0;
+		$chunkSize = $params['chunkSize'] ?? 100;
+		$startOver = $params['startOver'] ?? false;
+		$callback = $params['callback'] ?? null;
+		$adlerUser = \hash('adler32', $userId); // hash the user to ensure it fits in the config key
 
 		$connector = $this->hub->getRegisteredConnector($connectorName);
 		if ($connector === null) {
 			return false;
 		}
 
-		$fileIds = $this->mapper->findFilesIndexed($home, $limit, $offset);
+		if (!$startOver) {
+			$minId = (int)$this->config->getValue("es_fillsec_{$connectorName}_{$adlerUser}", '0');
+		}
+
+		$fileIds = $this->mapper->findFilesIndexed($home, $chunkSize, $minId);
 		while (!empty($fileIds)) {
 			foreach ($fileIds as $fileId) {
-				$nodes = $home->getById($fileId, true);
-				$connector->indexNode($userId, $nodes[0]);
+				$fileStatus = $this->mapper->getOrCreateFromFileId($fileId);
+				try {
+					$nodes = $home->getById($fileId, true);
+					if (isset($nodes[0])) {
+						if (!$connector->indexNode($userId, $nodes[0])) {
+							// even if primary index is successful, mark it as error
+							// so it can be retried in the secondary index
+							$this->mapper->markError($fileStatus, 'Index failed');
+						}
+						// if the node is successfully indexed, it should be already
+						// marked as indexed, so nothing to do
+					} else {
+						$this->logger->debug("fillSecondaryIndex: ($fileId) missing node", ['app' => 'search_elastic']);
+						$fileStatus->setMessage('File vanished');
+						$this->mapper->markVanished($fileStatus);
+					}
+				} catch (NotFoundException $e) {
+					// mark the fileid as vanished in order to remove it later
+					$this->logger->debug("fillSecondaryIndex: ($fileId) not found", ['app' => 'search_elastic']);
+					$fileStatus->setMessage('File vanished');
+					$this->mapper->markVanished($fileStatus);
+				}
+				$minId = $fileId;  // update minId
 			}
-			$offset += $limit;
-			$fileIds = $this->mapper->findFilesIndexed($home, $limit, $offset);
+
+			$this->config->setValue("es_fillsec_{$connectorName}_{$adlerUser}", $minId); // mark minId so we can start from there
+			if ($callback !== null && \is_callable($callback)) {
+				$callback($fileIds);
+			}
+
+			$fileIds = $this->mapper->findFilesIndexed($home, $chunkSize, $minId);
 		}
+		$this->config->deleteValue("es_fillsec_{$connectorName}_{$adlerUser}");
 	}
 }

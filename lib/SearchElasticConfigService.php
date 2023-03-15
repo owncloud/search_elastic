@@ -79,6 +79,10 @@ class SearchElasticConfigService {
 		return $this->owncloudConfig->getAppValue(Application::APP_ID, $key, $default);
 	}
 
+	public function deleteValue($key) {
+		$this->owncloudConfig->deleteAppValue(Application::APP_ID, $key);
+	}
+
 	/**
 	 * @param string $userId
 	 * @param string $key

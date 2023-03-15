@@ -36,12 +36,46 @@ use OCP\AppFramework\Db\Entity;
  * @method setMessage(string $status)
  */
 class Status extends Entity {
+	/**
+	 * New. This is intended to mark the fileid as new in order to re-index.
+	 * This means that the fileid has been indexed before, but it needs to
+	 * be re-indexed.
+	 */
 	public const STATUS_NEW = 'N';
+	/**
+	 * Modified / Metadata changed. The metadata has changed and the fileid
+	 * needs to be re-indexed
+	 */
 	public const STATUS_METADATA_CHANGED = 'M';
+	/**
+	 * Indexed. If multiple write indexes are being used, "I" should
+	 * imply that the node is indexed in all the indexes.
+	 * When a new write index is configured, old indexed nodes are expected
+	 * to be indexed in the new index, so "I" will mean that the node is indexed
+	 * only in one of the index, not in all of them.
+	 * For new nodes, "I" must be setup only if the nodes has been indexed
+	 * correctly in all the indexes.
+	 */
 	public const STATUS_INDEXED = 'I';
+	/**
+	 * Skipped. Some directories can be configured to be skipped. This fileid
+	 * is (or should be) within a skipped directory. No action is expected
+	 * on this entry.
+	 */
 	public const STATUS_SKIPPED = 'S';
 	public const STATUS_UNINDEXED = 'U';
+	/**
+	 * Vanished. Fileid not found locally in the oc_filecache. The document
+	 * should be removed from all the write indexes at some point.
+	 * Once the document has been successfully removed from all the
+	 * write indexes, the status entry should also be removed.
+	 */
 	public const STATUS_VANISHED = 'V';
+	/**
+	 * An error has happened with that entry. It's expected that we retry
+	 * the indexing of this fileid at some point.
+	 * Specific details about the error are stored as message
+	 */
 	public const STATUS_ERROR = 'E';
 
 	public $fileId;

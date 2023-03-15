@@ -44,6 +44,22 @@ use OCP\IGroupManager;
 use OCP\IConfig;
 use OCP\ILogger;
 
+/**
+ * Abstract class providing a common behavior to implement the IConnector
+ * interface. Most of the public methods of the interface are marked as final
+ * because we don't want subclasses of change the behavior. Subclasses can
+ * and should override some of the protected methods. The protected methods
+ * are expected to provide data or information that the subclasses can
+ * customize according to their needs.
+ *
+ * Protected non-final method are expected to be overwritten by the subclasses
+ * if the default code isn't suitable for them. Same for the public non-final
+ * methods (except for the `isSetup` method, which shouldn't need to be changed)
+ *
+ * Note that this class is intended to be used as helper since subclasses are
+ * only expected to provide information. If the behavior isn't suited for
+ * your purposes, consider to implement the `IConnector` interface yourself.
+ */
 abstract class BaseConnector implements IConnector {
 	/** @var IConfig */
 	private $config;
@@ -89,7 +105,12 @@ abstract class BaseConnector implements IConnector {
 	}
 
 	/**
-	 * This method can be overwritten, although it shouldn't be needed
+	 * Check whether the connector is properly setup. This usually involves
+	 * checking if the index and the ingest pipeline exist.
+	 *
+	 * This method can be overwritten, although it shouldn't be needed. You
+	 * might want to include additional checks depending on what has been
+	 * configured.
 	 */
 	public function isSetup(): bool {
 		$index = $this->getIndex();
@@ -229,6 +250,9 @@ abstract class BaseConnector implements IConnector {
 		];
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public final function indexNode(string $userId, Node $node, bool $extractContent = true): bool {
 		$this->logger->debug(
 			"indexNode {$node->getPath()} ({$node->getId()}) for $userId",
@@ -261,8 +285,17 @@ abstract class BaseConnector implements IConnector {
 			$bulk->setIndex($index);
 			$bulk->setRequestParam('pipeline', $this->getProcessorName());
 			$bulk->addDocuments([$doc]);
-			$bulk->send();
-			return true;
+			$responseSet = $bulk->send();
+
+			$result = $responseSet->isOk();
+			if (!$result) {
+				// we'll log only the first error found in the response set.
+				$this->logger->error(
+					"indexNode: connector {$this->getConnectorName()} failed: {$responseSet->getError()}",
+					['app' => 'search_elastic']
+				);
+			}
+			return $result;
 		}
 
 		$this->logger->debug(
@@ -270,8 +303,16 @@ abstract class BaseConnector implements IConnector {
 			\json_encode($doc->getData()),
 			['app' => 'search_elastic']
 		);
-		$index->updateDocument($doc);
-		return true;
+		$response = $index->updateDocument($doc);
+
+		$result = $response->isOk();
+		if (!$result) {
+			$this->logger->error(
+				"indexNode: connector {$this->getConnectorName()} failed: {$response->getError()}",
+				['app' => 'search_elastic']
+			);
+		}
+		return $result;
 	}
 
 	/**
@@ -350,6 +391,9 @@ abstract class BaseConnector implements IConnector {
 		return $es_query;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public final function fetchResults(string $userId, string $query, int $limit, int $offset): ResultSet {
 		$noContentGroups = $this->esConfig->getGroupNoContentArray();
 		$searchContent = true;
@@ -422,7 +466,8 @@ abstract class BaseConnector implements IConnector {
 	public final function deleteByFileId($fileId): bool {
 		$index = $this->getIndex();
 		$response = $index->deleteById($fileId);
-		return $response->isOk();
+		// 404 is considered ok because the file id isn't in the index any longer
+		return $response->isOk() || $response->getStatus() === 404;
 	}
 
 	/**
@@ -439,6 +484,7 @@ abstract class BaseConnector implements IConnector {
 	 *
 	 * This is the public name that the admin should use to refer
 	 * to this connector
+	 * The connector's name must be under 30 chars
 	 */
 	abstract public function getConnectorName(): string;
 

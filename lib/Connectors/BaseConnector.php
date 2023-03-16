@@ -210,10 +210,10 @@ abstract class BaseConnector implements IConnector {
 		$index = $this->getIndex();
 		$index->create(['settings' => $settings], true);
 
-		$mapping = $this->getMappingPropertiesConf();
-		if (!empty($mapping)) {
+		$mappingData = $this->getMappingPropertiesConf();
+		if (!empty($mappingData)) {
 			$mapping = new Mapping();
-			$mapping->setProperties($mapping);
+			$mapping->setProperties($mappingData);
 			$mapping->send($index);
 		}
 

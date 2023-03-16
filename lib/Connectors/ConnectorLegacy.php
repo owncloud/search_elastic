@@ -22,8 +22,6 @@
 namespace OCA\Search_Elastic\Connectors;
 
 use Elastica\Client;
-use Elastica\Index;
-use Elastica\Document;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\Files\Node;
 use OCP\IGroupManager;

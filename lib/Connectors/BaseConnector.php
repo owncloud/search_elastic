@@ -417,6 +417,8 @@ abstract class BaseConnector implements IConnector {
 				'groups' => $groupIds,
 			],
 			'searchContent' => $searchContent,
+			'size' => $limit,
+			'from' => $offset,
 		];
 		$proposedEsQuery = $this->getElasticSearchQuery($query, $opts);
 

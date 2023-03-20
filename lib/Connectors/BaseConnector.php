@@ -422,6 +422,7 @@ abstract class BaseConnector implements IConnector {
 		];
 		$proposedEsQuery = $this->getElasticSearchQuery($query, $opts);
 
+		$this->logger->info('query: ' . json_encode($proposedEsQuery), ['search_elastic']); // TODO: Reduce log level to debug
 		$es_query = new Query();
 		$es_query->setRawQuery($proposedEsQuery);
 

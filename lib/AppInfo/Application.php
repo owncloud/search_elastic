@@ -38,6 +38,7 @@ use OCA\Search_Elastic\Hooks\Files;
 use OCA\Search_Elastic\Jobs\DeleteJob;
 use OCA\Search_Elastic\Connectors\Hub;
 use OCA\Search_Elastic\Connectors\ConnectorLegacy;
+use OCA\Search_Elastic\Connectors\ConnectorRelevanceV2;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\SearchElasticService;
 use OCP\AppFramework\App;
@@ -98,6 +99,7 @@ class Application extends App {
 			$server = $c->getServer();
 			$hub = new Hub($server->getConfig(), $server->getLogger());
 			$hub->registerConnector($c->query(ConnectorLegacy::class));
+			$hub->registerConnector($c->query(ConnectorRelevanceV2::class));
 			// TODO: Delete test connector
 			$hub->registerConnector($c->query(\OCA\Search_Elastic\Connectors\ConnectorTest::class));
 			return $hub;

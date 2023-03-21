@@ -296,7 +296,7 @@ class StatusMapper extends Mapper {
 
 		$ids = [];
 		while (($row = $result->fetchRow()) !== false) {
-			$ids[] = $row['fileid'];
+			$ids[] = (int)$row['fileid'];
 		}
 		$result->closeCursor();
 		return $ids;
@@ -347,7 +347,7 @@ class StatusMapper extends Mapper {
 		$result = $query->execute($params);
 
 		$row = $result->fetchRow();
-		$nIds = $row['nIds'];
+		$nIds = (int)$row['nIds'];
 		$result->closeCursor();
 		return $nIds;
 	}
@@ -394,7 +394,7 @@ class StatusMapper extends Mapper {
 				$result = $query->execute([$numericId, $status]);
 
 				while ($row = $result->fetchRow()) {
-					$files[] = $row['fileid'];
+					$files[] = (int)$row['fileid'];
 				}
 			}
 		}

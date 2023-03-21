@@ -243,7 +243,13 @@ class SearchElasticService {
 	 */
 	public function getNodeForId($userId, $fileId) {
 		/* @var Node[] */
-		$nodes = \OC::$server->getUserFolder($userId)->getById($fileId);
+		$userFolder = \OC::$server->getUserFolder($userId);
+		if ($userFolder->getId() === $fileId) {
+			\OCP\Util::writeLog('deleteme', $fileId . " is home!", \OCP\Util::ERROR);
+			throw new NotIndexedException();
+		}
+
+		$nodes = $userFolder->getById($fileId);
 		// getById can return more than one id because the containing storage might be mounted more than once
 		// Since we only want to index the file once, we only use the first entry
 

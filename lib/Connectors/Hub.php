@@ -21,13 +21,13 @@
 
 namespace OCA\Search_Elastic\Connectors;
 
-use OCP\IConfig;
+use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\ILogger;
 use OCP\Files\Node;
 
 class Hub {
-	/** @var IConfig */
-	private $config;
+	/** @var SearchElasticConfigService */
+	private $esConfig;
 	/** @var array<string, IConnector> */
 	private $registeredConnectors = [];
 	/** @var array<string, bool> */
@@ -38,8 +38,8 @@ class Hub {
 	/** @var IConnector */
 	private $searchConnector;
 
-	public function __construct(IConfig $config, ILogger $logger) {
-		$this->config = $config;
+	public function __construct(SearchElasticConfigService $esConfig, ILogger $logger) {
+		$this->esConfig = $esConfig;
 		$this->logger = $logger;
 	}
 
@@ -71,11 +71,10 @@ class Hub {
 	}
 
 	private function getWriteConnectors() {
-		// TODO: Fetching the data from the config.php file is temporary
 		if (!isset($this->writeConnectors)) {
 			$writeConnectors = [];
 
-			$writeNames = $this->config->getSystemValue('es.write', ['Legacy']);
+			$writeNames = $this->esConfig->getConfiguredWriteConnectors();
 			foreach ($writeNames as $writeName) {
 				$connector = $this->registeredConnectors[$writeName] ?? null;
 				if ($connector === null) {
@@ -97,9 +96,8 @@ class Hub {
 	}
 
 	private function getSearchConnector() {
-		// TODO: Fetching the data from the config.php file is temporary
 		if (!isset($this->searchConnector)) {
-			$searchName = $this->config->getSystemValue('es.search', 'Legacy');
+			$searchName = $this->esConfig->getConfiguredSearchConnector();
 			$connector = $this->registeredConnectors[$searchName] ?? null;
 			if ($connector === null) {
 				$this->logger->warning("Connector {$searchName} is missing. Falling back to Legacy", ['app' => 'search_elastic']);

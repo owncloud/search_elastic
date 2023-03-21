@@ -40,6 +40,8 @@ class SearchElasticConfigService {
 	public const NO_CONTENT_GROUP = 'group.nocontent';
 	public const APP_MODE = 'mode';
 	public const ENABLED_GROUPS = 'group';
+	public const CONNECTORS_WRITE = 'connectors_write';
+	public const CONNECTORS_SEARCH = 'connectors_search';
 
 	/**
 	 * @var IConfig
@@ -338,5 +340,23 @@ class SearchElasticConfigService {
 			$results[] = $serverData;
 		}
 		return ['servers' => $results];
+	}
+
+	public function getConfiguredWriteConnectors() {
+		$values = $this->getValue(self::CONNECTORS_WRITE, 'Legacy');
+		return \explode(',', $values);
+	}
+
+	public function getConfiguredSearchConnector() {
+		return $this->getValue(self::CONNECTORS_SEARCH, 'Legacy');
+	}
+
+	public function setConfiguredWriteConnectors($connectorNameList) {
+		$values = \implode(',', $connectorNameList);
+		$this->setValue(self::CONNECTORS_WRITE, $values);
+	}
+
+	public function setConfiguredSearchConnector($connectorName) {
+		return $this->setValue(self::CONNECTORS_SEARCH, $connectorName);
 	}
 }

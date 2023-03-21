@@ -411,4 +411,16 @@ class SearchElasticService {
 		}
 		$this->config->deleteValue("es_fillsec_{$connectorName}_{$adlerUser}");
 	}
+
+	public function getConnectorInfo() {
+		$registered = $this->hub->getRegisteredConnectorNames();
+		$write = $this->config->getConfiguredWriteConnectors();
+		$search = $this->config->getConfiguredSearchConnector();
+
+		return [
+			'registered' => $registered,
+			'write' => $write,
+			'search' => $search,
+		];
+	}
 }

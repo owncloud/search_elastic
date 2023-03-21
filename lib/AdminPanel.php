@@ -25,10 +25,24 @@
 namespace OCA\Search_Elastic;
 
 use OCP\Settings\ISettings;
+use OCA\Search_Elastic\SearchElasticService;
 
 class AdminPanel implements ISettings {
+	/** @var SearchElasticService */
+	private $service;
+
+	public function __construct(SearchElasticService $service) {
+		$this->service = $service;
+	}
+
 	public function getPanel() {
-		return new \OCP\Template('search_elastic', 'settings/admin');
+		$conInfo = $this->service->getConnectorInfo();
+
+		$tmpl = new \OCP\Template('search_elastic', 'settings/admin');
+		$tmpl->assign('connectorList', $conInfo['registered']);
+		$tmpl->assign('writeConnectors', $conInfo['write']);
+		$tmpl->assign('searchConnector', $conInfo['search']);
+		return $tmpl;
 	}
 
 	public function getSectionID() {

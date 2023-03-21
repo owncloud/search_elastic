@@ -97,7 +97,7 @@ class Application extends App {
 
 		$container->registerService(Hub::class, function (IAppContainer $c) {
 			$server = $c->getServer();
-			$hub = new Hub($server->getConfig(), $server->getLogger());
+			$hub = new Hub($c->query(SearchElasticConfigService::class), $server->getLogger());
 			$hub->registerConnector($c->query(ConnectorLegacy::class));
 			$hub->registerConnector($c->query(ConnectorRelevanceV2::class));
 			// TODO: Delete test connector

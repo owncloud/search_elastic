@@ -100,8 +100,6 @@ class Application extends App {
 			$hub = new Hub($c->query(SearchElasticConfigService::class), $server->getLogger());
 			$hub->registerConnector($c->query(ConnectorLegacy::class));
 			$hub->registerConnector($c->query(ConnectorRelevanceV2::class));
-			// TODO: Delete test connector
-			$hub->registerConnector($c->query(\OCA\Search_Elastic\Connectors\ConnectorTest::class));
 			return $hub;
 		});
 

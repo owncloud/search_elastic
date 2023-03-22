@@ -245,7 +245,6 @@ class SearchElasticService {
 		/* @var Node[] */
 		$userFolder = \OC::$server->getUserFolder($userId);
 		if ($userFolder->getId() === $fileId) {
-			\OCP\Util::writeLog('deleteme', $fileId . " is home!", \OCP\Util::ERROR);
 			throw new NotIndexedException();
 		}
 

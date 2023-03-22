@@ -25,6 +25,7 @@ use Elastica\Client;
 use Elastica\Result;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\Files\Node;
+use OCP\Files\FileInfo;
 use OCP\IGroupManager;
 use OCP\IConfig;
 use OCP\ILogger;
@@ -89,10 +90,18 @@ class ConnectorRelevanceV2 extends BaseConnector {
 	protected function getMappingPropertiesConf(): array {
 		return [
 			'mtime' => [
-				'type' => 'date',
-				'format' => 'epoch_second',
+				'properties' => [
+					'stamp' => ['type' => 'date', 'format' => 'epoch_second'],
+					'date' => ['type' => 'date', 'format' => 'date'],
+					'datetime' => ['type' => 'date', 'format' => 'date_time_no_millis'],
+				],
 			],
-			'size' => ['type' => 'long'],
+			'size' => [
+				'properties' => [
+					'b' => ['type' => 'long'],
+					'mb' => ['type' => 'double'],
+				],
+			],
 			'name' => [
 				'type' => 'text',
 				'analyzer' => 'filename_analyzer',
@@ -107,16 +116,39 @@ class ConnectorRelevanceV2 extends BaseConnector {
 					],
 				],
 			],
-			'extension' => [
+			'ext' => [
 				'type' => 'text',
 				'analyzer' => 'filename_analyzer',
 			],
+			'type' => ['type' => 'keyword'],
+			'mime' => ['type' => 'text'],
 			'users' => ['type' => 'keyword'],
 			'groups' => ['type' => 'keyword'],
 		];
 	}
 
-	// processor configuration will be same as the base connector
+	protected function getProcessorConf(): array {
+		$processors = [
+			[
+				'attachment' => [
+					'field' => 'data',
+					'target_field' => 'file',
+					'indexed_chars' => '-1',
+				]
+			],
+			[
+				'remove' => [
+					'field' => 'data',
+				]
+			],
+		];
+		$description = "Pipeline to process entries for ownCloud search with connector {$this->getConnectorName()}";
+
+		$payload = [];
+		$payload['description'] = $description;
+		$payload['processors'] = $processors;
+		return $payload;
+	}
 
 	protected function extractNodeData(Node $node, array $access): array {
 		$filename = $node->getName();
@@ -141,11 +173,31 @@ class ConnectorRelevanceV2 extends BaseConnector {
 			}
 		}
 
+		$size = $node->getSize();
+		$time = $node->getMTime();
+		$timeObj = new \DateTime();
+		$timeObj->setTimestamp($time);
+
+		$nodeType = $node->getType();
+		$type = 'file';
+		if ($nodeType === FileInfo::TYPE_FOLDER) {
+			$type = 'folder';
+		}
+
 		return [
 			'name' => $name,
-			'extension' => $extension,
-			'size' => $node->getSize(),
-			'mtime' => $node->getMTime(),
+			'ext' => $extension,
+			'size' => [
+				'b' => $size,
+				'mb' => $size / (1024 * 1024),
+			],
+			'mtime' => [
+				'stamp' => $time,
+				'date' => $timeObj->format('Y-m-d'),
+				'datetime' => $timeObj->format('c'),
+			],
+			'type' => $type,
+			'mime' => $node->getMimetype(),
 			'users' => $access['users'],
 			'groups' => $access['groups'],
 		];
@@ -164,7 +216,7 @@ class ConnectorRelevanceV2 extends BaseConnector {
 						[
 							'filter' => [
 								'range' => [
-									'mtime' => [
+									'mtime.stamp' => [
 										'lt' => 'now-1y',
 									],
 								],
@@ -174,7 +226,7 @@ class ConnectorRelevanceV2 extends BaseConnector {
 						[
 							'filter' => [
 								'range' => [
-									'mtime' => [
+									'mtime.stamp' => [
 										'lt' => 'now-1M',
 									],
 								],
@@ -184,7 +236,7 @@ class ConnectorRelevanceV2 extends BaseConnector {
 						[
 							'filter' => [
 								'range' => [
-									'mtime' => [
+									'mtime.stamp' => [
 										'lt' => 'now-1w',
 									],
 								],
@@ -194,7 +246,7 @@ class ConnectorRelevanceV2 extends BaseConnector {
 						[
 							'filter' => [
 								'range' => [
-									'mtime' => [
+									'mtime.stamp' => [
 										'lt' => 'now-1d',
 									],
 								],
@@ -204,7 +256,7 @@ class ConnectorRelevanceV2 extends BaseConnector {
 						[
 							'filter' => [
 								'range' => [
-									'mtime' => [
+									'mtime.stamp' => [
 										'gte' => 'now-1d',
 									],
 								],
@@ -252,19 +304,14 @@ class ConnectorRelevanceV2 extends BaseConnector {
 				'fields' => ['file.content' => new \stdClass]
 			],
 			'_source' => [
-				'includes' => ['mtime']
+				'includes' => ['mtime.stamp']
 			],
 			'size' => $size,
 			'from' => $from,
 		];
 
 		if ($opts['searchContent']) {
-			$es_query['query']['function_score']['query']['bool']['should'][] = [
-				'query_string' => [
-					'query' => $query,
-					'fields' => ['file.content'],
-				],
-			];
+			$es_query['query']['function_score']['query']['bool']['should'][0]['query_string']['fields'][] = 'file.content';
 		}
 		return $es_query;
 	}
@@ -276,6 +323,9 @@ class ConnectorRelevanceV2 extends BaseConnector {
 			case 'highlights':
 				$highlights = $result->getHighlights();
 				return $highlights['file.content'] ?? [];
+			case 'mtime':
+				$data = $result->getData();
+				return $data['mtime']['stamp'];
 			default:
 				$data = $result->getData();
 				return $data[$key] ?? null;

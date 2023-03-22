@@ -171,7 +171,8 @@ class AdminSettingsController extends ApiController {
 						'message' => $message
 					]
 				],
-				Http::STATUS_BAD_REQUEST);
+				Http::STATUS_BAD_REQUEST
+			);
 		}
 	}
 

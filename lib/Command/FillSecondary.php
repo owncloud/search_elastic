@@ -62,7 +62,6 @@ class FillSecondary extends Command {
 	 * @param SearchElasticService $searchElasticService
 	 * @param IUserManager $userManager
 	 * @param IRootFolder $rootFolder
-	 * @param UpdateContent $job
 	 */
 	public function __construct(
 		SearchElasticService $searchElasticService,

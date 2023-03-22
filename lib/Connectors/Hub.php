@@ -28,14 +28,16 @@ use OCP\Files\Node;
 class Hub {
 	/** @var SearchElasticConfigService */
 	private $esConfig;
+	/** @var ILogger */
+	private $logger;
 	/** @var array<string, IConnector> */
 	private $registeredConnectors = [];
 	/** @var array<string, bool> */
 	private $connectorsChecked = [];
 
-	/** @var array<IConnector> */
+	/** @var array<IConnector>|null */
 	private $writeConnectors;
-	/** @var IConnector */
+	/** @var IConnector|null */
 	private $searchConnector;
 
 	public function __construct(SearchElasticConfigService $esConfig, ILogger $logger) {

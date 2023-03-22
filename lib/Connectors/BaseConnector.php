@@ -34,11 +34,9 @@ use Elastica\ResultSet;
 use OC\Files\Cache\Cache;
 use OC\Files\Filesystem;
 use OC\Files\View;
-use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OC\Share\Constants;
 use OCP\Files\Node;
-use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\IGroupManager;
 use OCP\IConfig;
@@ -72,7 +70,7 @@ abstract class BaseConnector implements IConnector {
 	/** @var ILogger */
 	private $logger;
 
-	/** @var Index */
+	/** @var Index|null */
 	private $index;
 
 	/**
@@ -97,7 +95,7 @@ abstract class BaseConnector implements IConnector {
 	 * This method mustn't be overwritten, but it can be used in the
 	 * subclasses if needed.
 	 */
-	protected final function getIndex() {
+	final protected function getIndex() {
 		if (!isset($this->index)) {
 			$this->index = new Index($this->client, $this->getIndexName());
 		}
@@ -204,7 +202,7 @@ abstract class BaseConnector implements IConnector {
 	/**
 	 * @inheritDoc
 	 */
-	public final function prepareIndex() {
+	final public function prepareIndex() {
 		$settings = $this->getIndexSettingsConf();
 
 		$index = $this->getIndex();
@@ -253,7 +251,7 @@ abstract class BaseConnector implements IConnector {
 	/**
 	 * @inheritDoc
 	 */
-	public final function indexNode(string $userId, Node $node, bool $extractContent = true): bool {
+	final public function indexNode(string $userId, Node $node, bool $extractContent = true): bool {
 		$this->logger->debug(
 			"indexNode {$node->getPath()} ({$node->getId()}) for $userId",
 			['app' => 'search_elastic']
@@ -394,7 +392,7 @@ abstract class BaseConnector implements IConnector {
 	/**
 	 * @inheritDoc
 	 */
-	public final function fetchResults(string $userId, string $query, int $limit, int $offset): ResultSet {
+	final public function fetchResults(string $userId, string $query, int $limit, int $offset): ResultSet {
 		$noContentGroups = $this->esConfig->getGroupNoContentArray();
 		$searchContent = true;
 		if (!$this->esConfig->shouldContentBeIncluded()) {
@@ -466,7 +464,7 @@ abstract class BaseConnector implements IConnector {
 	 * always set the document's id to the fileid, so there is no need
 	 * for subclasses to overwrite this method.
 	 */
-	public final function deleteByFileId($fileId): bool {
+	final public function deleteByFileId($fileId): bool {
 		$index = $this->getIndex();
 		$response = $index->deleteById($fileId);
 		// 404 is considered ok because the file id isn't in the index any longer
@@ -476,7 +474,7 @@ abstract class BaseConnector implements IConnector {
 	/**
 	 * Get the index stats as reported by elasticsearch
 	 */
-	public final function getStats(): array {
+	final public function getStats(): array {
 		$index = $this->getIndex();
 		$stats = $index->getStats()->getData();
 		return $stats;
@@ -512,7 +510,7 @@ abstract class BaseConnector implements IConnector {
 	 * adjusted by using the `getPrivateConnectorName` method
 	 * @return string the name of the index
 	 */
-	protected final function getIndexName() {
+	final protected function getIndexName() {
 		$instanceid = $this->config->getSystemValue('instanceid', '');
 		return "oc-{$instanceid}{$this->getPrivateConnectorName()}";
 	}
@@ -525,7 +523,7 @@ abstract class BaseConnector implements IConnector {
 	 * This method can me overwritten by subclasses, but it can be slightly
 	 * adjusted by using the `getPrivateConnectorName` method
 	 */
-	protected final function getProcessorName() {
+	final protected function getProcessorName() {
 		$instanceid = $this->config->getSystemValue('instanceid', '');
 		return "oc-processor-{$instanceid}{$this->getPrivateConnectorName()}";
 	}

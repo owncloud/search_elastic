@@ -60,7 +60,7 @@ interface IConnector {
 	 * "all at once", etc
 	 * @param int $limit the number of results to be returned
 	 * @param int $offset the offset of the results
-	 * @return array
+	 * @return ResultSet
 	 */
 	public function fetchResults(string $userId, string $query, int $limit, int $offset): ResultSet;
 

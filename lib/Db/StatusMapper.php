@@ -294,6 +294,10 @@ class StatusMapper extends Mapper {
 		\array_push($params, $minId, Status::STATUS_INDEXED);
 		$result = $query->execute($params);
 
+		if ($result === false) {
+			return [];
+		}
+
 		$ids = [];
 		while (($row = $result->fetchRow()) !== false) {
 			$ids[] = (int)$row['fileid'];
@@ -345,6 +349,10 @@ class StatusMapper extends Mapper {
 		$params = $storageIds;
 		\array_push($params, $minId, Status::STATUS_INDEXED);
 		$result = $query->execute($params);
+
+		if ($result === false) {
+			return 0;
+		}
 
 		$row = $result->fetchRow();
 		$nIds = (int)$row['nIds'];

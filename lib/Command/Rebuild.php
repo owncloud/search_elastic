@@ -98,7 +98,8 @@ class Rebuild extends Command {
 				' All the indexes associated with the configured connectors will be rebuilt.'.
 				' This won\'t apply any change to the configuration of the index if it\'s already setup'.
 				' but it will setup any index that hasn\'t been setup yet'.
-				' Check "search:index:reset" to reset all the indexes associated to the configured connectors')
+				' Check "search:index:reset" to reset all the indexes associated to the configured connectors'
+			)
 			->addArgument(
 				'user_id',
 				InputArgument::REQUIRED | InputArgument::IS_ARRAY,

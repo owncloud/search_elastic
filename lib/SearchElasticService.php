@@ -28,24 +28,12 @@
 
 namespace OCA\Search_Elastic;
 
-use Elastica\Client;
-use Elastica\Index;
-use Elastica\Request;
-use Elastica\Response;
-use Elastica\Search;
-use Elastica\Document;
-use Elastica\Bulk;
-use OC\Files\Cache\Cache;
-use OC\Files\Filesystem;
-use OC\Files\View;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\Connectors\Hub;
-use OC\Share\Constants;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\Node;
 use OCP\Files\NotFoundException;
-use OCP\IConfig;
 use OCP\ILogger;
 
 class SearchElasticService {

@@ -27,10 +27,6 @@
 
 namespace OCA\Search_Elastic\Search;
 
-use Elastica\Query;
-use Elastica\Query\BoolQuery;
-use Elastica\Query\MatchQuery;
-use Elastica\Query\QueryString;
 use OCA\Search_Elastic\AppInfo\Application;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\Connectors\Hub;
@@ -52,16 +48,6 @@ class ElasticSearchProvider extends PagedProvider {
 	private $user;
 
 	/**
-	 * @var IGroup[]
-	 */
-	private $groups;
-
-	/**
-	 * @var SearchElasticConfigService
-	 */
-	private $config;
-
-	/**
 	 * @var Hub
 	 */
 	private $hub;
@@ -76,8 +62,6 @@ class ElasticSearchProvider extends PagedProvider {
 		$this->logger = $container->query(ILogger::class);
 		$this->hub = $container->query(Hub::class);
 		$this->user = $container->getServer()->getUserSession()->getUser();
-		$this->groups = $container->getServer()->getGroupManager()->getUserGroups($this->user);
-		$this->config = $container->query(SearchElasticConfigService::class);
 	}
 
 	/**

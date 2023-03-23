@@ -28,10 +28,8 @@
 namespace OCA\Search_Elastic\Search;
 
 use OCA\Search_Elastic\AppInfo\Application;
-use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\Connectors\Hub;
 use OCP\Files\Node;
-use OCP\IGroup;
 use OCP\ILogger;
 use OCP\IUser;
 use OCP\Search\PagedProvider;

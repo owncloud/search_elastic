@@ -25,7 +25,7 @@ use Elastica\Client;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\Files\Node;
 use OCP\IGroupManager;
-use OCP\IConfig;
+use OCP\IUserManager;
 use OCP\ILogger;
 
 class ConnectorLegacy extends BaseConnector {
@@ -33,10 +33,10 @@ class ConnectorLegacy extends BaseConnector {
 		Client $client,
 		SearchElasticConfigService $esConfig,
 		IGroupManager $groupManager,
-		IConfig $config,
+		IUserManager $userManager,
 		ILogger $logger
 	) {
-		parent::__construct($client, $esConfig, $groupManager, $config, $logger);
+		parent::__construct($client, $esConfig, $groupManager, $userManager, $logger);
 	}
 
 	/**

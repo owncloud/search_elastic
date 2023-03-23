@@ -27,7 +27,7 @@ use OCA\Search_Elastic\SearchElasticConfigService;
 use OCP\Files\Node;
 use OCP\Files\FileInfo;
 use OCP\IGroupManager;
-use OCP\IConfig;
+use OCP\IUserManager;
 use OCP\ILogger;
 
 class ConnectorRelevanceV2 extends BaseConnector {
@@ -35,10 +35,10 @@ class ConnectorRelevanceV2 extends BaseConnector {
 		Client $client,
 		SearchElasticConfigService $esConfig,
 		IGroupManager $groupManager,
-		IConfig $config,
+		IUserManager $userManager,
 		ILogger $logger
 	) {
-		parent::__construct($client, $esConfig, $groupManager, $config, $logger);
+		parent::__construct($client, $esConfig, $groupManager, $userManager, $logger);
 	}
 
 	protected function getIndexSettingsConf(): array {

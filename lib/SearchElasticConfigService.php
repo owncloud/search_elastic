@@ -359,4 +359,21 @@ class SearchElasticConfigService {
 	public function setConfiguredSearchConnector($connectorName) {
 		return $this->setValue(self::CONNECTORS_SEARCH, $connectorName);
 	}
+
+	/**
+	 * Get the recommended prefix for a component such as "index"
+	 * or "processor". This function rely on the ownCloud's instance id.
+	 */
+	public function getRecommendedPrefixFor(string $component) {
+		$instanceid = $this->owncloudConfig->getSystemValue('instanceid', '');
+
+		switch ($component) {
+			case 'index':
+				return "oc-{$instanceid}";
+			case 'processor':
+				return "oc-processor-{$instanceid}";
+			default:
+				return $instanceid;
+		}
+	}
 }

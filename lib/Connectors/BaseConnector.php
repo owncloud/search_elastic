@@ -39,7 +39,7 @@ use OC\Share\Constants;
 use OCP\Files\Node;
 use OCP\Files\Folder;
 use OCP\IGroupManager;
-use OCP\IConfig;
+use OCP\IUserManager;
 use OCP\ILogger;
 
 /**
@@ -59,14 +59,14 @@ use OCP\ILogger;
  * your purposes, consider to implement the `IConnector` interface yourself.
  */
 abstract class BaseConnector implements IConnector {
-	/** @var IConfig */
-	private $config;
 	/** @var Client */
 	private $client;
 	/** @var SearchElasticConfigService */
 	private $esConfig;
 	/** @var IGroupManager */
 	private $groupManager;
+	/** @var IUserManager */
+	private $userManager;
 	/** @var ILogger */
 	private $logger;
 
@@ -80,13 +80,13 @@ abstract class BaseConnector implements IConnector {
 		Client $client,
 		SearchElasticConfigService $esConfig,
 		IGroupManager $groupManager,
-		IConfig $config,
+		IUserManager $userManager,
 		ILogger $logger
 	) {
 		$this->client = $client;
 		$this->esConfig = $esConfig;
 		$this->groupManager = $groupManager;
-		$this->config = $config;
+		$this->userManager = $userManager;
 		$this->logger = $logger;
 	}
 
@@ -399,7 +399,9 @@ abstract class BaseConnector implements IConnector {
 			$searchContent = false;
 		}
 
-		$groups = $this->groupManager->getUserIdGroups($userId);
+		$userObj = $this->userManager->get($userId, true); // we get a DeletedUser instance of the user is missing
+
+		$groups = $this->groupManager->getUserGroups($userObj);
 		$groupIds = [];
 		foreach ($groups as $group) {
 			$groupId = $group->getGID();
@@ -503,16 +505,16 @@ abstract class BaseConnector implements IConnector {
 	 * The name of the index to connect to. This should be something like
 	 * "oc-<oc_instanceid><private_connector_name>", such as "oc-oci0of1jdsfo-es_v33"
 	 * (use "-es_v33" as privateConnectorName).
-	 * Note that using the instance id should provide some kind of isolation
-	 * in case there are multiple different ownCloud instances using the same
-	 * elasticsearch server.
+	 * This method will use the recommended prefix provided by the
+	 * SearchElasticConfigService, which will use the ownCloud's instance id,
+	 * so it should provide some kind of isolation in case there are multiple
+	 * different ownCloud instances using the same elasticsearch server.
 	 * The index name can't be overwritten by subclasses, but it can be slightly
 	 * adjusted by using the `getPrivateConnectorName` method
 	 * @return string the name of the index
 	 */
 	final protected function getIndexName() {
-		$instanceid = $this->config->getSystemValue('instanceid', '');
-		return "oc-{$instanceid}{$this->getPrivateConnectorName()}";
+		return $this->esConfig->getRecommendedPrefixFor('index') . $this->getPrivateConnectorName();
 	}
 
 	/**
@@ -520,12 +522,15 @@ abstract class BaseConnector implements IConnector {
 	 * derived from the `getPrivateConnectorName` and it will be something
 	 * like "oc-processor-<oc_instanceid><private_connector_name>", such as
 	 * "oc-processor-oci0of1jdsfo-es_v33" (use "-es_v33" as privateConnectorName).
+	 * This method will use the recommended prefix provided by the
+	 * SearchElasticConfigService, which will use the ownCloud's instance id,
+	 * so it should provide some kind of isolation in case there are multiple
+	 * different ownCloud instances using the same elasticsearch server.
 	 * This method can me overwritten by subclasses, but it can be slightly
 	 * adjusted by using the `getPrivateConnectorName` method
 	 */
 	final protected function getProcessorName() {
-		$instanceid = $this->config->getSystemValue('instanceid', '');
-		return "oc-processor-{$instanceid}{$this->getPrivateConnectorName()}";
+		return $this->esConfig->getRecommendedPrefixFor('processor') . $this->getPrivateConnectorName();
 	}
 
 	/**

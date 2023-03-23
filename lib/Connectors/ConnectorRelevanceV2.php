@@ -90,11 +90,8 @@ class ConnectorRelevanceV2 extends BaseConnector {
 	protected function getMappingPropertiesConf(): array {
 		return [
 			'mtime' => [
-				'properties' => [
-					'stamp' => ['type' => 'date', 'format' => 'epoch_second'],
-					'date' => ['type' => 'date', 'format' => 'date'],
-					'datetime' => ['type' => 'date', 'format' => 'date_time_no_millis'],
-				],
+				'type' => 'date',
+				'format' => 'epoch_second||date||date_time_no_millis',
 			],
 			'size' => [
 				'properties' => [
@@ -179,9 +176,6 @@ class ConnectorRelevanceV2 extends BaseConnector {
 		}
 
 		$size = $node->getSize();
-		$time = $node->getMTime();
-		$timeObj = new \DateTime();
-		$timeObj->setTimestamp($time);
 
 		$nodeType = $node->getType();
 		$type = 'file';
@@ -196,11 +190,7 @@ class ConnectorRelevanceV2 extends BaseConnector {
 				'b' => $size,
 				'mb' => $size / (1024 * 1024),
 			],
-			'mtime' => [
-				'stamp' => $time,
-				'date' => $timeObj->format('Y-m-d'),
-				'datetime' => $timeObj->format('c'),
-			],
+			'mtime' => $node->getMTime(),
 			'type' => $type,
 			'mime' => $node->getMimetype(),
 			'users' => $access['users'],
@@ -221,7 +211,7 @@ class ConnectorRelevanceV2 extends BaseConnector {
 						[
 							'filter' => [
 								'range' => [
-									'mtime.stamp' => [
+									'mtime' => [
 										'lt' => 'now-1y',
 									],
 								],
@@ -231,7 +221,7 @@ class ConnectorRelevanceV2 extends BaseConnector {
 						[
 							'filter' => [
 								'range' => [
-									'mtime.stamp' => [
+									'mtime' => [
 										'lt' => 'now-1M',
 									],
 								],
@@ -241,7 +231,7 @@ class ConnectorRelevanceV2 extends BaseConnector {
 						[
 							'filter' => [
 								'range' => [
-									'mtime.stamp' => [
+									'mtime' => [
 										'lt' => 'now-1w',
 									],
 								],
@@ -251,7 +241,7 @@ class ConnectorRelevanceV2 extends BaseConnector {
 						[
 							'filter' => [
 								'range' => [
-									'mtime.stamp' => [
+									'mtime' => [
 										'lt' => 'now-1d',
 									],
 								],
@@ -261,7 +251,7 @@ class ConnectorRelevanceV2 extends BaseConnector {
 						[
 							'filter' => [
 								'range' => [
-									'mtime.stamp' => [
+									'mtime' => [
 										'gte' => 'now-1d',
 									],
 								],
@@ -308,8 +298,11 @@ class ConnectorRelevanceV2 extends BaseConnector {
 			'highlight' => [
 				'fields' => ['file.content' => new \stdClass]
 			],
-			'_source' => [
-				'includes' => ['mtime.stamp']
+			'fields' => [
+				[
+					'field' => 'mtime',
+					'format' => 'epoch_second',
+				]
 			],
 			'size' => $size,
 			'from' => $from,
@@ -328,9 +321,6 @@ class ConnectorRelevanceV2 extends BaseConnector {
 			case 'highlights':
 				$highlights = $result->getHighlights();
 				return $highlights['file.content'] ?? [];
-			case 'mtime':
-				$data = $result->getData();
-				return $data['mtime']['stamp'];
 			default:
 				$data = $result->getData();
 				return $data[$key] ?? null;

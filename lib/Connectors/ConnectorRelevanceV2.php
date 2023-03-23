@@ -121,7 +121,12 @@ class ConnectorRelevanceV2 extends BaseConnector {
 				'analyzer' => 'filename_analyzer',
 			],
 			'type' => ['type' => 'keyword'],
-			'mime' => ['type' => 'text'],
+			'mime' => [
+				'type' => 'text',
+				'fields' => [
+					'key' => ['type' => 'keyword'],
+				],
+			],
 			'users' => ['type' => 'keyword'],
 			'groups' => ['type' => 'keyword'],
 		];

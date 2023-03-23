@@ -289,17 +289,12 @@ class StatusMapper extends Mapper {
 			AND `status` = ?
 			ORDER BY `*PREFIX*filecache`.`fileid` ASC
 		";
-		$query = $this->db->prepareQuery($sql, $limit);
 		$params = $storageIds;
 		\array_push($params, $minId, Status::STATUS_INDEXED);
-		$result = $query->execute($params);
-
-		if ($result === false) {
-			return [];
-		}
+		$result = $this->execute($sql, $params, $limit);
 
 		$ids = [];
-		while (($row = $result->fetchRow()) !== false) {
+		while (($row = $result->fetch()) !== false) {
 			$ids[] = (int)$row['fileid'];
 		}
 		$result->closeCursor();
@@ -345,16 +340,11 @@ class StatusMapper extends Mapper {
 			AND `*PREFIX*filecache`.`fileid` > ?
 			AND `status` = ?
 		";
-		$query = $this->db->prepareQuery($sql);
 		$params = $storageIds;
 		\array_push($params, $minId, Status::STATUS_INDEXED);
-		$result = $query->execute($params);
+		$result = $this->execute($sql, $params);
 
-		if ($result === false) {
-			return 0;
-		}
-
-		$row = $result->fetchRow();
+		$row = $result->fetch();
 		$nIds = (int)$row['nIds'];
 		$result->closeCursor();
 		return $nIds;

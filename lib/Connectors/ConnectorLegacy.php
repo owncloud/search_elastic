@@ -23,6 +23,7 @@ namespace OCA\Search_Elastic\Connectors;
 
 use Elastica\Client;
 use OCA\Search_Elastic\SearchElasticConfigService;
+use OCA\Search_Elastic\Connectors\ElasticaFactory;
 use OCP\Files\Node;
 use OCP\IGroupManager;
 use OCP\IUserManager;
@@ -31,12 +32,13 @@ use OCP\ILogger;
 class ConnectorLegacy extends BaseConnector {
 	public function __construct(
 		Client $client,
+		ElasticaFactory $factory,
 		SearchElasticConfigService $esConfig,
 		IGroupManager $groupManager,
 		IUserManager $userManager,
 		ILogger $logger
 	) {
-		parent::__construct($client, $esConfig, $groupManager, $userManager, $logger);
+		parent::__construct($client, $factory, $esConfig, $groupManager, $userManager, $logger);
 	}
 
 	/**
@@ -54,8 +56,8 @@ class ConnectorLegacy extends BaseConnector {
 	}
 
 	protected function getElasticSearchQuery(string $query, array $opts): array {
-		$users = \implode(' OR ', $opts['access']['users']);
-		$groups = \implode(' OR ', $opts['access']['groups']);
+		$users = $opts['access']['users'] ?? [];
+		$groups = $opts['access']['groups'] ?? [];
 		$size = $opts['size'] ?? 30;
 		$from = $opts['from'] ?? 0;
 
@@ -66,16 +68,8 @@ class ConnectorLegacy extends BaseConnector {
 						[
 							'bool' => [
 								'should' => [
-									[
-										'match' => [
-											'users' => $users,
-										]
-									],
-									[
-										'match' => [
-											'groups' => $groups,
-										],
-									],
+									// assume there will be matches to be included here
+									// coming from users and groups
 								],
 							],
 						],
@@ -100,6 +94,13 @@ class ConnectorLegacy extends BaseConnector {
 			'size' => $size,
 			'from' => $from,
 		];
+
+		foreach ($users as $user) {
+			$es_query['query']['bool']['filter'][0]['bool']['should'][] = ['match' => ['users' => $user]];
+		}
+		foreach ($groups as $group) {
+			$es_query['query']['bool']['filter'][0]['bool']['should'][] = ['match' => ['groups' => $group]];
+		}
 
 		if ($opts['searchContent']) {
 			$es_query['query']['bool']['should'][] = [

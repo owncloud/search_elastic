@@ -24,6 +24,7 @@ namespace OCA\Search_Elastic\Connectors;
 use Elastica\Client;
 use Elastica\Result;
 use OCA\Search_Elastic\SearchElasticConfigService;
+use OCA\Search_Elastic\Connectors\ElasticaFactory;
 use OCP\Files\Node;
 use OCP\Files\FileInfo;
 use OCP\IGroupManager;
@@ -33,12 +34,13 @@ use OCP\ILogger;
 class ConnectorRelevanceV2 extends BaseConnector {
 	public function __construct(
 		Client $client,
+		ElasticaFactory $factory,
 		SearchElasticConfigService $esConfig,
 		IGroupManager $groupManager,
 		IUserManager $userManager,
 		ILogger $logger
 	) {
-		parent::__construct($client, $esConfig, $groupManager, $userManager, $logger);
+		parent::__construct($client, $factory, $esConfig, $groupManager, $userManager, $logger);
 	}
 
 	protected function getIndexSettingsConf(): array {
@@ -199,8 +201,8 @@ class ConnectorRelevanceV2 extends BaseConnector {
 	}
 
 	protected function getElasticSearchQuery(string $query, array $opts): array {
-		$users = \implode(' OR ', $opts['access']['users']);
-		$groups = \implode(' OR ', $opts['access']['groups']);
+		$users = $opts['access']['users'] ?? [];
+		$groups = $opts['access']['groups'] ?? [];
 		$size = $opts['size'] ?? 30;
 		$from = $opts['from'] ?? 0;
 
@@ -267,12 +269,12 @@ class ConnectorRelevanceV2 extends BaseConnector {
 									'bool' => [
 										'should' => [
 											[
-												'match' => [
+												'terms' => [
 													'users' => $users,
 												]
 											],
 											[
-												'match' => [
+												'terms' => [
 													'groups' => $groups,
 												],
 											],

@@ -23,18 +23,14 @@ namespace OCA\Search_Elastic\Connectors;
 
 use Elastica\Client;
 use Elastica\Index;
-use Elastica\Mapping;
 use Elastica\Request;
-use Elastica\Search;
-use Elastica\Document;
-use Elastica\Bulk;
-use Elastica\Query;
 use Elastica\Result;
 use Elastica\ResultSet;
 use OC\Files\Cache\Cache;
 use OC\Files\Filesystem;
 use OC\Files\View;
 use OCA\Search_Elastic\SearchElasticConfigService;
+use OCA\Search_Elastic\Connectors\ElasticaFactory;
 use OC\Share\Constants;
 use OCP\Files\Node;
 use OCP\Files\Folder;
@@ -61,6 +57,8 @@ use OCP\ILogger;
 abstract class BaseConnector implements IConnector {
 	/** @var Client */
 	private $client;
+	/** @var ElasticaFactory */
+	private $factory;
 	/** @var SearchElasticConfigService */
 	private $esConfig;
 	/** @var IGroupManager */
@@ -78,12 +76,14 @@ abstract class BaseConnector implements IConnector {
 	 */
 	public function __construct(
 		Client $client,
+		ElasticaFactory $factory,
 		SearchElasticConfigService $esConfig,
 		IGroupManager $groupManager,
 		IUserManager $userManager,
 		ILogger $logger
 	) {
 		$this->client = $client;
+		$this->factory = $factory;
 		$this->esConfig = $esConfig;
 		$this->groupManager = $groupManager;
 		$this->userManager = $userManager;
@@ -97,7 +97,7 @@ abstract class BaseConnector implements IConnector {
 	 */
 	final protected function getIndex() {
 		if (!isset($this->index)) {
-			$this->index = new Index($this->client, $this->getIndexName());
+			$this->index = $this->factory->getNewIndex($this->client, $this->getIndexName());
 		}
 		return $this->index;
 	}
@@ -210,7 +210,7 @@ abstract class BaseConnector implements IConnector {
 
 		$mappingData = $this->getMappingPropertiesConf();
 		if (!empty($mappingData)) {
-			$mapping = new Mapping();
+			$mapping = $this->factory->getNewMapping();
 			$mapping->setProperties($mappingData);
 			$mapping->send($index);
 		}
@@ -260,7 +260,7 @@ abstract class BaseConnector implements IConnector {
 		$access = $this->getUsersWithReadPermission($node, $userId);
 		$extractedData = $this->extractNodeData($node, $access);
 
-		$doc = new Document((string)$node->getId());
+		$doc = $this->factory->getNewDocument((string)$node->getId());
 		foreach ($extractedData as $key => $value) {
 			$doc->set($key, $value);
 		}
@@ -279,7 +279,7 @@ abstract class BaseConnector implements IConnector {
 
 			// this is a workaround to acutally be able to use parameters when setting a document
 			// see: https://github.com/ruflin/Elastica/issues/1248
-			$bulk = new Bulk($index->getClient());
+			$bulk = $this->factory->getNewBulk($index->getClient());
 			$bulk->setIndex($index);
 			$bulk->setRequestParam('pipeline', $this->getProcessorName());
 			$bulk->addDocuments([$doc]);
@@ -423,10 +423,10 @@ abstract class BaseConnector implements IConnector {
 		$proposedEsQuery = $this->getElasticSearchQuery($query, $opts);
 
 		$this->logger->info('query: ' . json_encode($proposedEsQuery), ['search_elastic']); // TODO: Reduce log level to debug
-		$es_query = new Query();
+		$es_query = $this->factory->getNewQuery();
 		$es_query->setRawQuery($proposedEsQuery);
 
-		$search = new Search($this->client);
+		$search = $this->factory->getNewSearch($this->client);
 		$search->addIndex($this->getIndex());
 		return $search->search($es_query);
 	}

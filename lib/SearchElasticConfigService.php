@@ -357,7 +357,7 @@ class SearchElasticConfigService {
 	}
 
 	public function setConfiguredSearchConnector($connectorName) {
-		return $this->setValue(self::CONNECTORS_SEARCH, $connectorName);
+		$this->setValue(self::CONNECTORS_SEARCH, $connectorName);
 	}
 
 	/**

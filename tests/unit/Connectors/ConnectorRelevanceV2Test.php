@@ -23,6 +23,7 @@ namespace OCA\Search_Elastic\Tests\Unit\Connectors;
 
 use Elastica\Client;
 use Elastica\Index;
+use Elastica\Mapping;
 use Elastica\Request;
 use Elastica\Response;
 use Elastica\Query;
@@ -35,11 +36,11 @@ use OCP\IUserManager;
 use OCP\IUser;
 use OCP\IGroup;
 use OCP\ILogger;
-use OCA\Search_Elastic\Connectors\ConnectorLegacy;
+use OCA\Search_Elastic\Connectors\ConnectorRelevanceV2;
 use OCA\Search_Elastic\Connectors\ElasticaFactory;
 use Test\TestCase;
 
-class ConnectorLegacyTest extends TestCase {
+class ConnectorRelevanceV2Test extends TestCase {
 	/** @var Client */
 	private $client;
 	/** @var ElasticaFactory */
@@ -53,8 +54,8 @@ class ConnectorLegacyTest extends TestCase {
 	/** @var ILogger */
 	private $logger;
 
-	/** @var ConnectorLegacy */
-	private $connectorLegacy;
+	/** @var ConnectorRelevanceV2 */
+	private $connectorRelevanceV2;
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -66,7 +67,7 @@ class ConnectorLegacyTest extends TestCase {
 		$this->userManager = $this->createMock(IUserManager::class);
 		$this->logger = $this->createMock(ILogger::class);
 
-		$this->connectorLegacy = new ConnectorLegacy(
+		$this->connectorRelevanceV2 = new ConnectorRelevanceV2(
 			$this->client,
 			$this->factory,
 			$this->esConfig,
@@ -77,7 +78,7 @@ class ConnectorLegacyTest extends TestCase {
 	}
 
 	public function testGetConnectorName() {
-		$this->assertSame('Legacy', $this->connectorLegacy->getConnectorName());
+		$this->assertSame('RelevanceV2', $this->connectorRelevanceV2->getConnectorName());
 	}
 
 	public function testIsSetupMissingIndex() {
@@ -94,7 +95,7 @@ class ConnectorLegacyTest extends TestCase {
 		$this->client->expects($this->never())
 			->method('request');
 
-		$this->assertFalse($this->connectorLegacy->isSetup());
+		$this->assertFalse($this->connectorRelevanceV2->isSetup());
 	}
 
 	public function testIsSetupWrongPipeline() {
@@ -118,10 +119,10 @@ class ConnectorLegacyTest extends TestCase {
 
 		$this->client->expects($this->once())
 			->method('request')
-			->with('_ingest/pipeline/oc-processor-instanceid', Request::GET)
+			->with('_ingest/pipeline/oc-processor-instanceid-relv2', Request::GET)
 			->willReturn($response);
 
-		$this->assertFalse($this->connectorLegacy->isSetup());
+		$this->assertFalse($this->connectorRelevanceV2->isSetup());
 	}
 
 	public function testIsSetup() {
@@ -145,10 +146,10 @@ class ConnectorLegacyTest extends TestCase {
 
 		$this->client->expects($this->once())
 			->method('request')
-			->with('_ingest/pipeline/oc-processor-instanceid', Request::GET)
+			->with('_ingest/pipeline/oc-processor-instanceid-relv2', Request::GET)
 			->willReturn($response);
 
-		$this->assertTrue($this->connectorLegacy->isSetup());
+		$this->assertTrue($this->connectorRelevanceV2->isSetup());
 	}
 
 	public function testPrepareIndex() {
@@ -161,6 +162,85 @@ class ConnectorLegacyTest extends TestCase {
 		$expectedIndexConf = [
 			'number_of_shards' => 1,
 			'number_of_replicas' => 0,
+			'analysis' => [
+				'analyzer' => [
+					'filename_analyzer' => [
+						'type' => 'custom',
+						'tokenizer' => 'filename_tokenizer',
+						'filter' => ['lowercase'],
+					],
+					'filename_analyzer_ngram' => [
+						'type' => 'custom',
+						'tokenizer' => 'filename_tokenizer',
+						'filter' => ['lowercase', 'filename_ngram'],
+					],
+					'filename_analyzer_edgegram' => [
+						'type' => 'custom',
+						'tokenizer' => 'filename_tokenizer',
+						'filter' => ['lowercase', 'filename_edge_ngram'],
+					],
+				],
+				'tokenizer' => [
+					'filename_tokenizer' => [
+						'type' => 'char_group',
+						'tokenize_on_chars' => ['whitespace', 'punctuation'],
+					],
+				],
+				'filter' => [
+					'filename_ngram' => [
+						'type' => 'ngram',
+						'min_gram' => 2,
+						'max_gram' => 3,
+						'preserve_original' => true,
+					],
+					'filename_edge_ngram' => [
+						'type' => 'edge_ngram',
+						'min_gram' => 2,
+						'max_gram' => 3,
+						'preserve_original' => true,
+					],
+				],
+			],
+		];
+
+		$expectedMappingConf = [
+			'mtime' => [
+				'type' => 'date',
+				'format' => 'epoch_second||date||date_time_no_millis',
+			],
+			'size' => [
+				'properties' => [
+					'b' => ['type' => 'long'],
+					'mb' => ['type' => 'double'],
+				],
+			],
+			'name' => [
+				'type' => 'text',
+				'analyzer' => 'filename_analyzer',
+				'fields' => [
+					'ngram' => [
+						'type' => 'text',
+						'analyzer' => 'filename_analyzer_ngram',
+					],
+					'edge_ngram' => [
+						'type' => 'text',
+						'analyzer' => 'filename_analyzer_edgegram',
+					],
+				],
+			],
+			'ext' => [
+				'type' => 'text',
+				'analyzer' => 'filename_analyzer',
+			],
+			'type' => ['type' => 'keyword'],
+			'mime' => [
+				'type' => 'text',
+				'fields' => [
+					'key' => ['type' => 'keyword'],
+				],
+			],
+			'users' => ['type' => 'keyword'],
+			'groups' => ['type' => 'keyword'],
 		];
 
 		$indexMock = $this->createMock(Index::class);
@@ -172,12 +252,19 @@ class ConnectorLegacyTest extends TestCase {
 			->method('getNewIndex')
 			->willReturn($indexMock);
 
-		// no specific mapping expected
-		$this->factory->expects($this->never())
-			->method('getNewMapping');
+		$mappingMock = $this->createMock(Mapping::class);
+		$mappingMock->expects($this->once())
+			->method('setProperties')
+			->with($expectedMappingConf);
+		$mappingMock->expects($this->once())
+			->method('send')
+			->with($indexMock);
+		$this->factory->expects($this->once())
+			->method('getNewMapping')
+			->willReturn($mappingMock);
 
 		$expectedPayload = [
-			'description' =>  'Pipeline to process entries for ownCloud search with connector Legacy',
+			'description' =>  'Pipeline to process entries for ownCloud search with connector RelevanceV2',
 			'processors' => [
 				[
 					'attachment' => [
@@ -196,9 +283,9 @@ class ConnectorLegacyTest extends TestCase {
 
 		$this->client->expects($this->once())
 			->method('request')
-			->with('_ingest/pipeline/oc-processor-instanceid', Request::PUT, $expectedPayload);
+			->with('_ingest/pipeline/oc-processor-instanceid-relv2', Request::PUT, $expectedPayload);
 
-		$this->assertNull($this->connectorLegacy->prepareIndex());
+		$this->assertNull($this->connectorRelevanceV2->prepareIndex());
 	}
 
 	public function testFetchResults() {
@@ -228,53 +315,103 @@ class ConnectorLegacyTest extends TestCase {
 
 		$expectedQuery = [
 			'query' => [
-				'bool' =>  [
-					'filter' => [
+				'function_score' => [
+					'functions' => [
 						[
-							'bool' => [
-								'should' => [
-									[
-										'match' => [
-											'users' => 'mockedUser',
-										]
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'lt' => 'now-1y',
 									],
-									[
-										'match' => [
-											'groups' => 'G1',
-										],
+								],
+							],
+							'weight' => 0.25,
+						],
+						[
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'lt' => 'now-1M',
 									],
-									[
-										'match' => [
-											'groups' => 'G2',
+								],
+							],
+							'weight' => 0.5,
+						],
+						[
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'lt' => 'now-1w',
+									],
+								],
+							],
+							'weight' => 1,
+						],
+						[
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'lt' => 'now-1d',
+									],
+								],
+							],
+							'weight' => 2,
+						],
+						[
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'gte' => 'now-1d',
+									],
+								],
+							],
+							'weight' => 4,
+						],
+					],
+					'score_mode' => 'first',
+					'query' => [
+						'bool' =>  [
+							'filter' => [
+								[
+									'bool' => [
+										'should' => [
+											[
+												'terms' => [
+													'users' => ['mockedUser'],
+												]
+											],
+											[
+												'terms' => [
+													'groups' => ['G1', 'G2'],
+												],
+											],
 										],
 									],
 								],
 							],
+							'should' => [
+								[
+									'query_string' => [
+										'query' =>  'test query',
+										'fields' => ['name', 'name.edge_ngram^0.5', 'name.ngram^0.25', 'file.content'],
+										'auto_generate_synonyms_phrase_query' => false,
+										'type' => 'most_fields',
+									],
+								],
+							],
+							'minimum_should_match' => 1,
 						],
 					],
-					'should' => [
-						[
-							'query_string' => [
-								'query' =>  'test query*',
-								'fields' => ['name'],
-							],
-						],
-						[
-							'query_string' => [
-								'query' => 'test* query*',
-								'fields' => ['file.content'],
-								'analyze_wildcard' => true,
-							],
-						],
-					],
-					'minimum_should_match' => 1,
 				],
 			],
 			'highlight' => [
 				'fields' => ['file.content' => new \stdClass]
 			],
-			'_source' => [
-				'includes' => ['mtime']
+			'fields' => [
+				[
+					'field' => 'mtime',
+					'format' => 'epoch_second',
+				]
 			],
 			'size' => 30,
 			'from' => 0,
@@ -306,7 +443,7 @@ class ConnectorLegacyTest extends TestCase {
 			->willReturn($search);
 
 		// can't perform checks over the result set
-		$this->connectorLegacy->fetchResults('mockedUser', 'test query', 30, 0);
+		$this->connectorRelevanceV2->fetchResults('mockedUser', 'test query', 30, 0);
 	}
 
 	public function testFetchResultsWithoutContent() {
@@ -336,46 +473,103 @@ class ConnectorLegacyTest extends TestCase {
 
 		$expectedQuery = [
 			'query' => [
-				'bool' =>  [
-					'filter' => [
+				'function_score' => [
+					'functions' => [
 						[
-							'bool' => [
-								'should' => [
-									[
-										'match' => [
-											'users' => 'mockedUser',
-										]
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'lt' => 'now-1y',
 									],
-									[
-										'match' => [
-											'groups' => 'G1',
-										],
+								],
+							],
+							'weight' => 0.25,
+						],
+						[
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'lt' => 'now-1M',
 									],
-									[
-										'match' => [
-											'groups' => 'G2',
+								],
+							],
+							'weight' => 0.5,
+						],
+						[
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'lt' => 'now-1w',
+									],
+								],
+							],
+							'weight' => 1,
+						],
+						[
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'lt' => 'now-1d',
+									],
+								],
+							],
+							'weight' => 2,
+						],
+						[
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'gte' => 'now-1d',
+									],
+								],
+							],
+							'weight' => 4,
+						],
+					],
+					'score_mode' => 'first',
+					'query' => [
+						'bool' =>  [
+							'filter' => [
+								[
+									'bool' => [
+										'should' => [
+											[
+												'terms' => [
+													'users' => ['mockedUser'],
+												]
+											],
+											[
+												'terms' => [
+													'groups' => ['G1', 'G2'],
+												],
+											],
 										],
 									],
 								],
 							],
-						],
-					],
-					'should' => [
-						[
-							'query_string' => [
-								'query' =>  'test query*',
-								'fields' => ['name'],
+							'should' => [
+								[
+									'query_string' => [
+										'query' =>  'test query',
+										'fields' => ['name', 'name.edge_ngram^0.5', 'name.ngram^0.25'],
+										'auto_generate_synonyms_phrase_query' => false,
+										'type' => 'most_fields',
+									],
+								],
 							],
+							'minimum_should_match' => 1,
 						],
 					],
-					'minimum_should_match' => 1,
 				],
 			],
 			'highlight' => [
 				'fields' => ['file.content' => new \stdClass]
 			],
-			'_source' => [
-				'includes' => ['mtime']
+			'fields' => [
+				[
+					'field' => 'mtime',
+					'format' => 'epoch_second',
+				]
 			],
 			'size' => 30,
 			'from' => 0,
@@ -407,7 +601,7 @@ class ConnectorLegacyTest extends TestCase {
 			->willReturn($search);
 
 		// can't perform checks over the result set
-		$this->connectorLegacy->fetchResults('mockedUser', 'test query', 30, 0);
+		$this->connectorRelevanceV2->fetchResults('mockedUser', 'test query', 30, 0);
 	}
 
 	public function testFetchResultsGroupNoContent() {
@@ -437,46 +631,103 @@ class ConnectorLegacyTest extends TestCase {
 
 		$expectedQuery = [
 			'query' => [
-				'bool' =>  [
-					'filter' => [
+				'function_score' => [
+					'functions' => [
 						[
-							'bool' => [
-								'should' => [
-									[
-										'match' => [
-											'users' => 'mockedUser',
-										]
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'lt' => 'now-1y',
 									],
-									[
-										'match' => [
-											'groups' => 'G1',
-										],
+								],
+							],
+							'weight' => 0.25,
+						],
+						[
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'lt' => 'now-1M',
 									],
-									[
-										'match' => [
-											'groups' => 'G2',
+								],
+							],
+							'weight' => 0.5,
+						],
+						[
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'lt' => 'now-1w',
+									],
+								],
+							],
+							'weight' => 1,
+						],
+						[
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'lt' => 'now-1d',
+									],
+								],
+							],
+							'weight' => 2,
+						],
+						[
+							'filter' => [
+								'range' => [
+									'mtime' => [
+										'gte' => 'now-1d',
+									],
+								],
+							],
+							'weight' => 4,
+						],
+					],
+					'score_mode' => 'first',
+					'query' => [
+						'bool' =>  [
+							'filter' => [
+								[
+									'bool' => [
+										'should' => [
+											[
+												'terms' => [
+													'users' => ['mockedUser'],
+												]
+											],
+											[
+												'terms' => [
+													'groups' => ['G1', 'G2'],
+												],
+											],
 										],
 									],
 								],
 							],
-						],
-					],
-					'should' => [
-						[
-							'query_string' => [
-								'query' =>  'test query*',
-								'fields' => ['name'],
+							'should' => [
+								[
+									'query_string' => [
+										'query' =>  'test query',
+										'fields' => ['name', 'name.edge_ngram^0.5', 'name.ngram^0.25'],
+										'auto_generate_synonyms_phrase_query' => false,
+										'type' => 'most_fields',
+									],
+								],
 							],
+							'minimum_should_match' => 1,
 						],
 					],
-					'minimum_should_match' => 1,
 				],
 			],
 			'highlight' => [
 				'fields' => ['file.content' => new \stdClass]
 			],
-			'_source' => [
-				'includes' => ['mtime']
+			'fields' => [
+				[
+					'field' => 'mtime',
+					'format' => 'epoch_second',
+				]
 			],
 			'size' => 30,
 			'from' => 0,
@@ -508,14 +759,14 @@ class ConnectorLegacyTest extends TestCase {
 			->willReturn($search);
 
 		// can't perform checks over the result set
-		$this->connectorLegacy->fetchResults('mockedUser', 'test query', 30, 0);
+		$this->connectorRelevanceV2->fetchResults('mockedUser', 'test query', 30, 0);
 	}
 
 	public function testFindInResultId() {
 		$result = $this->createMock(Result::class);
 		$result->method('getId')->willReturn(987);
 
-		$this->assertSame(987, $this->connectorLegacy->findInResult($result, 'id'));
+		$this->assertSame(987, $this->connectorRelevanceV2->findInResult($result, 'id'));
 	}
 
 	public function testFindInResultHighlight() {
@@ -524,7 +775,7 @@ class ConnectorLegacyTest extends TestCase {
 			'file.content' => ['high light number 1', 'another high']
 		]);
 
-		$this->assertSame(['high light number 1', 'another high'], $this->connectorLegacy->findInResult($result, 'highlights'));
+		$this->assertSame(['high light number 1', 'another high'], $this->connectorRelevanceV2->findInResult($result, 'highlights'));
 	}
 
 	public function testFindInResultMtime() {
@@ -535,7 +786,7 @@ class ConnectorLegacyTest extends TestCase {
 			'name' => 'a random name',
 		]);
 
-		$this->assertSame(123456, $this->connectorLegacy->findInResult($result, 'mtime'));
+		$this->assertSame(123456, $this->connectorRelevanceV2->findInResult($result, 'mtime'));
 	}
 
 	public function testDeleteByFileId() {
@@ -552,7 +803,7 @@ class ConnectorLegacyTest extends TestCase {
 			->method('getNewIndex')
 			->willReturn($indexMock);
 
-		$this->assertTrue($this->connectorLegacy->deleteByFileId(50));
+		$this->assertTrue($this->connectorRelevanceV2->deleteByFileId(50));
 	}
 
 	public function testDeleteByFileIdMissing() {
@@ -569,7 +820,7 @@ class ConnectorLegacyTest extends TestCase {
 			->method('getNewIndex')
 			->willReturn($indexMock);
 
-		$this->assertTrue($this->connectorLegacy->deleteByFileId(50));
+		$this->assertTrue($this->connectorRelevanceV2->deleteByFileId(50));
 	}
 
 	public function testDeleteByFileIdFailed() {
@@ -586,7 +837,7 @@ class ConnectorLegacyTest extends TestCase {
 			->method('getNewIndex')
 			->willReturn($indexMock);
 
-		$this->assertFalse($this->connectorLegacy->deleteByFileId(50));
+		$this->assertFalse($this->connectorRelevanceV2->deleteByFileId(50));
 	}
 
 	public function testGetStats() {
@@ -602,6 +853,6 @@ class ConnectorLegacyTest extends TestCase {
 			->method('getNewIndex')
 			->willReturn($indexMock);
 
-		$this->assertEquals(['nodeCount' => 50], $this->connectorLegacy->getStats());
+		$this->assertEquals(['nodeCount' => 50], $this->connectorRelevanceV2->getStats());
 	}
 }

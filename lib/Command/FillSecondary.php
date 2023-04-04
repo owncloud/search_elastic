@@ -34,6 +34,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Console\Helper\QuestionHelper;
 
 /**
  * Class Rebuild
@@ -108,7 +110,7 @@ class FillSecondary extends Command {
 				'force',
 				'f',
 				InputOption::VALUE_NONE,
-				'Use this option to rebuild the search index without further questions.'
+				'Use this option to fill the secondary index without further questions.'
 			)
 			->addOption(
 				'startOver',
@@ -123,6 +125,8 @@ class FillSecondary extends Command {
 				'The savepoint will be updated after processing this number of files.',
 				'100'
 			);
+
+		$this->setHelperSet(new HelperSet(['question' => new QuestionHelper()]));  // it seems needed for unit tests
 	}
 
 	/**
@@ -148,17 +152,23 @@ class FillSecondary extends Command {
 			'chunkSize' => $chunkSize,
 		];
 
+		$shouldAbort = true;
 		$this->searchElasticService->partialSetup();
 		foreach ($users as $user) {
 			$userObject = $this->userManager->get($user);
 			if ($userObject !== null) {
-				if ($this->shouldAbort($input, $output)) {
+				if ($shouldAbort && ($shouldAbort = $this->shouldAbort($input, $output))) {
+					// the $this->shouldAbort method should be executed only once.
+					// If it returns true, the command is aborted (returning -1).
+					// If it returns false, the $shouldAbort var will be false, so the
+					// next condition won't be evaluated the next time.
 					$output->writeln('Aborting.');
 					return -1;
 				}
 				$this->fillSecondary($connectorName, $userObject, $quiet, $output, $params);
 			} else {
 				$output->writeln("<error>Unknown user $user</error>");
+				return -1;
 			}
 		}
 		return 0;
@@ -172,22 +182,10 @@ class FillSecondary extends Command {
 	 * @return bool, returns true when the command has to be aborted, else false
 	 */
 	private function shouldAbort(InputInterface $input, OutputInterface $output) {
-		/**
-		 * We are using static variable here because this method is private and
-		 * the question should be asked once for the user, instead of asking for
-		 * each user. So at any point we need to maintain a state to know if the
-		 * question was asked or not.
-		 */
-		static $result = null;
-
-		if (isset($result)) {
-			return $result;
-		}
-
 		if (!$input->getOption('force')) {
 			$helper = $this->getHelper('question');
 			$question = new ChoiceQuestion(
-				"This will delete all search index data for selected users! Do you want to proceed?",
+				"This will re-index data for selected users based on already-indexed data! Do you want to proceed?",
 				['no', 'yes'],
 				'no'
 			);
@@ -213,7 +211,7 @@ class FillSecondary extends Command {
 	protected function fillSecondary($connectorName, $user, $quiet, $output, $params) {
 		$uid = $user->getUID();
 		if (!$quiet) {
-			$output->writeln("Rebuilding Search Index for <info>$uid</info>");
+			$output->writeln("Filling secondary index for <info>$uid</info>");
 		}
 		$home = $this->rootFolder->getUserFolder($uid);
 
@@ -231,5 +229,6 @@ class FillSecondary extends Command {
 		};
 		$this->searchElasticService->fillSecondaryIndex($uid, $home, $connectorName, $fillParams);
 		$progressBar->finish();
+		$output->writeln('');
 	}
 }

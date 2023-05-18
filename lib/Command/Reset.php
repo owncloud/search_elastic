@@ -78,7 +78,7 @@ class Reset extends Command {
 	 *
 	 * @return int
 	 */
-	public function execute(InputInterface $input, OutputInterface $output) {
+	public function execute(InputInterface $input, OutputInterface $output): int {
 		if ($input->getOption('force')) {
 			$continue = true;
 		} else {

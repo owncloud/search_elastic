@@ -111,9 +111,9 @@ class Create extends Command {
 	 * @param InputInterface $input
 	 * @param OutputInterface $output
 	 *
-	 * @return int|null|void
+	 * @return int
 	 */
-	public function execute(InputInterface $input, OutputInterface $output) {
+	public function execute(InputInterface $input, OutputInterface $output): int {
 		if ($input->getOption('all')) {
 			$users = $this->userManager->search('');
 		} else {
@@ -123,7 +123,7 @@ class Create extends Command {
 
 		if (\count($users) === 0) {
 			$output->writeln('<error>Please specify the user id to index, "--all" to index for all users</error>');
-			return;
+			return 1;
 		}
 
 		foreach ($users as $user) {
@@ -136,5 +136,6 @@ class Create extends Command {
 				$output->writeln("<error>Unknown user $user</error>");
 			}
 		}
+		return 0;
 	}
 }

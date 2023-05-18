@@ -124,7 +124,7 @@ class Rebuild extends Command {
 	 *
 	 * @return int
 	 */
-	public function execute(InputInterface $input, OutputInterface $output) {
+	public function execute(InputInterface $input, OutputInterface $output): int {
 		$users = $input->getArgument('user_id');
 		$quiet = $input->getOption('quiet');
 
@@ -133,7 +133,7 @@ class Rebuild extends Command {
 			if ($userObject !== null) {
 				if ($this->shouldAbort($input, $output)) {
 					$output->writeln('Aborting.');
-					return -1;
+					return 1;
 				}
 				$this->rebuildIndex($userObject, $quiet, $output);
 			} else {

@@ -85,7 +85,7 @@ class Update extends Command {
 	 *
 	 * @return int
 	 */
-	public function execute(InputInterface $input, OutputInterface $output) {
+	public function execute(InputInterface $input, OutputInterface $output): int {
 		$output->writeln("Start Updating the Elastic Search index:");
 
 		$updateJobs = [];

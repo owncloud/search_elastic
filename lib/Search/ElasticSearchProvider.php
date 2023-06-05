@@ -41,7 +41,6 @@ use OCP\IUser;
 use OCP\Search\PagedProvider;
 
 class ElasticSearchProvider extends PagedProvider {
-
 	/**
 	 * @var ILogger
 	 */

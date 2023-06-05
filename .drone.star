@@ -904,6 +904,7 @@ def acceptance(ctx):
         "databases": ["mariadb:10.2"],
         "esVersions": ["none"],
         "federatedServerNeeded": False,
+        "federatedServerVersion": "",
         "filterTags": "",
         "logLevel": "2",
         "emailNeeded": False,
@@ -1139,7 +1140,11 @@ def acceptance(ctx):
                         environment["S3_TYPE"] = "ceph"
                     if (testConfig["scalityS3"] != False):
                         environment["S3_TYPE"] = "scality"
+
                 federationDbSuffix = "-federated"
+
+                if len(testConfig["federatedServerVersion"]) == 0:
+                    testConfig["federatedServerVersion"] = testConfig["server"]
 
                 result = {
                     "kind": "pipeline",
@@ -1152,7 +1157,7 @@ def acceptance(ctx):
                     "steps": skipIfUnchanged(ctx, "acceptance-tests") +
                              installCore(ctx, testConfig["server"], testConfig["database"], testConfig["useBundledApp"]) +
                              installTestrunner(ctx, DEFAULT_PHP_VERSION, testConfig["useBundledApp"]) +
-                             (installFederated(testConfig["server"], phpVersionForDocker, testConfig["logLevel"], testConfig["database"], federationDbSuffix) + owncloudLog("federated") if testConfig["federatedServerNeeded"] else []) +
+                             (installFederated(testConfig["federatedServerVersion"], phpVersionForDocker, testConfig["logLevel"], testConfig["database"], federationDbSuffix) + owncloudLog("federated") if testConfig["federatedServerNeeded"] else []) +
                              installAppPhp(ctx, phpVersionForDocker) +
                              installAppJavaScript(ctx) +
                              installExtraApps(phpVersionForDocker, testConfig["extraApps"]) +
@@ -1193,7 +1198,7 @@ def acceptance(ctx):
                                 testConfig["extraServices"] +
                                 owncloudService(testConfig["server"], phpVersionForDocker, "server", dir["server"], testConfig["ssl"], testConfig["xForwardedFor"]) +
                                 ((
-                                    owncloudService(testConfig["server"], phpVersionForDocker, "federated", dir["federated"], testConfig["ssl"], testConfig["xForwardedFor"]) +
+                                    owncloudService(testConfig["federatedServerVersion"], phpVersionForDocker, "federated", dir["federated"], testConfig["ssl"], testConfig["xForwardedFor"]) +
                                     databaseServiceForFederation(testConfig["database"], federationDbSuffix)
                                 ) if testConfig["federatedServerNeeded"] else []),
                     "depends_on": [],

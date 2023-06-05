@@ -34,7 +34,6 @@ require_once 'bootstrap.php';
  * Context for search elastic specific steps
  */
 class SearchElasticContext implements Context {
-
 	/**
 	 * @var FeatureContext
 	 */

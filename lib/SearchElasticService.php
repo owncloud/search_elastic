@@ -408,7 +408,6 @@ class SearchElasticService {
 	 * @throws VanishedException
 	 */
 	public function getNodeForId($userId, $fileId) {
-
 		/* @var Node[] */
 		$nodes = \OC::$server->getUserFolder($userId)->getById($fileId);
 		// getById can return more than one id because the containing storage might be mounted more than once

@@ -265,7 +265,6 @@ class Files {
 		$logger = $container->query(ILogger::class);
 
 		if (!empty($userId)) {
-
 			// mark written file as new
 			$home = \OC::$server->getUserFolder($userId);
 			if (isset($param['path'])) {

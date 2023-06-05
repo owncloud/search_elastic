@@ -34,7 +34,6 @@ use OCP\Files\Node;
  * A found file
  */
 class ElasticSearchResult extends FileResult {
-
 	/**
 	 * Type name; translated in templates
 	 * @var string

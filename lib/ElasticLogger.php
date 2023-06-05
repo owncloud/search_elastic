@@ -8,7 +8,6 @@ use Psr\Log\LoggerInterface;
 // phan picks up logger interface from other apps so throws error here
 // @phan-suppress-next-line PhanRedefinedInheritedInterface
 class ElasticLogger implements LoggerInterface {
-
 	/**
 	 * @var ILogger
 	 */

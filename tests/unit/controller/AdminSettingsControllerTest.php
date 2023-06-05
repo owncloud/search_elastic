@@ -34,7 +34,6 @@ use OCP\IRequest;
 use Test\TestCase;
 
 class AdminSettingsControllerTest extends TestCase {
-
 	/**
 	 * @var AdminSettingsController
 	 */

@@ -5,22 +5,35 @@ parameters:
     - %currentWorkingDirectory%/appinfo/Migrations
     - %currentWorkingDirectory%/appinfo/routes.php
   ignoreErrors:
-    - '#Call to an undefined method OCP\\AppFramework\\Db\\Entity::getFileId\(\)#'
-    - '#Call to an undefined method OCP\\Files\\Node::getContent\(\)#'
     -
-      messages:
-          - '#Method .* should return .* but returns.*#'
-          - '#Property OCA\\Search_Elastic\\Db\\StatusMapper::\$logger is never read, only written.#'
+      message: '#Call to an undefined method OCP\\AppFramework\\Db\\Entity::getFileId\(\)#'
       path: lib/Db/StatusMapper.php
+      count: 2
+    -
+      message: '#Call to an undefined method OCP\\Files\\Node::getContent\(\)#'
+      path: lib/SearchElasticService.php
+      count: 1
+    -
+      message: '#Method .* should return .* but returns.*#'
+      path: lib/Db/StatusMapper.php
+      count: 2
+    -
+      message: '#Property OCA\\Search_Elastic\\Db\\StatusMapper::\$logger is never read, only written.#'
+      path: lib/Db/StatusMapper.php
+      count: 1
     -
       message: '#OCA\\Encryption#'
       path: lib/Jobs/UpdateContent.php
+      count: 5
     -
       message: '#Else branch is unreachable because previous condition is always true#'
       path: lib/Hooks/Files.php
+      count: 1
     -
       message: '#Else branch is unreachable because previous condition is always true#'
       path: lib/Search/ElasticSearchProvider.php
+      count: 1
     -
       message: '#OCA\\Search_Elastic\\SearchElasticConfigService::\$credentialsManager is never read, only written.#'
       path: lib/SearchElasticConfigService.php
+      count: 1

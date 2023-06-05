@@ -32,7 +32,6 @@ use OCA\Search_Elastic\SearchElasticService;
 use OCP\Files\Folder;
 
 class UpdateMetadata extends QueuedJob {
-
 	/**
 	 * updates changed metadata for file or folder
 	 *

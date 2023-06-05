@@ -37,7 +37,6 @@ use OCP\IDb;
 use OCP\ILogger;
 
 class StatusMapper extends Mapper {
-
 	/**
 	 * @var ILogger
 	 */

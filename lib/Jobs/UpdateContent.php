@@ -43,7 +43,6 @@ use OCP\IUserSession;
 use Sabre\DAV\Exception\NotImplemented;
 
 class UpdateContent extends QueuedJob implements IUserSession {
-
 	/**
 	 * @var ILogger
 	 */
@@ -135,7 +134,6 @@ class UpdateContent extends QueuedJob implements IUserSession {
 			&& \OC::$server->getAppManager()->isEnabledForUser('encryption')
 			&& $this->config->getAppValue('encryption', 'useMasterKey')
 		) {
-
 			// we need to initialize a fresh app container to get the current session
 			$encryption = new \OCA\Encryption\AppInfo\Application([], true);
 			$encryption_manager = \OC::$server->getEncryptionManager();

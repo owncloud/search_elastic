@@ -31,7 +31,6 @@ use Page\FilesPageElement\FileRow;
  * in the case of an elastic search.
  */
 class ElasticSearchResultInOtherFoldersPage extends SearchResultInOtherFoldersPage {
-
 	/**
 	 * get the highlighted content of the file with a given name and path
 	 *

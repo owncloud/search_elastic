@@ -374,13 +374,13 @@ class SearchElasticService {
 				try {
 					$nodes = $home->getById($fileId, true);
 					if (isset($nodes[0])) {
+						// if the node is successfully indexed, it should be already
+						// marked as indexed, so nothing to do in that case
 						if (!$connector->indexNode($userId, $nodes[0])) {
 							// even if primary index is successful, mark it as error
 							// so it can be retried in the secondary index
 							$this->mapper->markError($fileStatus, 'Index failed');
 						}
-						// if the node is successfully indexed, it should be already
-						// marked as indexed, so nothing to do
 					} else {
 						$this->logger->debug("fillSecondaryIndex: ($fileId) missing node", ['app' => 'search_elastic']);
 						$fileStatus->setMessage('File vanished');

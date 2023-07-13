@@ -4,7 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-### [Unreleased] - xxxx-xx-xx
+### [2.4.0] - 2023-07-12
+
+### Changed
+
+* [#322](https://github.com/owncloud/search_elastic/pull/322) - Always return an int from Symfony Command execute method
+* [#319](https://github.com/owncloud/search_elastic/pull/319) - Refactor connector
+* [#5643](https://github.com/owncloud/enterprise/issues/5643) - [00019894] - Feature Request - Elasticsearch - More Search Results and Latest Files
+
+### Fixed
+
+* [#5556](https://github.com/owncloud/enterprise/issues/5556) - [Fix] Remove trailing wildcard in searches of search_elastic enterprise
 
 ## [2.3.0] - 2022-03-02
 

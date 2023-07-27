@@ -54,15 +54,15 @@ class ConnectorRelevanceV2 extends BaseConnector {
 						'tokenizer' => 'filename_tokenizer',
 						'filter' => ['lowercase'],
 					],
-					'filename_analyzer_ngram' => [
+					'filename_analyzer_2ngram' => [
 						'type' => 'custom',
-						'tokenizer' => 'filename_tokenizer',
-						'filter' => ['lowercase', 'filename_ngram'],
+						'tokenizer' => 'filename_tokenizer_2ngram',
+						'filter' => ['lowercase'],
 					],
-					'filename_analyzer_edgegram' => [
+					'filename_analyzer_3ngram' => [
 						'type' => 'custom',
-						'tokenizer' => 'filename_tokenizer',
-						'filter' => ['lowercase', 'filename_edge_ngram'],
+						'tokenizer' => 'filename_tokenizer_3ngram',
+						'filter' => ['lowercase'],
 					],
 				],
 				'tokenizer' => [
@@ -70,19 +70,17 @@ class ConnectorRelevanceV2 extends BaseConnector {
 						'type' => 'char_group',
 						'tokenize_on_chars' => ['whitespace', 'punctuation'],
 					],
-				],
-				'filter' => [
-					'filename_ngram' => [
+					'filename_tokenizer_2ngram' => [
 						'type' => 'ngram',
 						'min_gram' => 2,
-						'max_gram' => 3,
-						'preserve_original' => true,
+						'max_gram' => 2,
+						'token_chars' => ['letter', 'digit', 'symbol'],
 					],
-					'filename_edge_ngram' => [
-						'type' => 'edge_ngram',
-						'min_gram' => 2,
+					'filename_tokenizer_3ngram' => [
+						'type' => 'ngram',
+						'min_gram' => 3,
 						'max_gram' => 3,
-						'preserve_original' => true,
+						'token_chars' => ['letter', 'digit', 'symbol'],
 					],
 				],
 			],
@@ -105,13 +103,13 @@ class ConnectorRelevanceV2 extends BaseConnector {
 				'type' => 'text',
 				'analyzer' => 'filename_analyzer',
 				'fields' => [
-					'ngram' => [
+					'2ngram' => [
 						'type' => 'text',
-						'analyzer' => 'filename_analyzer_ngram',
+						'analyzer' => 'filename_analyzer_2ngram',
 					],
-					'edge_ngram' => [
+					'3ngram' => [
 						'type' => 'text',
-						'analyzer' => 'filename_analyzer_edgegram',
+						'analyzer' => 'filename_analyzer_3ngram',
 					],
 				],
 			],
@@ -285,10 +283,12 @@ class ConnectorRelevanceV2 extends BaseConnector {
 							'should' => [
 								[
 									'query_string' => [
-										'query' =>  $query,
-										'fields' => ['name', 'name.edge_ngram^0.5', 'name.ngram^0.25'],
+										'query' => $query,
+										'fields' => ['name', 'name.3ngram^0.5', 'name.2ngram^0.25'],
 										'auto_generate_synonyms_phrase_query' => false,
-										'type' => 'most_fields',
+										'type' => 'phrase',
+										'default_operator' => 'and',
+										'minimum_should_match' => '100%',
 									],
 								],
 							],

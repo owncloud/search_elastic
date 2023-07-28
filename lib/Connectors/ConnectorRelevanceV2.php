@@ -288,7 +288,6 @@ class ConnectorRelevanceV2 extends BaseConnector {
 										'auto_generate_synonyms_phrase_query' => false,
 										'type' => 'phrase',
 										'default_operator' => 'and',
-										'minimum_should_match' => '100%',
 									],
 								],
 							],

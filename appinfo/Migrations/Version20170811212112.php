@@ -31,7 +31,7 @@ class Version20170811212112 implements ISchemaMigration {
 	public function changeSchema(Schema $schema, array $options) {
 		$prefix = $options['tablePrefix'];
 
-		if ($schema->hasTable("${prefix}search_elastic_status")) {
+		if ($schema->hasTable("{$prefix}search_elastic_status")) {
 			$table = $schema->getTable("{$prefix}search_elastic_status");
 
 			$fileIdColumn = $table->getColumn('fileid');

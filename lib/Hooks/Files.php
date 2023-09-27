@@ -248,7 +248,7 @@ class Files {
 			$node = $userFolder->get($params['path']);
 			self::processNode($node, $node->getOwner()->getUID());
 		} else {
-			\OC::$server->getLogger()->debug("Hook fileVersionRestoreUpdate could not find user: ${params['user']} revision in param "
+			\OC::$server->getLogger()->debug("Hook fileVersionRestoreUpdate could not find user: {$params['user']} revision in param "
 				. \json_encode($params), ['app' => 'search_elastic']);
 		}
 	}

@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-### [2.4.0] - 2023-07-12
+### [2.4.0] - 2023-10-05
 
 ### Changed
 
@@ -115,7 +115,9 @@ This release requires Elastic Search 5.6.x and the `ingest-attachment` processor
 ### Removed
 - Dropped support for Elastic Search 2.x
 
-[Unreleased]: https://github.com/owncloud/search_elastic/compare/v2.2.0...master
+[Unreleased]: https://github.com/owncloud/search_elastic/compare/v2.3.0...master
+[2.4.0]: https://github.com/owncloud/search_elastic/compare/v2.3.0...v2.4.0
+[2.3.0]: https://github.com/owncloud/search_elastic/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/owncloud/search_elastic/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/owncloud/search_elastic/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/owncloud/search_elastic/compare/v1.0.0...v2.0.0

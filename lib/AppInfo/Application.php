@@ -36,6 +36,9 @@ use OCA\Search_Elastic\Auth\UserPassAuth;
 use OCA\Search_Elastic\Db\StatusMapper;
 use OCA\Search_Elastic\Hooks\Files;
 use OCA\Search_Elastic\Jobs\DeleteJob;
+use OCA\Search_Elastic\Connectors\Hub;
+use OCA\Search_Elastic\Connectors\ConnectorLegacy;
+use OCA\Search_Elastic\Connectors\ConnectorRelevanceV2;
 use OCA\Search_Elastic\SearchElasticConfigService;
 use OCA\Search_Elastic\SearchElasticService;
 use OCP\AppFramework\App;
@@ -90,6 +93,14 @@ class Application extends App {
 				return $c->query('ServerContainer')->getUserSession()->getUser()->getUID();
 			}
 			return false;
+		});
+
+		$container->registerService(Hub::class, function (IAppContainer $c) {
+			$server = $c->getServer();
+			$hub = new Hub($c->query(SearchElasticConfigService::class), $server->getLogger());
+			$hub->registerConnector($c->query(ConnectorLegacy::class));
+			$hub->registerConnector($c->query(ConnectorRelevanceV2::class));
+			return $hub;
 		});
 
 		$container->registerService(AuthManager::class, function (IAppContainer $c) {

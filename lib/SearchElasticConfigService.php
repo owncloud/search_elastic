@@ -40,6 +40,8 @@ class SearchElasticConfigService {
 	public const NO_CONTENT_GROUP = 'group.nocontent';
 	public const APP_MODE = 'mode';
 	public const ENABLED_GROUPS = 'group';
+	public const CONNECTORS_WRITE = 'connectors_write';
+	public const CONNECTORS_SEARCH = 'connectors_search';
 
 	/**
 	 * @var IConfig
@@ -77,6 +79,10 @@ class SearchElasticConfigService {
 	 */
 	public function getValue($key, $default = '') {
 		return $this->owncloudConfig->getAppValue(Application::APP_ID, $key, $default);
+	}
+
+	public function deleteValue($key) {
+		$this->owncloudConfig->deleteAppValue(Application::APP_ID, $key);
 	}
 
 	/**
@@ -334,5 +340,40 @@ class SearchElasticConfigService {
 			$results[] = $serverData;
 		}
 		return ['servers' => $results];
+	}
+
+	public function getConfiguredWriteConnectors() {
+		$values = $this->getValue(self::CONNECTORS_WRITE, 'Legacy');
+		return \explode(',', $values);
+	}
+
+	public function getConfiguredSearchConnector() {
+		return $this->getValue(self::CONNECTORS_SEARCH, 'Legacy');
+	}
+
+	public function setConfiguredWriteConnectors($connectorNameList) {
+		$values = \implode(',', $connectorNameList);
+		$this->setValue(self::CONNECTORS_WRITE, $values);
+	}
+
+	public function setConfiguredSearchConnector($connectorName) {
+		$this->setValue(self::CONNECTORS_SEARCH, $connectorName);
+	}
+
+	/**
+	 * Get the recommended prefix for a component such as "index"
+	 * or "processor". This function rely on the ownCloud's instance id.
+	 */
+	public function getRecommendedPrefixFor(string $component) {
+		$instanceid = $this->owncloudConfig->getSystemValue('instanceid', '');
+
+		switch ($component) {
+			case 'index':
+				return "oc-{$instanceid}";
+			case 'processor':
+				return "oc-processor-{$instanceid}";
+			default:
+				return $instanceid;
+		}
 	}
 }

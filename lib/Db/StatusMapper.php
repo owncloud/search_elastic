@@ -234,6 +234,122 @@ class StatusMapper extends Mapper {
 		";
 		return $this->findNodesWithStatus($home, $sql, Status::STATUS_NEW);
 	}
+
+	/**
+	 * Find files marked as indexes inside the home folder.
+	 * The returned files will be limited to $limit results and the
+	 * fileids will be greater than the $minId. This should be more
+	 * stable because files that has been processed could be removed,
+	 * which could be a problem with the usual limit + offset approach.
+	 *
+	 * The current approach should be better in case something happens
+	 * and we need to restart the processing. We don't know when a
+	 * second call to this will happen, and the filecache could have been
+	 * modified.
+	 *
+	 * The returned ids will be in ascending order
+	 */
+	public function findFilesIndexed(Folder $home, $limit, $minId) {
+		$mount = $home->getMountPoint();
+		$mounts = \OC::$server->getMountManager()->findIn($home->getPath());
+		if (!\in_array($mount, $mounts)) {
+			$mounts[] = $mount;
+		}
+
+		$storageIds = [];
+		foreach ($mounts as $mount) {
+			$storage = $mount->getStorage();
+
+			// skip shared storages, they must be indexed in the context of
+			// their owner to prevent marking files as vanished
+			// Files_Sharing\SharedStorage might not be available when phan runs
+			/* @phan-suppress-next-line PhanUndeclaredClassReference */
+			if ($storage->instanceOfStorage(SharedStorage::class)) {
+				continue;
+			}
+
+			//only index external files if the admin enabled it
+
+			if ($this->config->getScanExternalStorageFlag() || $storage->isLocal()) {
+				$cache = $storage->getCache();
+				$numericId = $cache->getNumericStorageId();
+				$storageIds[] = $numericId;
+			}
+		}
+
+		$placeholders = \array_fill(0, \count($storageIds), '?');
+		$placeholdersString = \implode(',', $placeholders);
+		$sql = "
+			SELECT `*PREFIX*filecache`.`fileid`
+			FROM `*PREFIX*filecache`
+			JOIN `{$this->tableName}`
+			ON `*PREFIX*filecache`.`fileid` = `{$this->tableName}`.`fileid`
+			WHERE `storage` in ({$placeholdersString})
+			AND `*PREFIX*filecache`.`fileid` > ?
+			AND `status` = ?
+			ORDER BY `*PREFIX*filecache`.`fileid` ASC
+		";
+		$params = $storageIds;
+		\array_push($params, $minId, Status::STATUS_INDEXED);
+		$result = $this->execute($sql, $params, $limit);
+
+		$ids = [];
+		while (($row = $result->fetch()) !== false) {
+			$ids[] = (int)$row['fileid'];
+		}
+		$result->closeCursor();
+		return $ids;
+	}
+
+	public function countFilesIndexed(Folder $home, $minId) {
+		$mount = $home->getMountPoint();
+		$mounts = \OC::$server->getMountManager()->findIn($home->getPath());
+		if (!\in_array($mount, $mounts)) {
+			$mounts[] = $mount;
+		}
+
+		$storageIds = [];
+		foreach ($mounts as $mount) {
+			$storage = $mount->getStorage();
+
+			// skip shared storages, they must be indexed in the context of
+			// their owner to prevent marking files as vanished
+			// Files_Sharing\SharedStorage might not be available when phan runs
+			/* @phan-suppress-next-line PhanUndeclaredClassReference */
+			if ($storage->instanceOfStorage(SharedStorage::class)) {
+				continue;
+			}
+
+			//only index external files if the admin enabled it
+
+			if ($this->config->getScanExternalStorageFlag() || $storage->isLocal()) {
+				$cache = $storage->getCache();
+				$numericId = $cache->getNumericStorageId();
+				$storageIds[] = $numericId;
+			}
+		}
+
+		$placeholders = \array_fill(0, \count($storageIds), '?');
+		$placeholdersString = \implode(',', $placeholders);
+		$sql = "
+			SELECT count(`*PREFIX*filecache`.`fileid`) AS nIds
+			FROM `*PREFIX*filecache`
+			JOIN `{$this->tableName}`
+			ON `*PREFIX*filecache`.`fileid` = `{$this->tableName}`.`fileid`
+			WHERE `storage` in ({$placeholdersString})
+			AND `*PREFIX*filecache`.`fileid` > ?
+			AND `status` = ?
+		";
+		$params = $storageIds;
+		\array_push($params, $minId, Status::STATUS_INDEXED);
+		$result = $this->execute($sql, $params);
+
+		$row = $result->fetch();
+		$nIds = (int)$row['nIds'];
+		$result->closeCursor();
+		return $nIds;
+	}
+
 	/**
 	 * get the list of all unindexed files for the user
 	 * @param Folder $home the home folder used to deduce the storages
@@ -242,7 +358,7 @@ class StatusMapper extends Mapper {
 	 *
 	 * @return array
 	 */
-	public function findNodesWithStatus(Folder $home, $sql, $status) {
+	public function findNodesWithStatus(Folder $home, $sql, $status, $limit = null, $offset = null) {
 		$home->getMountPoint();
 		$mounts = \OC::$server->getMountManager()->findIn($home->getPath());
 		$mount = $home->getMountPoint();
@@ -254,7 +370,7 @@ class StatusMapper extends Mapper {
 		// should we ORDER BY `mtime` DESC to index recent files first?
 		// how will they affect query time for large filecaches?
 
-		$query = $this->db->prepareQuery($sql);
+		$query = $this->db->prepareQuery($sql, $limit, $offset);
 
 		foreach ($mounts as $mount) {
 			$storage = $mount->getStorage();
@@ -276,7 +392,7 @@ class StatusMapper extends Mapper {
 				$result = $query->execute([$numericId, $status]);
 
 				while ($row = $result->fetchRow()) {
-					$files[] = $row['fileid'];
+					$files[] = (int)$row['fileid'];
 				}
 			}
 		}

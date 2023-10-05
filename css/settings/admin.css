@@ -13,6 +13,18 @@
 	width: 215px;
 }
 
+/*
+ * core/css/share.css uses text-transform:lowercase which looks
+ * bad here. Revert it for our elements
+ */
+#searchElasticSettings .select2-search-choice {
+	text-transform: none;
+}
+
+#searchElasticSettings div.field-margin-left-16 > div {
+	margin: 5px 5px 5px 0px;
+}
+
 .hide {
 	display: none;
 }

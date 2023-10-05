@@ -28,30 +28,15 @@
 
 namespace OCA\Search_Elastic;
 
-use Elastica\Client;
-use Elastica\Index;
-use Elastica\Request;
-use Elastica\Response;
-use Elastica\Search;
-use Elastica\Document;
-use Elastica\Bulk;
-use OC\Files\Cache\Cache;
-use OC\Files\Filesystem;
-use OC\Files\View;
 use OCA\Search_Elastic\Db\StatusMapper;
-use OC\Share\Constants;
+use OCA\Search_Elastic\Connectors\Hub;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\Node;
-use OCP\IConfig;
+use OCP\Files\NotFoundException;
 use OCP\ILogger;
 
 class SearchElasticService {
-	/**
-	 * @var Index
-	 */
-	private $index;
-
 	/**
 	 * @var StatusMapper
 	 */
@@ -68,141 +53,93 @@ class SearchElasticService {
 	private $config;
 
 	/**
-	 * @var \Elastica\Client
+	 * @var Hub
 	 */
-	private $client;
-
-	/**
-	 * @var string
-	 */
-	private $processorName;
+	private $hub;
 
 	/**
 	 * searchelasticservice Constructor
 	 *
-	 * @param IConfig $serverConfig
 	 * @param StatusMapper $mapper
 	 * @param ILogger $logger
-	 * @param Client $client
+	 * @param Hub $hub
 	 * @param SearchElasticConfigService $config
 	 */
 	public function __construct(
-		IConfig $serverConfig,
 		StatusMapper $mapper,
 		ILogger $logger,
-		Client $client,
+		Hub $hub,
 		SearchElasticConfigService $config
 	) {
 		$this->mapper = $mapper;
 		$this->logger = $logger;
+		$this->hub = $hub;
 		$this->config = $config;
-		$this->client = $client;
-
-		$instanceID = $serverConfig->getSystemValue('instanceid', '');
-		$this->index = new Index($client, 'oc-' . $instanceID);
-		$this->processorName = 'oc-processor-' . $instanceID;
 	}
 
 	/**
-	 * sets up index, processor and clears mapping
+	 * Resets all the write and search indexes and clears mapping
 	 */
-	public function setup() {
-		$this->setupIndex();
-		$this->setupProcessor();
+	public function fullSetup() {
+		$this->hub->clearConnectorsCheckedCache();
+		$this->hub->prepareWriteIndexes(true);
+		$this->hub->prepareSearchIndex(true);
 		$this->mapper->clear();
 	}
 
 	/**
+	 * Prepare the write and search indexes that haven't been setup
+	 * yet. This method WON'T clear the mapping
+	 */
+	public function partialSetup() {
+		$this->hub->prepareWriteIndexes();
+		$this->hub->prepareSearchIndex();
+	}
+
+	/**
+	 * Get whether the connector hub is setup or not. This implies
+	 * checking all the configured write and search connectors.
 	 * @return bool
 	 */
 	public function isSetup() {
-		return $this->isIndexSetup()
-			&& $this->isProcessorSetup();
+		return $this->hub->hubIsSetup();
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function isIndexSetup() {
-		return $this->index->exists();
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isProcessorSetup() {
-		$result = $this->client->request("_ingest/pipeline/".$this->processorName, Request::GET);
-		if ($result->getStatus() === 404) {
-			return false;
-		}
-		return true;
-	}
-
-	/**
+	 * Get the stats coming from the hub. An array will be returned
+	 * contaning all the information.
+	 * ```
+	 * [
+	 *   'connectors' => [
+	 *     'Legacy' => [.....],
+	 *     'CTest' => [.....],
+	 *   ],
+	 *   'oc_index' => [.....],
+	 *   'countIndexed' => 1234,
+	 * ]
+	 * ```
+	 * The oc_index key is kept for backwards-compatibility.
+	 * The countIndexed returns the number if indexed files we have
+	 * tracked in our DB, it also there for backwards-compatibility
 	 * @return array
 	 */
 	public function getStats() {
-		$stats = $this->index->getStats()->getData();
-		$indexName = $this->index->getName();
+		$stats = $this->hub->hubGetStats();
 		$countIndexed = $this->mapper->countIndexed();
-		return [
-			'_all'     => $stats['_all'],
-			'_shards'  => $stats['_shards'],
-			'oc_index' => $stats['indices'][$indexName],
-			'countIndexed'  => $countIndexed,
-		];
-	}
 
-	/**
-	 * setup the processor pipeline for ingest-attachment processing
-	 * Note: creating the array manually is necessary, since Elastica < 6
-	 * does not have pipeline/ingest support
-	 */
-	private function setupProcessor() {
-		$processors = [
-			[
-				'attachment' => [
-					'field' 		=> 'data',
-					'target_field' 	=> 'file',
-					'indexed_chars'	=> '-1',
-				]
-			],
-			[
-				'remove' => [
-					'field'			=> 'data',
-				]
-			],
-		];
-
-		$payload = [];
-		$payload['description'] = 'Pipeline to process Entries for Owncloud Search';
-		$payload['processors'] = $processors;
-
-		$this->client->request("_ingest/pipeline/".$this->processorName, Request::PUT, $payload);
-	}
-
-	/**
-	 * WARNING: will delete the index if it exists
-	 */
-	private function setupIndex() {
-		// the number of shards and replicas should be adjusted as necessary outside of owncloud
-		$this->index->create([
-			'settings' =>
-				[
-					'number_of_shards' => 1,
-					'number_of_replicas' => 0
-				],
-		], true);
-	}
-
-	/**
-	 * @param \Elastica\Query $es_query
-	 * @return \Elastica\ResultSet
-	 */
-	public function search($es_query) {
-		$search = new Search($this->client);
-		$search->addIndex($this->index);
-		return $search->search($es_query);
+		$finalStats = ['connectors' => []];
+		foreach ($stats as $key => $stat) {
+			// first will be the search connector
+			// set its info in the oc_index for compatibility
+			if (!isset($finalStats['oc_index'])) {
+				$indicesStats = $stat['indices'];
+				$firstIndexStats = \reset($indicesStats);
+				$finalStats['oc_index'] = $firstIndexStats;
+			}
+			$finalStats['connectors'][$key] = $stat;
+		}
+		$finalStats['countIndexed'] = $countIndexed;
+		return $finalStats;
 	}
 
 	// === CONTENT CHANGES / FULL INDEXING ====================================
@@ -235,8 +172,10 @@ class SearchElasticService {
 					}
 				}
 
-				if ($this->indexNode($userId, $node, $extractContent)) {
+				if ($this->hub->hubIndexNode($userId, $node, $extractContent)) {
 					$this->mapper->markIndexed($fileStatus);
+				} else {
+					$this->mapper->markError($fileStatus, 'Index failed');
 				}
 			} catch (VanishedException $e) {
 				$this->logger->debug("indexFiles: ($id) Vanished", ['app' => 'search_elastic']);
@@ -260,121 +199,7 @@ class SearchElasticService {
 			}
 		}
 
-		$this->index->forcemerge();
-	}
-
-	/**
-	 * index a file
-	 *
-	 * @param string $userId
-	 * @param Node $node the file or folder to be indexed
-	 * @param bool $extractContent
-	 *
-	 * @return bool true when something was stored in the index, false otherwise (eg, folders are not indexed)
-	 * @throws NotIndexedException when an unsupported file type is encountered
-	 */
-	public function indexNode($userId, Node $node, $extractContent = true) {
-		$this->logger->debug(
-			"indexNode {$node->getPath()} ({$node->getId()}) for $userId",
-			['app' => 'search_elastic']
-		);
-
-		$doc = new Document((string)$node->getId());
-
-		// we do not index the path because it might be different for each user
-		// FIXME what about shared files? the recipient can rename them ...
-		$doc->set('name', $node->getName());
-
-		$doc->set('size', $node->getSize());
-		$doc->set('mtime', $node->getMTime());
-
-		// document permissions
-		$access = $this->getUsersWithReadPermission($node, $userId);
-		$doc->set('users', $access['users']);
-		$doc->set('groups', $access['groups']);
-
-		$doc->setDocAsUpsert(true);
-
-		if ($this->canExtractContent($node, $extractContent)) {
-			$this->logger->debug(
-				"indexNode: inserting document with pipeline processor: ".
-				\json_encode($doc->getData()),
-				['app' => 'search_elastic']
-			);
-
-			// @phan-suppress-next-line PhanUndeclaredMethod
-			$doc->addFileContent('data', $node->getContent());
-
-			// this is a workaround to acutally be able to use parameters when setting a document
-			// see: https://github.com/ruflin/Elastica/issues/1248
-			$bulk = new Bulk($this->index->getClient());
-			$bulk->setIndex($this->index);
-			$bulk->setRequestParam('pipeline', $this->processorName);
-			$bulk->addDocuments([$doc]);
-			$bulk->send();
-			return true;
-		}
-
-		$this->logger->debug(
-			"indexNode: upserting document to index: ".
-			\json_encode($doc->getData()),
-			['app' => 'search_elastic']
-		);
-		$this->index->updateDocument($doc);
-		return true;
-	}
-
-	/**
-	 * Function that checks if we should also extract content
-	 *
-	 * @param Node $node
-	 * @param bool $extractContent
-	 * @return bool
-	 */
-	private function canExtractContent(Node $node, $extractContent = true) {
-		$storage = $node->getStorage();
-		$size = $node->getSize();
-		$maxSize = $this->config->getMaxFileSizeForIndex();
-
-		if (!$this->config->shouldContentBeIncluded()) {
-			$this->logger->debug(
-				"indexNode: content should not be included, skipping content extraction",
-				['app' => 'search_elastic']
-			);
-			$extractContent = false;
-		} elseif ($node instanceof Folder) {
-			$this->logger->debug(
-				"indexNode: folder, skipping content extraction",
-				['app' => 'search_elastic']
-			);
-			$extractContent = false;
-		} elseif ($size < 0) {
-			$this->logger->debug(
-				"indexNode: unknown size, skipping content extraction",
-				['app' => 'search_elastic']
-			);
-			$extractContent = false;
-		} elseif ($size === 0) {
-			$this->logger->debug(
-				"indexNode: file empty, skipping content extraction",
-				['app' => 'search_elastic']
-			);
-			$extractContent = false;
-		} elseif ($size > $maxSize) {
-			$this->logger->debug(
-				"indexNode: file exceeds $maxSize, skipping content extraction",
-				['app' => 'search_elastic']
-			);
-			$extractContent = false;
-		} elseif ($this->config->getScanExternalStorageFlag() === false
-			&& $storage->isLocal() === false) {
-			$this->logger->debug(
-				"indexNode: not indexing on remote storage {$storage->getId()}, skipping content extraction",
-				['app' => 'search_elastic']
-			);
-			$extractContent = false;
-		}
-		return $extractContent;
+		//$this->index->forcemerge();
 	}
 
 	// === DELETE =============================================================
@@ -384,13 +209,10 @@ class SearchElasticService {
 	 */
 	public function deleteFiles(array $fileIds) {
 		if (\count($fileIds) > 0) {
-			$result = \array_map(function ($fileId) {
-				return $this->index->deleteById($fileId);
-			}, $fileIds);
 			$count = 0;
-
-			foreach ($result as $response) {
-				if ($response instanceof Response && $response->isOk()) {
+			foreach ($fileIds as $fileId) {
+				$result = $this->hub->hubDeleteByFileId($fileId);
+				if ($result) {
 					$count++;
 				}
 			}
@@ -409,7 +231,12 @@ class SearchElasticService {
 	 */
 	public function getNodeForId($userId, $fileId) {
 		/* @var Node[] */
-		$nodes = \OC::$server->getUserFolder($userId)->getById($fileId);
+		$userFolder = \OC::$server->getUserFolder($userId);
+		if ($userFolder->getId() === $fileId) {
+			throw new NotIndexedException();
+		}
+
+		$nodes = $userFolder->getById($fileId);
 		// getById can return more than one id because the containing storage might be mounted more than once
 		// Since we only want to index the file once, we only use the first entry
 
@@ -427,121 +254,6 @@ class SearchElasticService {
 			return $node;
 		}
 		throw new NotIndexedException();
-	}
-
-	/**
-	 * @param Node $node
-	 * @param string $owner
-	 * @return array
-	 */
-	public function getUsersWithReadPermission(Node $node, $owner) {
-		// get path for lookup in sharing
-		$path = $node->getPath();
-		//TODO test this hack with subdirs and other storages like objectstore and files_external
-		//if ($file->getStorage()->instanceOfStorage('\OC\Files\Storage\Home') && substr($path, 0, 6) === 'files/') {
-		//	$path = substr($path, 6);
-		//}
-		$path = \substr($path, \strlen('/' . $owner . '/files'));
-		return $this->getUsersSharingFile($path, $owner);
-	}
-
-	/**
-	 * Find which users can access a shared item
-	 * @param string $path to the file
-	 * @param string $ownerUser owner of the file
-	 * @return array
-	 * @note $path needs to be relative to user data dir, e.g. 'file.txt'
-	 *       not '/admin/data/file.txt'
-	 */
-	public function getUsersSharingFile($path, $ownerUser) {
-		$this->logger->debug(
-			"determining access to $path",
-			['app' => 'search_elastic']
-		);
-
-		Filesystem::initMountPoints($ownerUser);
-		$users = $groups = $sharePaths = $fileTargets = [];
-//		$publicShare = false;
-//		$remoteShare = false;
-		$source = -1;
-		$cache = false;
-
-		$view = new  View('/' . $ownerUser . '/files');
-		$meta = $view->getFileInfo($path);
-		if ($meta === false) {
-			// if the file doesn't exists yet we start with the parent folder
-			$meta = $view->getFileInfo(\dirname($path));
-		}
-
-		if ($meta !== false) {
-			$source = $meta['fileid'];
-			$cache = new Cache($meta['storage']);
-		}
-
-		while ($source !== -1) {
-			// Fetch all shares with another user
-			$query = \OC_DB::prepare(
-				'SELECT `share_with`, `file_source`, `file_target`
-				FROM
-				`*PREFIX*share`
-				WHERE
-				`item_source` = ? AND `share_type` = ? AND `item_type` IN (\'file\', \'folder\')'
-			);
-			$result = $query->execute([$source, Constants::SHARE_TYPE_USER]);
-
-			if ($result === false) {
-				$this->logger->error(
-					\OC_DB::getErrorMessage(),
-					['app' => 'search_elastic']
-				);
-			} else {
-				while ($row = $result->fetchRow()) {
-					$users[] = $row['share_with'];
-				}
-			}
-
-			// We also need to take group shares into account
-			$query = \OC_DB::prepare(
-				'SELECT `share_with`, `file_source`, `file_target`
-				FROM
-				`*PREFIX*share`
-				WHERE
-				`item_source` = ? AND `share_type` = ? AND `item_type` IN (\'file\', \'folder\')'
-			);
-
-			$result = $query->execute([$source, Constants::SHARE_TYPE_GROUP]);
-
-			if ($result === false) {
-				$this->logger->error(
-					\OC_DB::getErrorMessage(),
-					['app' => 'search_elastic']
-				);
-			} else {
-				while ($row = $result->fetchRow()) {
-					$groups[] = $row['share_with'];
-				}
-			}
-
-			// let's get the parent for the next round
-			$meta = $cache->get((int)$source);
-			if ($meta !== false) {
-				// Cache->get() returns ICacheEntry which doesnot have array access.
-				// @phan-suppress-next-line PhanTypeArraySuspicious
-				$source = (int)$meta['parent'];
-			} else {
-				$source = -1;
-			}
-		}
-
-		// Include owner in list of users
-		$users[] = $ownerUser;
-
-		$result = ['users' => \array_values(\array_unique($users)), 'groups' => \array_values(\array_unique($groups))];
-		$this->logger->debug(
-			"access to $path:" . \json_encode($result),
-			['app' => 'search_elastic']
-		);
-		return $result;
 	}
 
 	/**
@@ -579,5 +291,129 @@ class SearchElasticService {
 				['app' => 'search_elastic']
 			);
 		}
+	}
+
+	/**
+	 * Count the number of indexed nodes that will be used to fill the secondary index.
+	 * Since filling the index can take a lot of time, savepoints are used so we can
+	 * continue from a previous savepoint if something goes wrong. By default, we'll
+	 * count from the latest known savepoint.
+	 *
+	 * The $params parameter can contain the following options:
+	 * - 'startOver' (optional, default false) -> bool whether this method should count
+	 * from the beginning (true) or should start from a previous savepoint (false)
+	 *
+	 * @param string $userId the userId of the owner of the home
+	 * @param Folder $home the home folder to be indexed
+	 * @param string $connectorName the name of the connector to use
+	 * @param array $params a map of options for this method, as explained above
+	 */
+	public function getCountFillSecondaryIndex($userId, $home, $connectorName, $params = []) {
+		$minId = 0;
+		$startOver = $params['startOver'] ?? false;
+		$adlerUser = \hash('adler32', $userId); // hash the user to ensure it fits in the config key
+
+		if (!$startOver) {
+			$minId = (int)$this->config->getValue("es_fillsec_{$connectorName}_{$adlerUser}", '0');
+		}
+
+		return $this->mapper->countFilesIndexed($home, $minId);
+	}
+
+	/**
+	 * Fill a secondary index by indexing the data from the home directory using the
+	 * connector provided by name.
+	 *
+	 * The $params parameter can contain the following options:
+	 * - 'startOver' (optional, default false) -> bool, whether this method should count
+	 * from the beginning (true) or should start from a previous savepoint (false)
+	 * - 'chunkSize' (optional, default 100) -> int, the chunk size of the list of files.
+	 * After processing those files, the savepoint will be updated and more files will
+	 * be requested to be indexed. The callback (if any) will be called after each chunk
+	 * has been fully processed.
+	 * - 'callback' (optional, default null) -> callback(array $fileIds), a callback to
+	 * be called after a chunk of files has been processed. This is intended to provide
+	 * a way to show progress.
+	 *
+	 * Filling the secondary index is expected to take a lot of time. We'll use savepoints
+	 * in order to continue from that point if something goes wrong, and avoid having to
+	 * re-index everything from the beginning.
+	 *
+	 * By default, it will start indexing from the previously savepoint (if any).
+	 * Note that this doesn't guarantee the files will be indexed only once. If the app
+	 * crashes, some of the files of the last chunk might have been indexed before the
+	 * crash, so those will be re-indexed when we resume the operation.
+	 * What it does guarantee is that not all the chunks will be re-indexed, just the
+	 * last one.
+	 *
+	 * @param string $userId the userId of the owner of the home
+	 * @param Folder $home the home folder to be indexed
+	 * @param string $connectorName the name of the connector to use
+	 * @param array $params a map of options for this method, as explained above
+	 */
+	public function fillSecondaryIndex($userId, $home, $connectorName, $params = []) {
+		$minId = 0;
+		$chunkSize = $params['chunkSize'] ?? 100;
+		$startOver = $params['startOver'] ?? false;
+		$callback = $params['callback'] ?? null;
+		$adlerUser = \hash('adler32', $userId); // hash the user to ensure it fits in the config key
+
+		$connector = $this->hub->getRegisteredConnector($connectorName);
+		if ($connector === null) {
+			return false;
+		}
+
+		if (!$startOver) {
+			$minId = (int)$this->config->getValue("es_fillsec_{$connectorName}_{$adlerUser}", '0');
+		}
+
+		$fileIds = $this->mapper->findFilesIndexed($home, $chunkSize, $minId);
+		while (!empty($fileIds)) {
+			foreach ($fileIds as $fileId) {
+				$fileStatus = $this->mapper->getOrCreateFromFileId($fileId);
+				try {
+					$nodes = $home->getById($fileId, true);
+					if (isset($nodes[0])) {
+						// if the node is successfully indexed, it should be already
+						// marked as indexed, so nothing to do in that case
+						if (!$connector->indexNode($userId, $nodes[0])) {
+							// even if primary index is successful, mark it as error
+							// so it can be retried in the secondary index
+							$this->mapper->markError($fileStatus, 'Index failed');
+						}
+					} else {
+						$this->logger->debug("fillSecondaryIndex: ($fileId) missing node", ['app' => 'search_elastic']);
+						$fileStatus->setMessage('File vanished');
+						$this->mapper->markVanished($fileStatus);
+					}
+				} catch (NotFoundException $e) {
+					// mark the fileid as vanished in order to remove it later
+					$this->logger->debug("fillSecondaryIndex: ($fileId) not found", ['app' => 'search_elastic']);
+					$fileStatus->setMessage('File vanished');
+					$this->mapper->markVanished($fileStatus);
+				}
+				$minId = $fileId;  // update minId
+			}
+
+			$this->config->setValue("es_fillsec_{$connectorName}_{$adlerUser}", $minId); // mark minId so we can start from there
+			if ($callback !== null && \is_callable($callback)) {
+				$callback($fileIds);
+			}
+
+			$fileIds = $this->mapper->findFilesIndexed($home, $chunkSize, $minId);
+		}
+		$this->config->deleteValue("es_fillsec_{$connectorName}_{$adlerUser}");
+	}
+
+	public function getConnectorInfo() {
+		$registered = $this->hub->getRegisteredConnectorNames();
+		$write = $this->config->getConfiguredWriteConnectors();
+		$search = $this->config->getConfiguredSearchConnector();
+
+		return [
+			'registered' => $registered,
+			'write' => $write,
+			'search' => $search,
+		];
 	}
 }

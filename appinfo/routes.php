@@ -34,6 +34,7 @@ return ['routes' => [
 	['name' => 'admin_settings#checkStatus', 'url' => '/settings/status', 'verb' => 'GET'],
 	['name' => 'admin_settings#setup', 'url' => '/setup', 'verb' => 'POST'],
 	['name' => 'admin_settings#rescan', 'url' => '/rescan', 'verb' => 'POST'],
+	['name' => 'admin_settings#saveConnectors', 'url' => '/settings/connectors/save', 'verb' => 'POST'],
 	['name' => 'api#index', 'url' => '/indexer/index', 'verb' => 'GET'],
 	['name' => 'api#optimize', 'url' => '/indexer/optimize', 'verb' => 'POST'],
 ]];

@@ -104,7 +104,9 @@ class UpdateContent extends QueuedJob implements IUserSession {
 				$elasticServers = $this->container->query(SearchElasticConfigService::class)->getServers();
 
 				if ($elasticServers) {
-					$this->container->query(SearchElasticService::class)->indexNodes($userId, $fileIds);
+					$service = $this->container->query(SearchElasticService::class);
+					$service->partialSetup();  // prepare all the needed indexes if not done yet
+					$service->indexNodes($userId, $fileIds);
 				}
 			} else {
 				$this->logger->debug(

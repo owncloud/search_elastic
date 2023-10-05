@@ -92,6 +92,7 @@ class UpdateMetadata extends QueuedJob {
 				);
 
 				$service = $container->query(SearchElasticService::class);
+				$service->partialSetup();  // prepare all the needed indexes if not done yet
 				$service->indexNodes($userId, $fileIds, false);
 			} else {
 				$logger->debug(

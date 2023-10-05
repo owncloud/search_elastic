@@ -85,6 +85,7 @@ class DeleteJob extends TimedJob {
 				['app' => 'search_elastic']
 			);
 
+			$this->searchElasticService->partialSetup();
 			//delete from status table
 			$deletedInDb = $this->statusMapper->deleteIds($deletedIds);
 			$deletedInIndex = $this->searchElasticService->deleteFiles($deletedIds);

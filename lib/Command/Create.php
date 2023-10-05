@@ -68,7 +68,12 @@ class Create extends Command {
 	protected function configure() {
 		$this
 			->setName('search:index:create')
-			->setDescription('Create initial Search Index for one or all users. This command could not update the search index correctly after the initial indexing.')
+			->setDescription(
+				'Create initial indexes for one or all users.'.
+				' The indexes will be created based on the configured connectors.'.
+				' New indexes will be setup if needed, but old ones won\'t be reset.'.
+				' This command could not update the indexes correctly after the initial indexing.'
+			)
 			->addArgument(
 				'user_id',
 				InputArgument::OPTIONAL | InputArgument::IS_ARRAY,

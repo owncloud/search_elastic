@@ -118,7 +118,7 @@ This release requires Elastic Search 5.6.x and the `ingest-attachment` processor
 ### Removed
 - Dropped support for Elastic Search 2.x
 
-[Unreleased]: https://github.com/owncloud/search_elastic/compare/v2.3.0...master
+[Unreleased]: https://github.com/owncloud/search_elastic/compare/v2.4.0...master
 [2.4.0]: https://github.com/owncloud/search_elastic/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/owncloud/search_elastic/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/owncloud/search_elastic/compare/v2.1.0...v2.2.0

@@ -152,6 +152,30 @@ class AdminSettingsController extends ApiController {
 		return new JSONResponse();
 	}
 
+	public function saveConnectors(string $searchConnector, array $writeConnectors) {
+		if (\in_array($searchConnector, $writeConnectors, true)) {
+			$this->config->setConfiguredWriteConnectors($writeConnectors);
+			$this->config->setConfiguredSearchConnector($searchConnector);
+			return new JSONResponse([
+				'status' => 'success',
+				'data' => [
+					'message' => 'Saved',
+				]
+			]);
+		} else {
+			$message = 'The search connector must be present in the write connectors';
+			return new JSONResponse(
+				[
+					'status' => 'error',
+					'data' => [
+						'message' => $message
+					]
+				],
+				Http::STATUS_BAD_REQUEST
+			);
+		}
+	}
+
 	public function checkStatus(): JSONResponse {
 		try {
 			if (!$this->searchElasticService->isSetup()) {
@@ -168,7 +192,7 @@ class AdminSettingsController extends ApiController {
 
 	public function setup(): JSONResponse {
 		try {
-			$this->searchElasticService->setup();
+			$this->searchElasticService->fullSetup();
 		} catch (\Exception $e) {
 			$this->logger->logException($e);
 			return new JSONResponse(['message' => $e->getMessage()], Http::STATUS_SERVICE_UNAVAILABLE);

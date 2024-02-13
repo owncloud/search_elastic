@@ -26,6 +26,7 @@
 namespace OCA\Search_Elastic\Search;
 
 use Elastica\Result;
+use OCA\Search_Elastic\Connectors\IConnector;
 use OC\Search\Result\File as FileResult;
 use OCP\Files\Folder;
 use OCP\Files\Node;
@@ -56,11 +57,9 @@ class ElasticSearchResult extends FileResult {
 	 * @param Node $node
 	 * @param Folder $home
 	 */
-	public function __construct(Result $result, Node $node, Folder $home) {
+	public function __construct(Result $result, IConnector $connector, Node $node, Folder $home) {
 		parent::__construct($node);
-		$data = $result->getData();
-		$highlights = $result->getHighlights();
-		$this->id = $result->getId();
+		$this->id = $connector->findInResult($result, 'id');
 		$this->path = $home->getRelativePath($node->getPath());
 		$this->name = \basename($this->path);
 		$this->size = (int)$node->getSize();
@@ -83,11 +82,7 @@ class ElasticSearchResult extends FileResult {
 			);
 		}
 		$this->permissions = (string) $node->getPermissions();
-		$this->modified = $data['mtime'];
-		if (isset($highlights['file.content'])) {
-			$this->highlights = $highlights['file.content'];
-		} else {
-			$this->highlights = [];
-		}
+		$this->modified = $connector->findInResult($result, 'mtime');
+		$this->highlights = $connector->findInResult($result, 'highlights');
 	}
 }

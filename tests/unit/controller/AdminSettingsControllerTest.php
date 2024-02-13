@@ -157,4 +157,38 @@ class AdminSettingsControllerTest extends TestCase {
 		$expectedResponse = new JSONResponse(['message' => $expectedError], Http::STATUS_EXPECTATION_FAILED);
 		$this->assertEquals($expectedResponse, $this->controller->saveServers($urls, $authType, $authParams));
 	}
+
+	public function testSaveConnectors() {
+		$this->configService->expects($this->once())
+			->method('setConfiguredWriteConnectors')
+			->with(['Con001', 'Con002']);
+		$this->configService->expects($this->once())
+			->method('setConfiguredSearchConnector')
+			->with('Con001');
+
+		$expectedResponse = new JSONResponse([
+				'status' => 'success',
+				'data' => [
+					'message' => 'Saved',
+				]
+			]);
+
+		$this->assertEquals($expectedResponse, $this->controller->saveConnectors('Con001', ['Con001', 'Con002']));
+	}
+
+	public function testSaveConnectorsWrongData() {
+		$this->configService->expects($this->never())
+			->method('setConfiguredWriteConnectors');
+		$this->configService->expects($this->never())
+			->method('setConfiguredSearchConnector');
+
+		$expectedResponse = new JSONResponse([
+				'status' => 'error',
+				'data' => [
+					'message' => 'The search connector must be present in the write connectors',
+				]
+			], Http::STATUS_BAD_REQUEST);
+
+		$this->assertEquals($expectedResponse, $this->controller->saveConnectors('Con003', ['Con001', 'Con002']));
+	}
 }

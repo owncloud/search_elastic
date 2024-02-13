@@ -68,7 +68,7 @@ class Update extends Command {
 	protected function configure() {
 		$this
 			->setName('search:index:update')
-			->setDescription('Update the search index by running all pending background jobs.')
+			->setDescription('Update the indexes by running all pending background jobs.')
 			->addOption(
 				'quiet',
 				'q',

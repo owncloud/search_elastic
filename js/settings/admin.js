@@ -100,6 +100,28 @@
 			});
 		}
 
+		$('.select2').select2({
+			minimumResultsForSearch: -1
+		});
+		$('#saveConnectors').on('click', function(e) {
+			var sCon = $('#searchConnector').val();
+			var wCon = $('#writeConnectorList').val();
+			if (wCon.indexOf(sCon) !== -1) {
+				// search connector must be present in the write connectors
+				$.post(
+					OC.generateUrl('apps/search_elastic/settings/connectors/save'),
+					{
+						searchConnector: sCon,
+						writeConnectors: wCon
+					}
+				).always(function(result) {
+					OC.msg.finishedSaving('#saveMessage', result);
+				});
+			} else {
+				OC.msg.finishedError('#saveMessage', t('search_elastic', 'Error: the search connector must be present in the write connectors'));
+			}
+		});
+
 		$('#saveConfiguration').on('click', function(e) {
 			var host = $('#host').val();
 			var auth = $('#authType').val();

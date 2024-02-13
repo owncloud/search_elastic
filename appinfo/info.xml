@@ -2,11 +2,11 @@
 <info>
 	<id>search_elastic</id>
 	<name>Full Text Search</name>
-	<version>2.3.0</version>
+	<version>2.4.0</version>
 	<licence>GPLv2</licence>
 	<author>ownCloud GmbH</author>
 	<dependencies>
-		<owncloud min-version="10.3" max-version="10" />
+		<owncloud min-version="10.5" max-version="10" />
 		<php min-version="7.3" max-version="7.4"/>
 	</dependencies>
 	<use-migrations>true</use-migrations>
@@ -29,5 +29,6 @@
 		<command>OCA\Search_Elastic\Command\Reset</command>
 		<command>OCA\Search_Elastic\Command\Update</command>
 		<command>OCA\Search_Elastic\Command\Rebuild</command>
+		<command>OCA\Search_Elastic\Command\FillSecondary</command>
 	</commands>
 </info>

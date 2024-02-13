@@ -67,7 +67,12 @@ class Reset extends Command {
 				InputOption::VALUE_NONE,
 				'Use this option to reset the index without further questions.'
 			)
-			->setDescription('Reset the index');
+			->setDescription(
+				'Reset all the configured indexes.'.
+				' Changes in the configuration of the indexes associated to the configured connectors will take place.'.
+				' All the data in those indexes will be removed, so you\'ll need to rebuild the indexes,'.
+				' usually with "search:index:rebuild"'
+			);
 	}
 
 	/**
@@ -95,7 +100,7 @@ class Reset extends Command {
 			return 0;
 		}
 
-		$this->searchElasticService->setup();
+		$this->searchElasticService->fullSetup();
 		$output->writeln('Search index has been reset.');
 		return 0;
 	}

@@ -11,7 +11,7 @@ parameters:
       count: 2
     -
       message: '#Call to an undefined method OCP\\Files\\Node::getContent\(\)#'
-      path: lib/SearchElasticService.php
+      path: lib/Connectors/BaseConnector.php
       count: 1
     -
       message: '#Method .* should return .* but returns.*#'

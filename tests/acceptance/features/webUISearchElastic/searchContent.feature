@@ -131,4 +131,4 @@ Feature: Search
     And the user has reloaded the current page of the webUI
     And the user searches for "secret" using the webUI
     Then file "Brian-upload.txt" should not be listed on the webUI
-    Then file "Brian-upload.txt" with path "/" should not be listed in the search results in the other folders section on the webUI
+    And file "Brian-upload.txt" with path "/" should not be listed in the search results in the other folders section on the webUI

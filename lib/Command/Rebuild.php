@@ -37,6 +37,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Helper\QuestionHelper;
 
 /**
  * Class Rebuild
@@ -63,6 +64,8 @@ class Rebuild extends Command {
 	 * @var UpdateContent
 	 */
 	private $job;
+	/** @var QuestionHelper */
+	private $questionHelper;
 
 	/**
 	 * Rebuild constructor.
@@ -71,18 +74,21 @@ class Rebuild extends Command {
 	 * @param IUserManager $userManager
 	 * @param IRootFolder $rootFolder
 	 * @param UpdateContent $job
+	 * @param QuestionHelper $questionHelper
 	 */
 	public function __construct(
 		SearchElasticService $searchElasticService,
 		IUserManager $userManager,
 		IRootFolder $rootFolder,
-		UpdateContent $job
+		UpdateContent $job,
+		QuestionHelper $questionHelper
 	) {
 		parent::__construct();
 		$this->searchelasticservice = $searchElasticService;
 		$this->userManager = $userManager;
 		$this->rootFolder = $rootFolder;
 		$this->job = $job;
+		$this->questionHelper = $questionHelper;
 	}
 
 	/**
@@ -170,14 +176,12 @@ class Rebuild extends Command {
 		}
 
 		if (!$input->getOption('force')) {
-			$helper = $this->getHelper('question');
-			'@phan-var \Symfony\Component\Console\Helper\QuestionHelper $helper';
 			$question = new ChoiceQuestion(
 				"This will delete all search index data for selected users! Do you want to proceed?",
 				['no', 'yes'],
 				'no'
 			);
-			$result = ($helper->ask($input, $output, $question) === 'yes') ? false : true;
+			$result = ($this->questionHelper->ask($input, $output, $question) === 'yes') ? false : true;
 		} else {
 			$result = false;
 		}

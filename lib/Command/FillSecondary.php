@@ -140,7 +140,7 @@ class FillSecondary extends Command {
 	 *
 	 * @return int
 	 */
-	public function execute(InputInterface $input, OutputInterface $output) {
+	public function execute(InputInterface $input, OutputInterface $output): int {
 		$users = $input->getArgument('user_id');
 		$connectorName = $input->getArgument('connector_name');
 		$quiet = $input->getOption('quiet');
@@ -184,6 +184,7 @@ class FillSecondary extends Command {
 	private function shouldAbort(InputInterface $input, OutputInterface $output) {
 		if (!$input->getOption('force')) {
 			$helper = $this->getHelper('question');
+			'@phan-var \Symfony\Component\Console\Helper\QuestionHelper $helper';
 			$question = new ChoiceQuestion(
 				"This will re-index data for selected users based on already-indexed data! Do you want to proceed?",
 				['no', 'yes'],

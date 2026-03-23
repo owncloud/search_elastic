@@ -88,6 +88,7 @@ class Reset extends Command {
 			$continue = true;
 		} else {
 			$helper = $this->getHelper('question');
+			'@phan-var \Symfony\Component\Console\Helper\QuestionHelper $helper';
 			$question = new ChoiceQuestion(
 				'This will delete the whole search index! Do you want to proceed?',
 				['no', 'yes'],

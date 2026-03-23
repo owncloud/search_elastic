@@ -17,39 +17,39 @@ class ElasticLogger implements LoggerInterface {
 		$this->logger = $logger;
 	}
 
-	public function emergency($message, array $context = []) {
+	public function emergency(string|\Stringable $message, array $context = []): void {
 		$this->logger->emergency($message, ['extraFields' => $context]);
 	}
 
-	public function alert($message, array $context = []) {
+	public function alert(string|\Stringable $message, array $context = []): void {
 		$this->logger->alert($message, ['extraFields' => $context]);
 	}
 
-	public function critical($message, array $context = []) {
+	public function critical(string|\Stringable $message, array $context = []): void {
 		$this->logger->critical($message, ['extraFields' => $context]);
 	}
 
-	public function error($message, array $context = []) {
+	public function error(string|\Stringable $message, array $context = []): void {
 		$this->logger->error($message, ['extraFields' => $context]);
 	}
 
-	public function warning($message, array $context = []) {
+	public function warning(string|\Stringable $message, array $context = []): void {
 		$this->logger->warning($message, ['extraFields' => $context]);
 	}
 
-	public function notice($message, array $context = []) {
+	public function notice(string|\Stringable $message, array $context = []): void {
 		$this->logger->notice($message, ['extraFields' => $context]);
 	}
 
-	public function info($message, array $context = []) {
+	public function info(string|\Stringable $message, array $context = []): void {
 		$this->logger->info($message, ['extraFields' => $context]);
 	}
 
-	public function debug($message, array $context = []) {
+	public function debug(string|\Stringable $message, array $context = []): void {
 		$this->logger->debug($message, ['extraFields' => $context]);
 	}
 
-	public function log($level, $message, array $context = []) {
+	public function log($level, string|\Stringable $message, array $context = []): void {
 		$this->logger->log($level, $message, ['extraFields' => $context]);
 	}
 }

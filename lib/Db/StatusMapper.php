@@ -76,8 +76,7 @@ class StatusMapper extends Mapper {
 	 */
 	public function delete(Entity $status) {
 		$sql = 'DELETE FROM `' . $this->tableName . '` WHERE `fileid` = ?';
-		$stmt = $this->execute($sql, [$status->getFileId()]);
-		$stmt->closeCursor();
+		$stmt = $this->executeStatement($sql, [$status->getFileId()]);
 		return $status;
 	}
 	/**
@@ -95,16 +94,16 @@ class StatusMapper extends Mapper {
 		}
 
 		$sql = "DELETE FROM `{$this->tableName}` WHERE `fileid` IN ($values)";
-		$stmt = $this->execute($sql, $ids);
+		$rowCount = $this->executeStatement($sql, $ids);
 
-		return $stmt->rowCount();
+		return $rowCount;
 	}
 
 	/**
 	 * Clears all status entries from the table
 	 */
 	public function clear() {
-		$this->execute('DELETE FROM `' . $this->tableName . '`');
+		$this->executeStatement('DELETE FROM `' . $this->tableName . '`');
 	}
 
 	/**
@@ -142,7 +141,7 @@ class StatusMapper extends Mapper {
 		$sql = 'INSERT INTO `' . $this->tableName . '`(' .
 			$columns . ') VALUES(' . $values . ')';
 
-		$this->execute($sql, $params);
+		$this->executeStatement($sql, $params);
 
 		return $entity;
 	}
@@ -197,7 +196,8 @@ class StatusMapper extends Mapper {
 			$columns . ' WHERE `fileid` = ?';
 		\array_push($params, $fileId);
 
-		return $this->execute($sql, $params);
+		$this->executeStatement($sql, $params);
+		return $entity;
 	}
 
 	/**
@@ -291,13 +291,13 @@ class StatusMapper extends Mapper {
 		";
 		$params = $storageIds;
 		\array_push($params, $minId, Status::STATUS_INDEXED);
-		$result = $this->execute($sql, $params, $limit);
+		$result = $this->executeQuery($sql, $params, $limit);
 
 		$ids = [];
-		while (($row = $result->fetch()) !== false) {
+		while (($row = $result->fetchAssociative()) !== false) {
 			$ids[] = (int)$row['fileid'];
 		}
-		$result->closeCursor();
+		$result->free();
 		return $ids;
 	}
 
@@ -342,11 +342,11 @@ class StatusMapper extends Mapper {
 		";
 		$params = $storageIds;
 		\array_push($params, $minId, Status::STATUS_INDEXED);
-		$result = $this->execute($sql, $params);
+		$result = $this->executeQuery($sql, $params);
 
-		$row = $result->fetch();
+		$row = $result->fetchAssociative();
 		$nIds = (int)$row['nIds'];
-		$result->closeCursor();
+		$result->free();
 		return $nIds;
 	}
 
@@ -389,11 +389,12 @@ class StatusMapper extends Mapper {
 				$cache = $storage->getCache();
 				$numericId = $cache->getNumericStorageId();
 
-				$result = $query->execute([$numericId, $status]);
+				$result = $query->executeQuery([$numericId, $status]);
 
-				while ($row = $result->fetchRow()) {
+				while ($row = $result->fetchAssociative()) {
 					$files[] = (int)$row['fileid'];
 				}
+				$result->free();
 			}
 		}
 		return $files;
@@ -407,8 +408,9 @@ class StatusMapper extends Mapper {
 			SELECT count(*) AS `count_indexed` FROM `*PREFIX*search_elastic_status` WHERE `status` = ?
 		";
 		$query = $this->db->prepareQuery($sql);
-		$result = $query->execute([Status::STATUS_INDEXED]);
-		$row = $result->fetchRow();
+		$result = $query->executeQuery([Status::STATUS_INDEXED]);
+		$row = $result->fetchAssociative();
+		$result->free();
 		return (int)$row['count_indexed'];
 	}
 
@@ -511,11 +513,12 @@ class StatusMapper extends Mapper {
 			WHERE `*PREFIX*filecache`.`fileid` IS NULL
 		');
 
-		$result = $query->execute();
+		$result = $query->executeQuery();
 
-		while ($row = $result->fetchRow()) {
+		while ($row = $result->fetchAssociative()) {
 			$files[] = $row['fileid'];
 		}
+		$result->free();
 
 		return $files;
 	}

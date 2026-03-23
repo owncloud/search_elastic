@@ -171,6 +171,7 @@ class Rebuild extends Command {
 
 		if (!$input->getOption('force')) {
 			$helper = $this->getHelper('question');
+			'@phan-var \Symfony\Component\Console\Helper\QuestionHelper $helper';
 			$question = new ChoiceQuestion(
 				"This will delete all search index data for selected users! Do you want to proceed?",
 				['no', 'yes'],

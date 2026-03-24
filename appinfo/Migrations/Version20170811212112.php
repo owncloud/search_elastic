@@ -25,6 +25,7 @@ namespace OCA\Search_Elastic\Migrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\DBAL\Types\BigIntType;
 use OCP\Migration\ISchemaMigration;
 
 /** Updates some fields to bigint if required */
@@ -36,7 +37,7 @@ class Version20170811212112 implements ISchemaMigration {
 			$table = $schema->getTable("{$prefix}search_elastic_status");
 
 			$fileIdColumn = $table->getColumn('fileid');
-			if ($fileIdColumn && $fileIdColumn->getType()->getName() !== Types::BIGINT) {
+			if ($fileIdColumn && $fileIdColumn->getType() instanceof BigIntType) {
 				$fileIdColumn->setType(Type::getType(Types::BIGINT));
 				$fileIdColumn->setOptions(['length' => 20]);
 			}

@@ -28,6 +28,7 @@ use OCP\IUser;
 use OCP\IUserManager;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use OCA\Search_Elastic\Command\FillSecondary;
 use Test\TestCase;
 
@@ -45,6 +46,8 @@ class FillSecondaryTest extends TestCase {
 	private $userManager;
 	/** @var IRootFolder */
 	private $rootFolder;
+	/** @var QuestionHelper */
+	private $questionHelper;
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -52,8 +55,9 @@ class FillSecondaryTest extends TestCase {
 		$this->searchElasticService = $this->createMock(SearchElasticService::class);
 		$this->userManager = $this->createMock(IUserManager::class);
 		$this->rootFolder = $this->createMock(IRootFolder::class);
+		$this->questionHelper = $this->createMock(QuestionHelper::class);
 
-		$command = new FillSecondary($this->searchElasticService, $this->userManager, $this->rootFolder);
+		$command = new FillSecondary($this->searchElasticService, $this->userManager, $this->rootFolder, $this->questionHelper);
 		$this->commandTester = new CommandTester($command);
 	}
 

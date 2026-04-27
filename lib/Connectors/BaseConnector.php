@@ -565,8 +565,6 @@ abstract class BaseConnector implements IConnector {
 
 		Filesystem::initMountPoints($ownerUser);
 		$users = $groups = $sharePaths = $fileTargets = [];
-//		$publicShare = false;
-//		$remoteShare = false;
 		$source = -1;
 		$cache = false;
 
@@ -584,28 +582,23 @@ abstract class BaseConnector implements IConnector {
 
 		while ($source !== -1) {
 			// Fetch all shares with another user
-			$query = \OC_DB::prepare(
+			$connection = \OC::$server->getDatabaseConnection();
+			$query = $connection->prepare(
 				'SELECT `share_with`, `file_source`, `file_target`
 				FROM
 				`*PREFIX*share`
 				WHERE
 				`item_source` = ? AND `share_type` = ? AND `item_type` IN (\'file\', \'folder\')'
 			);
-			$result = $query->execute([$source, Constants::SHARE_TYPE_USER]);
+			$result = $query->executeQuery([$source, Constants::SHARE_TYPE_USER]);
 
-			if ($result === false) {
-				$this->logger->error(
-					\OC_DB::getErrorMessage(),
-					['app' => 'search_elastic']
-				);
-			} else {
-				while ($row = $result->fetchRow()) {
-					$users[] = $row['share_with'];
-				}
+			while ($row = $result->fetchAssociative()) {
+				$users[] = $row['share_with'];
 			}
+			$result->free();
 
 			// We also need to take group shares into account
-			$query = \OC_DB::prepare(
+			$query = $connection->prepare(
 				'SELECT `share_with`, `file_source`, `file_target`
 				FROM
 				`*PREFIX*share`
@@ -613,18 +606,12 @@ abstract class BaseConnector implements IConnector {
 				`item_source` = ? AND `share_type` = ? AND `item_type` IN (\'file\', \'folder\')'
 			);
 
-			$result = $query->execute([$source, Constants::SHARE_TYPE_GROUP]);
+			$result = $query->executeQuery([$source, Constants::SHARE_TYPE_GROUP]);
 
-			if ($result === false) {
-				$this->logger->error(
-					\OC_DB::getErrorMessage(),
-					['app' => 'search_elastic']
-				);
-			} else {
-				while ($row = $result->fetchRow()) {
-					$groups[] = $row['share_with'];
-				}
+			while ($row = $result->fetchAssociative()) {
+				$groups[] = $row['share_with'];
 			}
+			$result->free();
 
 			// let's get the parent for the next round
 			$meta = $cache->get((int)$source);

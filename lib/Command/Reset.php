@@ -31,6 +31,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Helper\QuestionHelper;
 
 /**
  * Class Reset
@@ -42,15 +43,18 @@ class Reset extends Command {
 	 * @var SearchElasticService
 	 */
 	private $searchElasticService;
+	/** @var QuestionHelper */
+	private $questionHelper;
 
 	/**
 	 * Reset constructor.
 	 *
 	 * @param SearchElasticService $searchElasticService
 	 */
-	public function __construct(SearchElasticService $searchElasticService) {
+	public function __construct(SearchElasticService $searchElasticService, QuestionHelper $questionHelper) {
 		parent::__construct();
 		$this->searchElasticService = $searchElasticService;
+		$this->questionHelper = $questionHelper;
 	}
 
 	/**
@@ -87,13 +91,12 @@ class Reset extends Command {
 		if ($input->getOption('force')) {
 			$continue = true;
 		} else {
-			$helper = $this->getHelper('question');
 			$question = new ChoiceQuestion(
 				'This will delete the whole search index! Do you want to proceed?',
 				['no', 'yes'],
 				'no'
 			);
-			$continue = $helper->ask($input, $output, $question) === 'yes';
+			$continue = $this->questionHelper->ask($input, $output, $question) === 'yes';
 		}
 		if (!$continue) {
 			$output->writeln('Aborting.');

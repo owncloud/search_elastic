@@ -33,6 +33,7 @@ use OCP\IUser;
 use OCP\IUserManager;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Test\TestCase;
 
 /**
@@ -70,6 +71,8 @@ class RebuildTest extends TestCase {
 	 * @var UpdateContent  | \PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $job;
+	/** @var QuestionHelper */
+	private $questionHelper;
 
 	/**
 	 * Set Up the Test
@@ -83,8 +86,9 @@ class RebuildTest extends TestCase {
 		$this->rootFolder = $this->createMock(IRootFolder::class);
 		$this->user = $this->createMock(IUser::class);
 		$this->job = $this->createMock(UpdateContent::class);
+		$this->questionHelper = $this->createMock(QuestionHelper::class);
 
-		$command = new Rebuild($this->searchElasticService, $this->userManager, $this->rootFolder, $this->job);
+		$command = new Rebuild($this->searchElasticService, $this->userManager, $this->rootFolder, $this->job, $this->questionHelper);
 		$this->commandTester = new CommandTester($command);
 	}
 

@@ -34,7 +34,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
 
 /**
@@ -57,6 +56,8 @@ class FillSecondary extends Command {
 	 * @var IRootFolder
 	 */
 	private $rootFolder;
+	/** @var QuestionHelper */
+	private $questionHelper;
 
 	/**
 	 * Rebuild constructor.
@@ -64,16 +65,19 @@ class FillSecondary extends Command {
 	 * @param SearchElasticService $searchElasticService
 	 * @param IUserManager $userManager
 	 * @param IRootFolder $rootFolder
+	 * @param QuestionHelper $questionHelper
 	 */
 	public function __construct(
 		SearchElasticService $searchElasticService,
 		IUserManager $userManager,
-		IRootFolder $rootFolder
+		IRootFolder $rootFolder,
+		QuestionHelper $questionHelper
 	) {
 		parent::__construct();
 		$this->searchElasticService = $searchElasticService;
 		$this->userManager = $userManager;
 		$this->rootFolder = $rootFolder;
+		$this->questionHelper = $questionHelper;
 	}
 
 	/**
@@ -126,7 +130,7 @@ class FillSecondary extends Command {
 				'100'
 			);
 
-		$this->setHelperSet(new HelperSet(['question' => new QuestionHelper()]));  // it seems needed for unit tests
+		//$this->setHelperSet(new HelperSet(['question' => new QuestionHelper()]));  // it seems needed for unit tests
 	}
 
 	/**
@@ -140,7 +144,7 @@ class FillSecondary extends Command {
 	 *
 	 * @return int
 	 */
-	public function execute(InputInterface $input, OutputInterface $output) {
+	public function execute(InputInterface $input, OutputInterface $output): int {
 		$users = $input->getArgument('user_id');
 		$connectorName = $input->getArgument('connector_name');
 		$quiet = $input->getOption('quiet');
@@ -183,13 +187,12 @@ class FillSecondary extends Command {
 	 */
 	private function shouldAbort(InputInterface $input, OutputInterface $output) {
 		if (!$input->getOption('force')) {
-			$helper = $this->getHelper('question');
 			$question = new ChoiceQuestion(
 				"This will re-index data for selected users based on already-indexed data! Do you want to proceed?",
 				['no', 'yes'],
 				'no'
 			);
-			$result = ($helper->ask($input, $output, $question) === 'yes') ? false : true;
+			$result = ($this->questionHelper->ask($input, $output, $question) === 'yes') ? false : true;
 		} else {
 			$result = false;
 		}

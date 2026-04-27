@@ -42,6 +42,8 @@ class AdminSettingsControllerTest extends TestCase {
 	private $configService;
 
 	private $searchElasticService;
+	/** @var ILogger */
+	private $logger;
 
 	public function setUp(): void {
 		$request = $this->getMockBuilder(IRequest::class)

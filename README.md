@@ -1,60 +1,125 @@
-# Elasticsearch
+# Search Elastic
 
-[![Build Status](https://drone.owncloud.com/api/badges/owncloud/search_elastic/status.svg?branch=master)](https://drone.owncloud.com/owncloud/search_elastic)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=owncloud_search_elastic&metric=alert_status)](https://sonarcloud.io/dashboard?id=owncloud_search_elastic)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=owncloud_search_elastic&metric=security_rating)](https://sonarcloud.io/dashboard?id=owncloud_search_elastic)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=owncloud_search_elastic&metric=coverage)](https://sonarcloud.io/dashboard?id=owncloud_search_elastic)
+<!-- OSPO-managed README | Generated: 2026-04-16 | v2 -->
 
-The search_elastic app adds a full text search for files stored in ownCloud. It requires an [elasticsearch](http://www.elasticsearch.org) server and can index all files supported by apache tika, e.g., plain text, .docx, .xlsx, .pptx, .odt, .ods and .pdf files. The source code is available on [GitHub](https://github.com/owncloud/search_elastic). For more information please read the documentation at [https://doc.owncloud.com](https://doc.owncloud.com/server/latest/admin_manual/configuration/general_topics/search.html).
+[![License](https://img.shields.io/badge/License-GPL--2.0-blue.svg)](LICENSE) [![ownCloud OSPO](https://img.shields.io/badge/OSPO-ownCloud-blue)](https://kiteworks.com/opensource) [![Docker Hub](https://img.shields.io/docker/pulls/owncloud)](https://hub.docker.com/r/owncloud/server)
 
-## Maintainers
+Search Elastic adds Elasticsearch-powered full-text search to ownCloud Server, enabling users to search the contents of documents stored in their ownCloud instance. It indexes all file types supported by Apache Tika -- including plain text, .docx, .xlsx, .pptx, .odt, .ods and .pdf files -- and returns results filtered by the user's access permissions.
 
-- [Jörn Friedrich Dreyer](https://github.com/butonic)
+## Part of Classic (OC10)
 
-## Todo
+This app is part of the [ownCloud Server (OC10)](https://github.com/owncloud/core) ecosystem, extending its built-in search with full-text content indexing backed by Elasticsearch. It requires a running Elasticsearch instance connected to the ownCloud server.
 
-- [x] update elastica lib
-- [x] restore compatibility with oc8.2
-- [x] restore compatibility with elasticsearch (requires new indexes)
-- [x] store groups and users with access to filter search results by group membership
-- [x] store fileid instead of filenames so we don't have to handle renames
-- [x] use instanceid to set up index - allows using the same elasticsearch instance for multiple oc instances
-- [x] store the filename to allow faster search in shared files
-  - index files and folders
-- [ ] store tags?
-- [ ] store image / video dimensions?
-- sharing a file immediately after it has been uploaded throws an exception
-  - [x] fix exception / do not try to update a nonexistent document
-  - [x] get all users and groups when initially indexing the document
-- [x] move share updates to background job -> eventually searchable
-  - [x] descend subdirs when updating
-  - [x] check permissions again on search and remove results if no longer accessible
-    - [ ] compensate for removed entries in search results, too many will confuse the paging logic
-- [ ] --index in batches (make batch size configurable, 0 = unlimited)
-  - CLI cron.php executes all jobs
-    - [ ] limit number of files to 250? per job?
-- add occ commands
-  - [x] index all files or only those of a specific user
-  - [x] enable / disable automatic background scanning via cron
-    - [ ] admin settings ui for this
-- [x] check js for result link handling so clicking a result dos not do a full page load, there seems to be js in place that already does the file highlighting
-  - the old filehandler logic does not seem to work, removed it, now using plain link
-- [ ] send code snippets for search_lucene
-- [ ] use file tab
-  - [ ] show index status
-  - [ ] remember index error message in db
-- [x] check encryption compatibility
-  - [x] had to jump a few hoops to get master key working
-  - not compatible with user individual keys
-    - [ ] at least index metadata in this case (catch encryption exception and ignore content extraction)
-- [ ] statistics on admin settings page
-- [ ] statistics on personal settings page
-- [x] cleanup code
-- [x] port test suite from search_lucene
-- [x] resolve path for shared files
-- [x] files with empty content extraction are reindexed indefinitely? e.g., empty text file
-- [x] more debug logging
-- [x] wildcard search ... but there is a [bug](https://github.com/owncloud/core/pull/23531) in core js code preventing wildcard search
-  - well partly. \* and ? are no longer supported. Instead, we now mimic core, which is called a [match phrase prefix](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html#query-dsl-match-query-phrase-prefix) type query
-- [ ] to find out why a node cannot be found by its contents mark it as "NO CONTENT EXTRACTED"?
-- [ ] how should we handle files in userhome/files_versions/ or userhome/thumbnails/ ... currently a 'vanished' message will be logged ... annoying
+The ownCloud Server is available on [Docker Hub](https://hub.docker.com/r/owncloud/server).
+
+## Getting Started
+
+Follow the steps below to install and configure Elasticsearch integration.
+
+### Prerequisites
+
+- A running [Elasticsearch](http://www.elasticsearch.org) instance
+
+### Installation
+
+Install from the [ownCloud Marketplace](https://marketplace.owncloud.com/), or manually:
+
+```bash
+cd apps
+git clone https://github.com/owncloud/search_elastic.git
+cd ..
+php occ app:enable search_elastic
+```
+
+### Building from Source
+
+```bash
+make all                   # Install all dependencies
+make dist                  # Build distribution package
+```
+
+### Running Tests
+
+```bash
+make test-php-unit         # Run PHP unit tests
+make test-php-style        # Check code style with phpcs
+make test-php-phpstan      # Run static analysis with PHPStan
+```
+
+## Documentation
+
+- [Elasticsearch Search Configuration](https://doc.owncloud.com/server/latest/admin_manual/configuration/general_topics/search.html)
+- [ownCloud Server Admin Manual](https://doc.owncloud.com/server/latest/admin_manual/)
+- [FEATURES.md](FEATURES.md) for feature details
+- [TESTING.md](TESTING.md) for testing instructions
+
+## Community & Support
+
+**[Star](https://github.com/owncloud/search_elastic)** this repo and **Watch** for release notifications!
+
+- [ownCloud Website](https://owncloud.com)
+- [Community Discussions](https://github.com/orgs/owncloud/discussions)
+- [Matrix Chat](https://app.element.io/#/room/#owncloud:matrix.org)
+- [Documentation](https://doc.owncloud.com)
+- [Enterprise Support](https://owncloud.com/contact-us/)
+- [OSPO Home](https://kiteworks.com/opensource)
+
+## Contributing
+
+We welcome contributions! Please read the [Contributing Guidelines](CONTRIBUTING.md)
+and our [Code of Conduct](CODE_OF_CONDUCT.md) before getting started.
+
+### Workflow
+
+- **Rebase Early, Rebase Often!** We use a rebase workflow. Always rebase on the target branch before submitting a PR.
+- **Dependabot**: Automated dependency updates are managed via Dependabot. Review and merge dependency PRs promptly.
+- **Signed Commits**: All commits **must** be PGP/GPG signed. See [GitHub's signing guide](https://docs.github.com/en/authentication/managing-commit-signature-verification).
+- **DCO Sign-off**: Every commit must carry a `Signed-off-by` line:
+  ```
+  git commit -s -S -m "your commit message"
+  ```
+- **GitHub Actions Policy**: Workflows may only use actions that are (a) owned by `owncloud`, (b) created by GitHub (`actions/*`), or (c) verified in the GitHub Marketplace.
+
+## Security
+
+**Do not open a public GitHub issue for security vulnerabilities.**
+
+Report vulnerabilities at **<https://security.owncloud.com>** -- see [SECURITY.md](SECURITY.md).
+
+Bug bounty: [YesWeHack ownCloud Program](https://yeswehack.com/programs/owncloud-bug-bounty-program)
+
+## License
+
+This project is licensed under the [GPL-2.0](LICENSE).
+
+## About the ownCloud OSPO
+
+The [Kiteworks Open Source Program Office](https://kiteworks.com/opensource), operating under
+the [ownCloud](https://owncloud.com) brand, launched on May 5, 2026, to steward the open source
+ecosystem around ownCloud's products. The OSPO ensures transparent governance, license compliance,
+community health, and sustainable collaboration between the open source community and
+[Kiteworks](https://www.kiteworks.com), which acquired ownCloud in 2023.
+
+- **OSPO Home**: <https://kiteworks.com/opensource>
+- **GitHub**: <https://github.com/owncloud>
+- **ownCloud**: <https://owncloud.com>
+
+For questions about the OSPO or licensing, contact ospo@kiteworks.com.
+
+### License Migration to Apache 2.0
+
+The OSPO is driving a strategic relicensing of ownCloud repositories toward the
+[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0), following
+the [Apache Software Foundation's third-party license policy](https://www.apache.org/legal/resolved.html).
+
+Individual repositories will migrate as their audit is completed. The LICENSE file
+in each repo reflects its **current** license status (not the target).
+
+**Current license: GPL-2.0** (Category X per Apache policy -- cannot be included in Apache-2.0 works).
+
+Migration prerequisites for this repository:
+
+- **CLA/DCO coverage**: All past contributors must have signed agreements permitting relicensing
+- **Copyleft dependency audit**: All GPL dependencies must be replaced or isolated
+- **KDE heritage review**: Any code with KDE-era copyrights requires legal analysis
+- **Complete relicensing**: GPL-2.0 is a strong copyleft license; migration requires full relicensing of all files

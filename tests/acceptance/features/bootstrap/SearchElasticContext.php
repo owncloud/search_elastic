@@ -69,6 +69,9 @@ class SearchElasticContext implements Context {
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword()
 		);
+		// creating the index leaves the new documents unsearchable until the
+		// shards refresh, exactly as updating it does - see updateIndex()
+		\sleep(2);
 	}
 
 	/**

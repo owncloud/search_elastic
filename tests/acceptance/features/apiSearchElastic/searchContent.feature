@@ -19,7 +19,7 @@ Feature: Search for content
     And user "Alice" has uploaded file "filesForUpload/simple.pdf" to "/simple.pdf"
     And the search index has been created
 
-
+  @smokeTest
   Scenario Outline: search for files by pattern
     Given using <dav_version> DAV path
     When user "Alice" searches for "content" using the WebDAV API
@@ -119,7 +119,7 @@ Feature: Search for content
       | old         |
       | new         |
 
-
+  @smokeTest
   Scenario Outline: search for files with multiple words
     Given using <dav_version> DAV path
     When user "Alice" searches for "ownCloud text" using the WebDAV API
@@ -209,7 +209,7 @@ Feature: Search for content
       | old         |
       | new         |
 
-
+  @smokeTest
   Scenario Outline: search for files by pattern - pattern matches filename of one file and content of others
     Given using <dav_version> DAV path
     And user "Alice" has uploaded file with content "files content" to "/ownCloud.txt"
@@ -249,7 +249,7 @@ Feature: Search for content
       | old         |
       | new         |
 
-
+  @smokeTest
   Scenario Outline: search for deleted files should not work
     Given using <dav_version> DAV path
     When user "Alice" deletes file "/upload.txt" using the WebDAV API

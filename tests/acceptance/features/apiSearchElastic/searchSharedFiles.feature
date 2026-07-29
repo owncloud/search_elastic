@@ -19,7 +19,7 @@ Feature: Search for content
     And user "Alice" has uploaded file "filesForUpload/simple.pdf" to "/simple.pdf"
     And the search index has been created
 
-
+  @smokeTest
   Scenario Outline: user searches for files shared to him as a single user
     Given using <dav_version> DAV path
     And user "Brian" has been created with default attributes and small skeleton files
@@ -59,7 +59,7 @@ Feature: Search for content
       | old         |
       | new         |
 
-
+  @smokeTest
   Scenario Outline: user searches for files shared to him as a member of a group
     Given using <dav_version> DAV path
     And user "Brian" has been created with default attributes and small skeleton files

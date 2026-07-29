@@ -16,7 +16,7 @@ Feature: Search for content using wildcard in query
     And user "Alice" has uploaded file with content "foo baz bar" to "/simple-folder/file6.txt"
     And user "Alice" has uploaded file with content "bar foo baz" to "/simple-search-folder/file7.txt"
 
-
+  @smokeTest
   Scenario Outline: search using wildcard pattern at the end of string
     Given using <dav_version> DAV path
     And the search index has been updated

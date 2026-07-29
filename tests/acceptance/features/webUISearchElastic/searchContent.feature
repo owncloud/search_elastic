@@ -87,6 +87,19 @@ Feature: Search
     But file "lorem.txt" should not be listed on the webUI
 
 
+  Scenario: content highlights are not rendered as markup
+    Given user "Brian" has uploaded file with content "qreport <script>alert(1)</script> tail" to "/xss-highlight.txt"
+    And the search index has been updated
+    And the user has reloaded the current page of the webUI
+    When the user searches for "qreport" using the webUI
+    # the payload has to show up as visible text - if it were rendered as markup
+    # the script element would not contribute any visible text at all
+    Then file "xss-highlight.txt" with path "/" should be listed in the search results in the other folders section on the webUI with highlights containing:
+      """
+      qreport <script>alert(1)</script> tail
+      """
+
+
   Scenario: search for files by UTF pattern
     Given user "Brian" has uploaded file with content "मेरो नेपालि content" to "/utf-upload.txt"
     And user "Brian" has uploaded file with content "मेरो दोस्रो नेपालि content" to "/simple-folder/utf-upload.txt"

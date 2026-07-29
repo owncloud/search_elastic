@@ -1,4 +1,46 @@
 (function() {
+	/**
+	 * Highlight fragments are built from attacker controlled file content, so they
+	 * must never be handed to .html(). Rebuild them from an inert document, keeping
+	 * text and the <em> markers elasticsearch wraps the matched terms in, and
+	 * dropping every other element together with its subtree.
+	 *
+	 * Stripping - not escaping - is deliberate: elasticsearch already encodes the
+	 * fragment ('encoder' => 'html'), escaping again here would show the encoded
+	 * entities to the user.
+	 *
+	 * @param {string} html highlight fragment
+	 * @param {Document} target document the returned nodes belong to
+	 * @returns {Array} sanitized nodes, ready to be appended
+	 */
+	function sanitizeHighlights(html, target) {
+		// parsing into a 'text/html' document is inert: no script is executed and
+		// no resource is loaded, unlike jQuery.parseHTML which builds the fragment
+		// against the live document
+		var parsed = new DOMParser().parseFromString(html, 'text/html');
+
+		function convert(node) {
+			var nodes = [];
+			for (var i = 0; i < node.childNodes.length; i++) {
+				var child = node.childNodes[i];
+				if (child.nodeType === Node.TEXT_NODE) {
+					nodes.push(target.createTextNode(child.nodeValue));
+				} else if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'EM') {
+					var em = target.createElement('em');
+					var grandChildren = convert(child);
+					for (var j = 0; j < grandChildren.length; j++) {
+						em.appendChild(grandChildren[j]);
+					}
+					nodes.push(em);
+				}
+				// anything else is dropped, subtree included
+			}
+			return nodes;
+		}
+
+		return convert(parsed.body);
+	}
+
 	OCA.Search.ElasticSearch = {
 		attach: function(search) {
 			search.setRenderer('search_elastic', OCA.Search.ElasticSearch.renderFileResult);
@@ -43,7 +85,8 @@
 			}
 			if ($fileResultRow && typeof result.highlights === 'object' && result.highlights !== null) {
 				var highlights = result.highlights.join(' … ');
-				var $highlightsDiv = $('<div class="highlights"></div>').html(highlights);
+				var $highlightsDiv = $('<div class="highlights"></div>')
+					.append(sanitizeHighlights(highlights, document));
 				$row.find('td.info div.path').after($highlightsDiv);
 			}
 			return $fileResultRow;

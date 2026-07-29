@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### [Unreleased] 
 
+### Fixed
+
+* Content highlights of search results are no longer rendered as HTML, fixing a stored cross site scripting issue where file content could execute script in the session of a user the file was shared with
 
 ### [2.4.0] - 2023-11-02
 

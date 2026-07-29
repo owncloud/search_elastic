@@ -369,6 +369,9 @@ abstract class BaseConnector implements IConnector {
 				],
 			],
 			'highlight' => [
+				// the fragment contains attacker controlled file content and is
+				// rendered as HTML by the consumers - let elasticsearch encode it
+				'encoder' => 'html',
 				'fields' => ['file.content' => new \stdClass]
 			],
 			'_source' => [

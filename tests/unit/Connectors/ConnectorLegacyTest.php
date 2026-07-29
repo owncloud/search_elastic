@@ -271,6 +271,7 @@ class ConnectorLegacyTest extends TestCase {
 				],
 			],
 			'highlight' => [
+				'encoder' => 'html',
 				'fields' => ['file.content' => new \stdClass]
 			],
 			'_source' => [
@@ -372,6 +373,7 @@ class ConnectorLegacyTest extends TestCase {
 				],
 			],
 			'highlight' => [
+				'encoder' => 'html',
 				'fields' => ['file.content' => new \stdClass]
 			],
 			'_source' => [
@@ -473,6 +475,7 @@ class ConnectorLegacyTest extends TestCase {
 				],
 			],
 			'highlight' => [
+				'encoder' => 'html',
 				'fields' => ['file.content' => new \stdClass]
 			],
 			'_source' => [
@@ -525,6 +528,60 @@ class ConnectorLegacyTest extends TestCase {
 		]);
 
 		$this->assertSame(['high light number 1', 'another high'], $this->connectorLegacy->findInResult($result, 'highlights'));
+	}
+
+	/**
+	 * findInResult is a deliberate passthrough: the highlight fragment is
+	 * HTML-encoded by elasticsearch itself (see the 'encoder' => 'html' setting
+	 * asserted in testFetchResultsHighlightUsesHtmlEncoder), not here. Encoding
+	 * again in PHP would also escape the <em> markers elasticsearch adds around
+	 * the matched terms and break highlighting.
+	 *
+	 * Consumers must therefore never render this value as HTML unencoded.
+	 */
+	public function testFindInResultHighlightIsPassedThroughVerbatim() {
+		$result = $this->createMock(Result::class);
+		$result->method('getHighlights')->willReturn([
+			'file.content' => ['<script>alert(1)</script>']
+		]);
+
+		$this->assertSame(
+			['<script>alert(1)</script>'],
+			$this->connectorLegacy->findInResult($result, 'highlights')
+		);
+	}
+
+	/**
+	 * The highlight fragment contains attacker-controlled file content. Without
+	 * an explicit encoder elasticsearch defaults to 'encoder: default', which
+	 * does not HTML-encode the content surrounding the matched terms, exposing
+	 * every consumer of the fragment to stored XSS.
+	 */
+	public function testFetchResultsHighlightUsesHtmlEncoder() {
+		$this->esConfig->method('getGroupNoContentArray')->willReturn([]);
+		$this->esConfig->method('shouldContentBeIncluded')->willReturn(true);
+
+		$userObj = $this->createMock(IUser::class);
+		$userObj->method('getUID')->willReturn('mockedUser');
+		$this->userManager->method('get')->willReturn($userObj);
+		$this->groupManager->method('getUserGroups')->willReturn([]);
+
+		$rawQuery = null;
+		$query = $this->createMock(Query::class);
+		$query->expects($this->once())
+			->method('setRawQuery')
+			->willReturnCallback(function ($q) use (&$rawQuery, &$query) {
+				$rawQuery = $q;
+				return $query;
+			});
+
+		$this->factory->method('getNewQuery')->willReturn($query);
+		$this->factory->method('getNewIndex')->willReturn($this->createMock(Index::class));
+		$this->factory->method('getNewSearch')->willReturn($this->createMock(Search::class));
+
+		$this->connectorLegacy->fetchResults('mockedUser', 'test query', 30, 0);
+
+		$this->assertSame('html', $rawQuery['highlight']['encoder'] ?? null);
 	}
 
 	public function testFindInResultMtime() {

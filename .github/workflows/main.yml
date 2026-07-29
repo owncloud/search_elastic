@@ -55,11 +55,15 @@ jobs:
       app-name: ${{ needs.get-vars.outputs.app-name }}
       php-versions: ${{ needs.get-vars.outputs.php-versions }}
 
+  # TODO: switch both acceptance jobs back to @main once
+  # owncloud/reusable-workflows#88 is merged - the `elasticsearch-version` input
+  # only exists on that branch, and an unknown input to a reusable workflow is a
+  # startup failure that takes down every other job in this file too.
   acceptance-api:
     name: API acceptance tests
     needs:
       - get-vars
-    uses: owncloud/reusable-workflows/.github/workflows/acceptance.yml@main
+    uses: owncloud/reusable-workflows/.github/workflows/acceptance.yml@feat/acceptance-elasticsearch
     with:
       app-name: ${{ needs.get-vars.outputs.app-name }}
       php-versions: ${{ needs.get-vars.outputs.php-versions }}
@@ -72,7 +76,7 @@ jobs:
     name: WebUI acceptance tests
     needs:
       - get-vars
-    uses: owncloud/reusable-workflows/.github/workflows/acceptance.yml@main
+    uses: owncloud/reusable-workflows/.github/workflows/acceptance.yml@feat/acceptance-elasticsearch
     with:
       app-name: ${{ needs.get-vars.outputs.app-name }}
       php-versions: ${{ needs.get-vars.outputs.php-versions }}

@@ -21,7 +21,7 @@
 		"issues": "https://github.com/owncloud/search_elastic/issues"
 	},
 	"require": {
-		"ruflin/elastica": "^7.3"
+		"ruflin/elastica": "^9.0"
 	},
 	"require-dev": {
 		"roave/security-advisories": "dev-master"

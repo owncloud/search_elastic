@@ -1,4 +1,4 @@
-# agents.md — search_elastic
+# AGENTS.md — search_elastic
 
 ## Repository Overview
 
